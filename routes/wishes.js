@@ -4,16 +4,68 @@ const axios = require("axios");
 const cheerio = require("cheerio");
 const wishRoutes = express.Router();
 
-module.exports = () => {
-  wishRoutes.route("/").get(function (req, res) {
-    console.log("sup");
-    Wish.find(function (err, wishes) {
+module.exports = (params) => {
+  const { wishesService } = params;
+
+  wishRoutes.get("/", async (req, res) => {
+    const wishes = await wishesService.getData().catch(console.log);
+    return res.json(wishes);
+  });
+
+  wishRoutes.route("/:id").get(async function (req, res) {
+    let id = req.params.id;
+    const wish = await wishesService.getWish(id).catch(console.log);
+    res.json(wish);
+  });
+
+  wishRoutes.route("/add").post(function (req, res) {
+    wishesService
+      .addWish(req.body)
+      .then((wish) => {
+        res.status(200).json({ wish: "wish added successfully" });
+      })
+      .catch((err) => {
+        res.status(400).send("adding new wish failed");
+      });
+  });
+
+  wishRoutes.route("/delete/:id").delete(function (req, res) {
+    wishesService.deleteWish(req.params.id, (err, wish) => {
       if (err) {
-        console.log(err);
+        res.send("error removing wish");
       } else {
-        res.json(wishes);
+        console.log(wish);
+        res.json({ message: "wish deleted" });
       }
     });
+  });
+
+  wishRoutes.route("/delete/many").post(async function (req, res) {
+    await wishesService.deleteWishes(req.body.ids);
+    res.status(200).json("wishes deleted");
+  });
+
+  // wishRoutes.route("/update2/:id").post(function (req, res) {
+  //   wishesService.updateWish(req.params.id, function (err, wish) {
+  //     if (!wish) res.status(404).send("data is not found");
+  //     else wish.wish_name = req.body.wish_name;
+  //     wish
+  //       .save()
+  //       .then((wish) => {
+  //         res.json("Wish updated!");
+  //       })
+  //       .catch((err) => {
+  //         res.status(400).send("Update not possible");
+  //       });
+  //   });
+  // });
+  wishRoutes.route("/update/:id").post(function (req, res) {
+    wishesService
+      .updateWish(req.params.id, req.body)
+      .then((wish) => {
+        console.log("update:", wish, "<--- why undefined?");
+      })
+      .catch((err) => console.log("error:", err));
   });
 
   wishRoutes.route("/productInfo").post(async function (req, res) {
@@ -97,80 +149,6 @@ module.exports = () => {
       });
     console.log("info: ", info);
     res.json(info);
-  });
-
-  wishRoutes.route("/:id").get(function (req, res) {
-    let id = req.params.id;
-    Wish.findById(id, function (err, wish) {
-      res.json(wish);
-    });
-  });
-
-  wishRoutes.route("/add").post(function (req, res) {
-    let wish = new Wish(req.body);
-    wish
-      .save()
-      .then((wish) => {
-        res.status(200).json({ wish: "wish added successfully" });
-      })
-      .catch((err) => {
-        res.status(400).send("adding new wish failed");
-      });
-  });
-
-  wishRoutes.route("/delete/:id").delete(function (req, res) {
-    Wish.remove(
-      {
-        _id: req.params.id,
-      },
-      (err, wish) => {
-        if (err) {
-          res.send("error removing wish");
-        } else {
-          console.log(wish);
-          res.json({ message: "wish deleted" });
-        }
-      }
-    );
-  });
-
-  wishRoutes.route("/delete/many").post(async function (req, res) {
-    console.log(req.body);
-    const ids = req.body.ids;
-
-    for (const id of ids) {
-      await Wish.findByIdAndDelete(id);
-    }
-
-    res.status(200).json({ wish: "wishes deleted" });
-  });
-  wishRoutes.route("/ids/array").get(function (req, res) {
-    Wish.find(function (err, wishes) {
-      if (err) {
-        console.log(err);
-      } else {
-        let array = [];
-        wishes.forEach((x) => array.push(`${x._id}`));
-        console.log(array);
-
-        res.json(array);
-      }
-    });
-  });
-
-  wishRoutes.route("/update/:id").post(function (req, res) {
-    Wish.findById(req.params.id, function (err, wish) {
-      if (!wish) res.status(404).send("data is not found");
-      else wish.wish_name = req.body.wish_name;
-      wish
-        .save()
-        .then((wish) => {
-          res.json("Wish updated!");
-        })
-        .catch((err) => {
-          res.status(400).send("Update not possible");
-        });
-    });
   });
 
   return wishRoutes;
