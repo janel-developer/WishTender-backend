@@ -1,6 +1,5 @@
 const express = require("express");
-const app = express.Router();
-let Wish = require(".././wish.model");
+let Wish = require("../wish.model");
 const axios = require("axios");
 const cheerio = require("cheerio");
 const wishRoutes = express.Router();
