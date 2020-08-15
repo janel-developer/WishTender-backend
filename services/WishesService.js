@@ -1,47 +1,57 @@
+const axios = require("axios");
+const scrape = require("./scrapeForProductInfo");
+
 /**
  * Logic for fetching speakers information
  */
 class WishesService {
   /**
    * Constructor
-   * @param {*} datafile Path to a JSOn file that contains the speakers data
+   * @param {*} WishModel Mongoose Schema Model
    */
   constructor(WishModel) {
     this.WishModel = WishModel;
   }
 
   /**
-   * Returns a list of speakers name and short name
+   * Fetches wishes data from the database
    */
-  async getNames() {
-    const data = await this.getData();
-
-    // We are using map() to transform the array we get into another one
-    return data.map((speaker) => {
-      return { name: speaker.name, shortname: speaker.shortname };
+  async getData() {
+    const data = await this.WishModel.find(function (err, wishes) {
+      if (err) {
+        console.log(err);
+        return err;
+      } else {
+        return wishes;
+      }
+    }).catch(console.log); //for database
+    return data;
+  }
+  /**
+   * Get wish information provided an id
+   * @param {*} id
+   */
+  async getWish(id) {
+    const response = await this.WishModel.findById(id, function (err, wish) {
+      if (err) {
+        return err.message;
+      } else {
+        return wish;
+      }
     });
+    return response;
   }
 
   /**
-   * Get all artwork
+   * Add a wish
    */
-  async getAllArtwork() {
-    const data = await this.getData();
-
-    // Array.reduce() is used to traverse all speakers and
-    // create an array that contains all artwork
-    const artwork = data.reduce((acc, elm) => {
-      if (elm.artwork) {
-        // eslint-disable-next-line no-param-reassign
-        acc = [...acc, ...elm.artwork];
-      }
-      return acc;
-    }, []);
-    return artwork;
+  async addWish(wishInfo) {
+    const wish = new this.WishModel(wishInfo);
+    return wish.save();
   }
 
   async deleteWish(id, callBack) {
-    this.WishModel.remove(
+    this.WishModel.deleteOne(
       {
         _id: id,
       },
@@ -60,75 +70,30 @@ class WishesService {
     }
   }
   async updateWish(id, body) {
-    let wishResponse;
-    await this.WishModel.findById(id, callBack)
-      .then((x) => {
-        console.log("end find", x);
-        wishResponse = x;
-        console.log("wishResponse:", wishResponse);
-      })
-      .catch((err) => console.log(err));
+    const wishResponse = await this.WishModel.findByIdAndUpdate(id, body, {
+      new: true,
+    })
+      .then((result) => `Wish Updated: ${result}`)
+      .catch((error) => `Error updating your wish: ${error.reason.message}`);
 
-    async function callBack(err, wish) {
-      if (wish) return { err: "data not found" };
-      else wish.wish_name = body.wish_name;
-      console.log("wish callback before save");
-      wish
-        .save()
-        .then((wish) => {
-          console.log("wish callback after save");
-          console.log("set wishresponse");
-          wishResponse = wish;
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    }
-
-    //see what happens with you throw from call back
-    //"end find" happens before "should be after wish"
-
-    console.log("should be after seting wish response");
     return wishResponse;
   }
-  //   async updateWish(id, callBack) {
-  //     this.WishModel.findById(id, callBack);
-  //   }
 
-  /**
-   * Get wish information provided an id
-   * @param {*} id
-   */
-  async getWish(id) {
-    const wish = this.WishModel.findById(id, function (err, wish) {
-      return wish;
-    });
-
-    if (!wish) return null;
-    return wish;
-  }
-
-  /**
-   * Add a wish
-   */
-  async addWish(wishInfo) {
-    const wish = new this.WishModel(wishInfo);
-    return wish.save();
-  }
-
-  /**
-   * Fetches wishes data from the database
-   */
-  async getData() {
-    const data = await this.WishModel.find(function (err, wishes) {
-      if (err) {
+  async getProductInfo(url) {
+    const response = await axios
+      .get(url)
+      .then((res) => {
+        if (res.status === 200) {
+          return scrape(res.data);
+        } else {
+          throw res.statusText;
+        }
+      })
+      .catch((err) => {
         console.log(err);
-        return err;
-      } else {
-        return wishes;
-      }
-    }).catch(console.log); //for database
-    return data;
+        return `Error getting product info: ${err}`;
+      });
+    return response;
   }
 }
 
