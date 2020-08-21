@@ -1,10 +1,11 @@
-const express = require("express");
+const express = require('express');
+
 const wishRoutes = express.Router();
 
 module.exports = (params) => {
   const wishesService = params;
 
-  wishRoutes.get("/", async (req, res) => {
+  wishRoutes.get('/', async (req, res) => {
     let wishes;
     try {
       console.log(wishesService);
@@ -17,59 +18,56 @@ module.exports = (params) => {
     return res.json(wishes);
   });
 
-  wishRoutes.route("/:id").get(async function (req, res) {
-    let id = req.params.id;
+  wishRoutes.route('/:id').get(async function (req, res) {
+    const { id } = req.params;
     const wish = await wishesService
       .getWish(id)
       .then((x) => {
-        console.log("good:", x);
+        console.log('good:', x);
         return x;
       })
       .catch((err) => {
-        console.log("oops", err.message);
+        console.log('oops', err.message);
         return err;
       });
     res.json(wish);
   });
 
-  wishRoutes.route("/add").post(function (req, res) {
+  wishRoutes.route('/add').post(function (req, res) {
     wishesService
       .addWish(req.body)
       .then((wish) => {
-        res.status(200).json({ wish: "wish added successfully" });
+        res.status(200).json({ wish: `wish added successfully: ${wish}` });
       })
       .catch((err) => {
-        res.status(400).send("adding new wish failed");
+        res.status(400).send(`adding new wish failed:${err}`);
       });
   });
 
-  wishRoutes.route("/delete/:id").delete(function (req, res) {
-    console.log("wish route");
+  wishRoutes.route('/delete/:id').delete(function (req, res) {
+    console.log('wish route');
     wishesService.deleteWish(req.params.id, (err, wish) => {
       if (err) {
-        res.send("error removing wish");
+        res.send('error removing wish');
       } else {
         console.log(wish);
-        res.json({ message: "wish deleted", wish });
+        res.json({ message: 'wish deleted', wish });
       }
     });
   });
 
-  wishRoutes.route("/delete/many").post(async function (req, res) {
+  wishRoutes.route('/delete/many').post(async function (req, res) {
     await wishesService.deleteWishes(req.body.ids);
-    res.status(200).json("wishes deleted");
+    res.status(200).json('wishes deleted');
   });
 
-  wishRoutes.route("/update/:id").post(async function (req, res) {
-    const wishUpdateResult = await wishesService.updateWish(
-      req.params.id,
-      req.body
-    );
+  wishRoutes.route('/update/:id').post(async function (req, res) {
+    const wishUpdateResult = await wishesService.updateWish(req.params.id, req.body);
 
     res.send(wishUpdateResult);
   });
 
-  wishRoutes.route("/productInfo").post(async function (req, res) {
+  wishRoutes.route('/productInfo').post(async function (req, res) {
     const info = await wishesService.getProductInfo(req.body.url);
     res.json(info);
   });

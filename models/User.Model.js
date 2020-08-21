@@ -1,8 +1,9 @@
-const mongoose = require("mongoose");
-const emailValidator = require("email-validator");
-const bcrypt = require("bcrypt");
+const mongoose = require('mongoose');
+const emailValidator = require('email-validator');
+const bcrypt = require('bcrypt');
+
 const SALT_ROUNDS = 12;
-const Schema = mongoose.Schema;
+const { Schema } = mongoose;
 
 const User = new Schema(
   {
@@ -33,15 +34,15 @@ const User = new Schema(
     },
   },
   {
-    timestamps: { createdAt: "created_at" },
+    timestamps: { createdAt: 'created_at' },
   }
 );
 
-User.pre("save", async function preSave(next) {
+User.pre('save', async function preSave(next) {
   const user = this;
-  console.log("presave");
+  console.log('presave');
   console.log(user.password);
-  if (!user.isModified("password")) return next();
+  if (!user.isModified('password')) return next();
   try {
     const hash = await bcrypt.hash(user.password, SALT_ROUNDS);
     user.password = hash;
@@ -56,4 +57,4 @@ User.methods.comparePassword = async function comparePassword(candidate) {
   return bcrypt.compare(candidate, this.password);
 };
 
-module.exports = mongoose.model("User", User);
+module.exports = mongoose.model('User', User);
