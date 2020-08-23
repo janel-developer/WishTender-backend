@@ -3,10 +3,12 @@ let db = null;
 
 try {
   // eslint-disable-next-line import/no-unresolved
-  db = require('../../server/lib/db');
+  // eslint-disable-next-line global-require
+  db = require('../server/lib/db');
 } catch (err) {
   console.log('db ignored');
 }
+const config = require('../server/config').test;
 
 /* eslint-disable global-require */
 module.exports.before = async () => {
@@ -23,5 +25,4 @@ module.exports.after = async () => {
   if (UserModel) {
     await UserModel.deleteMany({});
   }
-  return deleteFilesInDir(config.data.avatars);
 };

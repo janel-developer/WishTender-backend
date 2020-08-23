@@ -1,7 +1,7 @@
 const chai = require('chai');
 
 const should = chai.should();
-const Wish = require('../../../models/Wish.Model');
+const Wish = require('../../../../server/models/Wish.Model');
 
 describe('Wish Model', function () {
   context('Create a Wish', function () {
