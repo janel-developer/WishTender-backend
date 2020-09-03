@@ -1,4 +1,5 @@
 require('dotenv').config();
+const path = require('path');
 
 module.exports = {
   development: {
@@ -9,6 +10,9 @@ module.exports = {
   },
   test: {
     sitename: 'WishTender [Test]',
+    data: {
+      wishes: path.join(__dirname, '../data/wishes.json'),
+    },
     database: {
       dsn: process.env.TEST_DB_DSN,
     },

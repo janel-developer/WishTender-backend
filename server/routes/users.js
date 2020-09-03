@@ -1,12 +1,11 @@
 const express = require('express');
 const passport = require('passport');
 const { default: Axios } = require('axios');
+const User = require('../models/User.Model');
 
 const userRoutes = express.Router();
 
-module.exports = (params) => {
-  const User = params;
-
+module.exports = () => {
   userRoutes.post(
     '/login',
     passport.authenticate('local', {
@@ -21,6 +20,7 @@ module.exports = (params) => {
     if (req.query.error === 'false') return res.send(`Welcome `);
     return res.send(`You were redirected because your login failed: ${flashmsg}`);
   });
+
   userRoutes.get('/users', async (req, res, next) => {
     try {
       await User.find((err, users) => {

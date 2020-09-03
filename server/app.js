@@ -1,4 +1,5 @@
 const express = require('express');
+const axios = require('axios');
 
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -8,19 +9,15 @@ const flash = require('connect-flash');
 const PORT = 4000;
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
-// const cookieSession = require("cookie-session");
 const cookieParser = require('cookie-parser');
-// const axios = require('axios');
-const WishModel = require('./models/Wish.Model');
-const UserModel = require('./models/User.Model');
-const WishesService = require('./services/WishesService'); //Why is it a good idea to have the services centrally located?
 const auth = require('./lib/auth');
 const routes = require('./routes');
-
-const wishesService = new WishesService(WishModel);
+const { default: Axios } = require('axios');
 
 module.exports = (config) => {
   const app = express();
+  app.locals.title = config.sitename;
+
   app.set('trust proxy', 1);
 
   app.use(cors());
@@ -57,7 +54,8 @@ module.exports = (config) => {
       return next(err);
     }
   });
-  app.use('/', routes({ wishesService, UserModel }));
+
+  app.use('/', routes());
 
   return app;
 };

@@ -40,8 +40,6 @@ const User = new Schema(
 
 User.pre('save', async function preSave(next) {
   const user = this;
-  console.log('presave');
-  console.log(user.password);
   if (!user.isModified('password')) return next();
   try {
     const hash = await bcrypt.hash(user.password, SALT_ROUNDS);
