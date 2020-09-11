@@ -1,5 +1,8 @@
 let UserModel = null;
 let WishModel = null;
+let WishlistModel = null;
+let WishlistItemModel = null;
+let AliasSchema = null;
 let WishService = null;
 let db = null;
 
@@ -16,6 +19,35 @@ try {
   // eslint-disable-next-line import/no-unresolved
   // eslint-disable-next-line global-require
   UserModel = require('../server/models/User.Model');
+} catch (err) {
+  console.log('UserModel ignored');
+}
+
+try {
+  // eslint-disable-next-line import/no-unresolved
+  // eslint-disable-next-line global-require
+  WislistItemModel = require('../server/models/WishlistItem.Model');
+} catch (err) {
+  console.log('WislistItemModel ignored');
+}
+try {
+  // eslint-disable-next-line import/no-unresolved
+  // eslint-disable-next-line global-require
+  WislistModel = require('../server/models/Wishlist.Model');
+} catch (err) {
+  console.log('WislistModel ignored');
+}
+try {
+  // eslint-disable-next-line import/no-unresolved
+  // eslint-disable-next-line global-require
+  AliasSchema = require('../server/models/schema/Alias.Schema');
+} catch (err) {
+  console.log('AliasSchema ignored');
+}
+try {
+  // eslint-disable-next-line import/no-unresolved
+  // eslint-disable-next-line global-require
+  WislistItemModel = require('../server/models/Wishlist.Model');
 } catch (err) {
   console.log('UserModel ignored');
 }

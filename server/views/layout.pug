@@ -1,0 +1,31 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='utf-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1, shrink-to-fit=no')
+    meta(name='description', content='The premier safe and flexible wishlist site.')
+    meta(name='author', content='Dashiell Bark-Hus')
+    link(rel='icon', href='/favicon.ico')
+    title WishTender | #{title}
+
+  body
+    div.cover-container.d-flex.h-100.p-3.mx-auto.flex-column
+      header.masthead.mb-auto
+        div.inner
+          h3.masthead-brand WishTender
+
+      main.inner.cover(role='main')
+        if messages && messages.length > 0
+          each message in messages
+            div(class='alert alert-' + message.level , role='alert') #{message.body}
+
+        div.alerts
+
+        block content
+
+      footer.mastfoot.mt-auto
+        div.inner.text-center
+          p
+            i WishTender by Dash Bark-Huss
+
+

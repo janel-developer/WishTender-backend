@@ -1,18 +1,15 @@
 const express = require('express');
-const axios = require('axios');
 
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const flash = require('connect-flash');
 
-const PORT = 4000;
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
 const cookieParser = require('cookie-parser');
 const auth = require('./lib/auth');
 const routes = require('./routes');
-const { default: Axios } = require('axios');
 
 module.exports = (config) => {
   const app = express();
@@ -24,12 +21,6 @@ module.exports = (config) => {
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use(cookieParser());
-  app.use((req, res, next) => {
-    res.on('finish', () => {
-      console.log('finished', req.url, res.statusCode);
-    });
-    next();
-  });
 
   // Use the session middleware
   app.use(
@@ -56,6 +47,22 @@ module.exports = (config) => {
   });
 
   app.use('/', routes());
+  app.set('views', __dirname + '/views');
+  app.set('view engine', 'pug');
 
+  app.use('/', (req, res) => {
+    console.warn(new Date().toISOString(), req.method, req.originalUrl, '404');
+    return res.status(404).render('404');
+  });
+
+  app.use((err, req, res, next) => {
+    if (res.headersSent) {
+      return next(err);
+    }
+    console.err(err);
+    return res.status(500).render('500', {
+      title: '500',
+    });
+  });
   return app;
 };

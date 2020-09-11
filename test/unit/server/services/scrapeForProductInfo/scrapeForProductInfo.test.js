@@ -2,23 +2,29 @@ const chai = require('chai');
 chai.use(require('chai-as-promised'));
 const scrape = require('../../../../../server/services/scrapeForProductInfo/scrapeForProductInfo');
 const htmls = require('./htmls.js');
+const logger = require('../../../../../server/lib/logger');
 
 const { should, expect } = chai;
 
 function logInfo(productInfo) {
-  console.log(
-    productInfo.title && productInfo.title.length > 38
-      ? productInfo.title.slice(0, 40)
-      : productInfo.title,
-    '...'
-  );
-  console.log(productInfo.currency);
-  console.log(productInfo.price);
-  console.log(
-    productInfo.imageSrcs && productInfo.imageSrcs.length
-      ? productInfo.imageSrcs[0].slice(0, 40)
-      : productInfo.imageSrcs,
-    '...'
+  logger.log(
+    'debug',
+    `
+    ${
+      productInfo.title && productInfo.title.length > 38
+        ? `${productInfo.title.slice(0, 40)}...`
+        : productInfo.title
+    }
+    ${productInfo.currency}
+    ${productInfo.price}
+    ${productInfo.currency}
+    ${
+      productInfo.imageSrcs && productInfo.imageSrcs.length
+        ? `${productInfo.imageSrcs[0].slice(0, 40)}...`
+        : productInfo.imageSrcs
+    }
+    
+    `
   );
 }
 describe('scrapeForProductInfo', async () => {
