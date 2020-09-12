@@ -14,6 +14,11 @@ const User = new Schema(
       index: { unique: true },
       minlength: 3,
     },
+    fName: {
+      type: String,
+      require: true,
+      trim: true,
+    },
     email: {
       type: String,
       required: true,

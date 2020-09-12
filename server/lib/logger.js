@@ -18,7 +18,7 @@ const logger = createLogger({
     silly: 7,
   },
   format: combine(format.colorize(), timestamp(), myFormat),
-  transports: [new transports.Console({ level: 'info' })],
+  transports: [new transports.Console({ level: 'debug' })],
 });
 
 module.exports = logger;

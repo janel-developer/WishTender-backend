@@ -1,3 +1,5 @@
+const logger = require('../server/lib/logger');
+
 let UserModel = null;
 let WishModel = null;
 let WishlistModel = null;
@@ -26,16 +28,16 @@ try {
 try {
   // eslint-disable-next-line import/no-unresolved
   // eslint-disable-next-line global-require
-  WislistItemModel = require('../server/models/WishlistItem.Model');
+  WishlistItemModel = require('../server/models/WishlistItem.Model');
 } catch (err) {
   console.log('WislistItemModel ignored');
 }
 try {
   // eslint-disable-next-line import/no-unresolved
   // eslint-disable-next-line global-require
-  WislistModel = require('../server/models/Wishlist.Model');
+  WishlistModel = require('../server/models/Wishlist.Model');
 } catch (err) {
-  console.log('WislistModel ignored');
+  console.log('WishlistModel ignored');
 }
 try {
   // eslint-disable-next-line import/no-unresolved
@@ -47,9 +49,9 @@ try {
 try {
   // eslint-disable-next-line import/no-unresolved
   // eslint-disable-next-line global-require
-  WislistItemModel = require('../server/models/Wishlist.Model');
+  WislistItemModel = require('../server/models/WishlistItem.Model');
 } catch (err) {
-  console.log('UserModel ignored');
+  console.log('WislistItemModel ignored');
 }
 try {
   // eslint-disable-next-line import/no-unresolved
@@ -63,7 +65,7 @@ try {
   // eslint-disable-next-line global-require
   WishService = require('../server/services/WishService');
 } catch (err) {
-  console.log('WishModel ignored');
+  console.log('WishService ignored');
 }
 
 /* eslint-disable global-require */
@@ -88,11 +90,29 @@ module.exports.validUser = {
   email: 'frank@acme.org',
   password: 'verysecret',
 };
+module.exports.validAlias = {
+  aliasName: 'Dashie Cutie',
+  handle: 'gonnakillya' + Date.now().toString(),
+};
 module.exports.validWish = {
+  //delete later? this is for Wish but we are getting rid of wish
   wish_name: 'purse',
+};
+module.exports.validWishlistItem = {
+  itemName: 'Kion Aminos',
+  price: '46.00',
+  url: `https://getkion.com/products/kion-aminos-powder`,
+  //add image eventually
+};
+module.exports.validWishlist = {
+  wishlistName: `Dashie's list`,
 };
 
 module.exports.UserModel = UserModel;
 module.exports.WishModel = WishModel;
+module.exports.WishlistModel = WishlistModel;
+module.exports.WishlistItemModel = WishlistItemModel;
+module.exports.AliasSchema = AliasSchema;
 module.exports.config = config;
 module.exports.WishService = WishService;
+module.exports.logger = logger;

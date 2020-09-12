@@ -2,7 +2,7 @@ const chai = require('chai');
 chai.use(require('chai-as-promised'));
 const scrape = require('../../../../../server/services/scrapeForProductInfo/scrapeForProductInfo');
 const htmls = require('./htmls.js');
-const logger = require('../../../../../server/lib/logger');
+const { logger } = require('../../../../helper');
 
 const { should, expect } = chai;
 
