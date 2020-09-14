@@ -7,16 +7,21 @@ const { help } = require('../../../../server/lib/logger');
 const should = chai.should();
 const { expect } = chai;
 
-const { validWishlistItem, WishService } = helper;
+const { validWishlistItem, WishService, WishlistItemModel } = helper;
 
 describe('The WishlistItemService', async () => {
-  beforeEach(async () => helper.before());
-  afterEach(async () => helper.after());
+  let wishlistId;
+  before(async () => {
+    helper.before();
+    wishlistId = await WishlistModel.create({ name: "dashie's wishes" });
+  });
+  after(async () => helper.after());
+
   let wishId;
-  context('getData()', () => {
-    it('should find wishlist items', async () => {
+  context('getWishlistItems', () => {
+    it('should find wishlist items for a wishlist', async () => {
       const wishlistItemService = new WishlistItemService();
-      const data = await wishlistItemService.getData();
+      const data = await wishlistItemService.getWishlistItems(wishlistId);
       helper.logger.log('debug', data);
       expect(data).to.be.an('array');
     });
@@ -26,7 +31,7 @@ describe('The WishlistItemService', async () => {
   //   it('should add a wish to the specified wishlist', async () => {
   //     const wishService = new WishService();
   //     const itemName = validWishlistItem.itemName;
-  //     const wishAdded = await wishService.addWish(validWishlistItem);
+  //     const wishAdded = await wishService.addWishlistItem(wishlistId, validWishlistItem);
   //     // eslint-disable-next-line no-underscore-dangle
   //     if (wishAdded) wishId = wishAdded._id;
   //     const foundAddedWish = await wishService.getWish(wishId);

@@ -26,7 +26,7 @@ async function addWishlistItem(wishlistId, wishlistItem) {}
  *
  * @returns {array} an array of wishlists
  */
-async function getData() {}
+async function getWishlistItems() {}
 
 /**
  * updates the specified wishlist item
