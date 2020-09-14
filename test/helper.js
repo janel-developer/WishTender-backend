@@ -31,7 +31,7 @@ try {
   // eslint-disable-next-line global-require
   WishlistItemModel = require('../server/models/WishlistItem.Model');
 } catch (err) {
-  console.log('WislistItemModel ignored');
+  console.log('WishlistItemModel ignored');
 }
 try {
   // eslint-disable-next-line import/no-unresolved
@@ -50,9 +50,9 @@ try {
 try {
   // eslint-disable-next-line import/no-unresolved
   // eslint-disable-next-line global-require
-  WislistItemModel = require('../server/models/WishlistItem.Model');
+  WishlistItemModel = require('../server/models/WishlistItem.Model');
 } catch (err) {
-  console.log('WislistItemModel ignored');
+  console.log('WishlistItemModel ignored');
 }
 try {
   // eslint-disable-next-line import/no-unresolved
@@ -127,5 +127,5 @@ module.exports.WishlistItemModel = WishlistItemModel;
 module.exports.AliasSchema = AliasSchema;
 module.exports.config = config;
 module.exports.WishService = WishService;
-module.exports.WishlistItemService = WishlistItemModel;
+module.exports.WishlistItemService = WishlistItemService;
 module.exports.logger = logger;

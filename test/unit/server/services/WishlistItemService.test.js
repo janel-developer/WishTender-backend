@@ -7,36 +7,33 @@ const { help } = require('../../../../server/lib/logger');
 const should = chai.should();
 const { expect } = chai;
 
-const { validWishlistItem, WishService, WishlistItemModel } = helper;
+const { validWishlistItem, WishlistItemService, WishlistModel, WishlistItemModel } = helper;
 
 describe('The WishlistItemService', async () => {
   let wishlistId;
   before(async () => {
     helper.before();
-    wishlistId = await WishlistModel.create({ name: "dashie's wishes" });
+    wishlistId = await WishlistModel.create({ wishlistName: "dashie's wishes" });
   });
   after(async () => helper.after());
 
   let wishId;
-  context('getWishlistItems', () => {
-    it('should find wishlist items for a wishlist', async () => {
-      const wishlistItemService = new WishlistItemService();
-      const data = await wishlistItemService.getWishlistItems(wishlistId);
-      helper.logger.log('debug', data);
-      expect(data).to.be.an('array');
+
+  context('addWishlistItem', () => {
+    it('should add a wishlist item to the specified wishlist', async () => {
+      const wishService = new WishlistItemService(WishlistItemModel);
+      const { itemName } = validWishlistItem;
+      const wishAdded = await wishService.addWishlistItem(wishlistId, validWishlistItem);
+
+      wishAdded.should.have.property('itemName').and.is.equal(itemName);
     });
   });
-
-  // context('addWishlistItem', () => {
-  //   it('should add a wish to the specified wishlist', async () => {
-  //     const wishService = new WishService();
-  //     const itemName = validWishlistItem.itemName;
-  //     const wishAdded = await wishService.addWishlistItem(wishlistId, validWishlistItem);
-  //     // eslint-disable-next-line no-underscore-dangle
-  //     if (wishAdded) wishId = wishAdded._id;
-  //     const foundAddedWish = await wishService.getWish(wishId);
-  //     wishId.should.exist;
-  //     foundAddedWish.should.have.property('itemName').and.is.equal(itemName);
+  // context('getWishlistItems', () => {
+  //   it('should find wishlist items for a wishlist', async () => {
+  //     const wishlistItemService = new WishlistItemService();
+  //     const data = await wishlistItemService.getWishlistItems(wishlistId);
+  //     helper.logger.log('debug', data);
+  //     expect(data).to.be.an('array');
   //   });
   // });
 
