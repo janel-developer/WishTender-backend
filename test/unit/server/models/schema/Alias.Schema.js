@@ -45,10 +45,15 @@ const DummyRefModel = mongoose.model(
 
 describe('Alias Schema', () => {
   before(async () => {
-    helper.before();
+    await helper.before();
     await DummyModel.deleteMany({});
+    await DummyRefModel.deleteMany({});
   });
-  after(async () => await DummyModel.deleteMany({}));
+  after(async () => {
+    await helper.after();
+    await DummyModel.deleteMany({});
+    await DummyRefModel.deleteMany({});
+  });
   let dummy;
   context('Create an embedded alias document', () => {
     it('should return a dummy model with an embedded alias', async () => {
