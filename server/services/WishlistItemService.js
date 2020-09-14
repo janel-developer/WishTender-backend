@@ -23,10 +23,11 @@ async function addWishlistItem(wishlistId, wishlistItem) {}
 
 /**
  * gets all the wishlist items in the database
- *
- * @returns {array} an array of wishlists
+ * 
+ * @param {string} wishlistId the id of the wishlist
+ * @returns {array} an array of wishlist items
  */
-async function getWishlistItems() {}
+async function getWishlistItems(wishlistId) {}
 
 /**
  * updates the specified wishlist item
