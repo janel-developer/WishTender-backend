@@ -29,13 +29,6 @@ try {
 try {
   // eslint-disable-next-line import/no-unresolved
   // eslint-disable-next-line global-require
-  WishlistItemModel = require('../server/models/WishlistItem.Model');
-} catch (err) {
-  console.log('WishlistItemModel ignored');
-}
-try {
-  // eslint-disable-next-line import/no-unresolved
-  // eslint-disable-next-line global-require
   WishlistModel = require('../server/models/Wishlist.Model');
 } catch (err) {
   console.log('WishlistModel ignored');
