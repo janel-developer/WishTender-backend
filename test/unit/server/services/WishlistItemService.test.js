@@ -2,6 +2,7 @@
 const chai = require('chai');
 chai.use(require('chai-as-promised'));
 const helper = require('../../../helper');
+const { ApplicationError } = require('../../../../server/lib/Error');
 
 const should = chai.should();
 const { expect, assert } = chai;
@@ -11,11 +12,14 @@ const { validWishlistItem, WishlistItemService, WishlistModel, WishlistItemModel
 describe('The WishlistItemService', async () => {
   let wishlistId;
   const wishlistItemIds = [];
-  let wishId;
   const wishlistItemService = new WishlistItemService(WishlistItemModel);
   before(async () => {
     await helper.before();
-    let wishlist = await WishlistModel.create({ wishlistName: "dashie's wishes" });
+    let wishlist = await WishlistModel.create({
+      wishlistName: "dashie's wishes",
+      user: '5f67bbc6798ea12d42b7b6d8', // dummy id
+      alias: '5f67bbc6798ea12d42b7b6d8', // dummy id
+    });
     wishlistId = wishlist._id;
   });
   after(async () => helper.after());
@@ -24,7 +28,7 @@ describe('The WishlistItemService', async () => {
     it('should add a wishlist item to the specified wishlist', async () => {
       const { itemName } = validWishlistItem;
       const wishAdded = await wishlistItemService.addWishlistItem(wishlistId, validWishlistItem);
-      helper.logger.log('debug', `Wish added ${wishAdded}`);
+      // helper.logger.log('debug', `Wish added ${wishAdded}`);
       wishlistItemIds.push(wishAdded._id);
       wishAdded.should.have.property('itemName').and.is.equal(itemName);
       wishAdded.should.have
@@ -32,13 +36,40 @@ describe('The WishlistItemService', async () => {
         .and.is.not.equal('undefined')
         .and.is.not.equal('null');
     });
+
+    it('should throw an error with a bad wishlist item', async () => {
+      let error;
+      try {
+        await wishlistItemService.addWishlistItem(wishlistId, {});
+      } catch (err) {
+        error = err;
+      }
+      error.should.be.an('Error');
+    });
+    it('should throw an error with a bad wishlist id', async () => {
+      let error;
+      try {
+        await wishlistItemService.addWishlistItem('1234567898765', validWishlistItem);
+      } catch (err) {
+        error = err;
+      }
+      error.should.be.an('Error');
+    });
   });
   context('getWishlistItems', () => {
     it('should find wishlist items', async () => {
       const data = await wishlistItemService.getWishlistItems(wishlistItemIds);
-      console.log(wishlistItemIds);
       helper.logger.log('debug', `wishes ${data}`);
       expect(data).to.be.an('array');
+    });
+    it('should throw an error when cast fails', async () => {
+      let error;
+      try {
+        await wishlistItemService.getWishlistItems(['5f65770d610bb57378666ca']);
+      } catch (err) {
+        error = err;
+      }
+      expect(error).to.be.an('Error');
     });
   });
 
@@ -51,31 +82,55 @@ describe('The WishlistItemService', async () => {
       );
       helper.logger.log(
         'debug',
-        `return object message: ${updated.message}, success: ${updated.success}, \n updatedItem: ${updated.updatedItem}`
+        `
+      updatedItem: ${updated}`
       );
+      updated.should.be.an('Object');
+      updated.price.should.equal('30.00');
+    });
+    it(' should error on wrong id', async () => {
+      console.log(wishlistItemIds[0]);
+      const wishlistItemUpdate = { price: '30.00' };
+      let error;
+      try {
+        await wishlistItemService.updateWishlistItem(
+          '5f661bf8b1cd293353fb6639',
+          wishlistItemUpdate
+        );
+      } catch (err) {
+        error = err;
+      }
 
-      updated.should.be.an('object').and.has.property('message').and.is.not.equal('undefined');
-      updated.should.be.an('object').and.has.property('success').and.is.equal(true);
-      updated.updatedItem.price.should.be.equal('30.00');
+      expect(error).to.be.an('Error');
     });
   });
 
   context('deleteWishlistItem', () => {
     it('should delete the added wishlist item.', async () => {
-      const successMessage = await wishlistItemService.deleteWishlistItem(wishlistItemIds[0]);
+      const deletedItem = await wishlistItemService.deleteWishlistItem(wishlistItemIds[0]);
       helper.logger.log(
         'debug',
-        `\nreturn object message: "${successMessage.message}", \nsuccess: ${successMessage.success}, \ndeletedItem: ${successMessage.deletedItem}`
+        `
+      deletedItem: "${deletedItem}"`
       );
-      successMessage.should.be
-        .an('object')
-        .and.has.property('message')
-        .and.is.not.equal('undefined');
-      successMessage.should.be.an('object').and.has.property('success').and.is.equal(true);
+      const id = deletedItem._id.toString();
+      deletedItem.should.be.an('Object');
+      id.should.be.equal(wishlistItemIds[0].toString());
     });
     it('should delete the ref id in wishlist.', async () => {
       const wishlist = await WishlistModel.findById(wishlistId);
       assert.notInclude(wishlist.wishlistItems, wishlistItemIds[0], "array doesn't contain value");
+    });
+    it(`handle a delete wishlist item that's not found.`, async () => {
+      let error;
+      try {
+        const deletedItem = await wishlistItemService.deleteWishlistItem(
+          '5f6678c89cc20b7cc6d82ef5'
+        );
+      } catch (err) {
+        error = err;
+      }
+      error.should.be.an('Error');
     });
   });
 });

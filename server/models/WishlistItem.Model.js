@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const Wishlist = require('../models/Wishlist.Model');
 
 const itemSchema = new mongoose.Schema(
   {
@@ -17,13 +16,13 @@ const itemSchema = new mongoose.Schema(
 );
 
 itemSchema.pre('remove', async function (next) {
-  let wishlist = await Wishlist.findById(this.wishlist);
+  const Wishlist = require('./Wishlist.Model');
+
+  const wishlist = await Wishlist.findById(this.wishlist);
   wishlist.wishlistItems.pull(this._id);
   await wishlist.save();
-  wishlist = await Wishlist.findById(this.wishlist);
   next();
 });
 
 const WishlistItem = mongoose.model('WishlistItem', itemSchema);
-
 module.exports = WishlistItem;

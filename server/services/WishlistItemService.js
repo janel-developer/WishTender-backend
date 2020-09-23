@@ -1,5 +1,5 @@
 const WishlistModel = require('../models/Wishlist.Model');
-
+const { ApplicationError } = require('../lib/Error');
 /**
  * Logic for fetching wishlist items
  */
@@ -14,7 +14,7 @@ class WishlistItemService {
 
   /**
    * creates a wishlist item and adds the id
-   * to the specified wishlist's "wishlist" array
+   * to the specified wishlist's "wishlistItems" array
    * @param {string} wishlistId
    * @param {object} wishlistItem
    *
@@ -22,20 +22,38 @@ class WishlistItemService {
    * @returns {object} the wishlist item
    */
   async addWishlistItem(wishlistId, wishlistItem) {
-    const item = await this.WishlistItemModel.create(wishlistItem);
+    let item;
+    let wishlist;
+    try {
+      item = await this.WishlistItemModel.create(wishlistItem);
+    } catch (err) {
+      throw new ApplicationError(
+        {
+          wishlistItem,
+          wishlistId,
+          err,
+        },
+        `Unable to add wishlistItem: ${err.name}: ${err.message}`
+      );
+    }
+    try {
+      wishlist = await WishlistModel.findById(wishlistId);
+    } catch (err) {
+      throw new ApplicationError(
+        {
+          wishlistItem,
+          wishlistId,
+          err,
+        },
+        `Unable to add wishlistItem, wishlistId not found: ${err.name}:${err.message}`
+      );
+    }
     item.wishlist = wishlistId;
     await item.save();
 
-    await WishlistModel.findByIdAndUpdate(
-      wishlistId,
-      {
-        $push: {
-          wishlists: item._id,
-        },
-      },
-      { new: true, useFindAndModify: false }
-    );
+    wishlist.wishlistItems.push(item._id);
 
+    await wishlist.save();
     return item;
   }
 
@@ -46,7 +64,16 @@ class WishlistItemService {
    * @returns {array} an array of wishlist items
    */
   async getWishlistItems(ids) {
-    const wishlistItems = await this.WishlistItemModel.find({ _id: { $in: ids } });
+    let wishlistItems;
+    try {
+      wishlistItems = await this.WishlistItemModel.find({ _id: { $in: ids } });
+    } catch (err) {
+      throw new ApplicationError(
+        { wishlistIds: ids, err },
+        `Unable to get wishlist items: ${err.name}:${err.message}.
+        WishlistIds: ${ids}`
+      );
+    }
     return wishlistItems;
   }
 
@@ -56,34 +83,38 @@ class WishlistItemService {
    *@param {string} id the wishlist item id
    *@param {object} updates the wishlist item updates
    *
-   * @returns {{message: string, success:boolean, updatedItem: object}} success message
+   * @returns {updatedItem: object} updated wishlist
    */
   async updateWishlistItem(id, updates) {
     const output = await this.WishlistItemModel.updateOne({ _id: id }, updates);
-    let message = 'Something went wrong';
-    let success = false;
-    let updated = null;
+
+    let updatedItem;
     if (output.nModified) {
-      message = 'Successfully updated wishlist item.';
-      success = true;
-      updated = await this.getWishlistItems([id]);
-      updated = updated[0];
+      updatedItem = await this.getWishlistItems([id]);
+      [updatedItem] = updatedItem;
+    } else {
+      throw new ApplicationError({ id, updates }, 'WishlistItem not updated.');
     }
 
-    return { message, success, updatedItem: updated };
+    return updatedItem;
   }
 
   /**
    * deletes a wishlist item
    *
-   *@param {string} id of id the wishlist item id
+   *@param {string} id the wishlist item id
    *
-   * @returns {{message: string, success: boolean, deletedItem: object}} success message
+   * @returns {object} deleted wishlist
    */
   async deleteWishlistItem(id) {
-    const item = await this.WishlistItemModel.findById(id);
-    item.remove();
-    return { message: 'Item deleted', success: true, deletedItem: item };
+    let item;
+    try {
+      item = await this.WishlistItemModel.findById(id);
+    } catch (err) {
+      throw new ApplicationError({ id, err }, `Couldn't delete wishlist item. Item not found.`);
+    }
+    await item.remove();
+    return item;
   }
 }
 module.exports = WishlistItemService;

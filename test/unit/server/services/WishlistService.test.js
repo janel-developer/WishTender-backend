@@ -2,59 +2,76 @@
 const chai = require('chai');
 chai.use(require('chai-as-promised'));
 const helper = require('../../../helper');
-const { help } = require('../../../../server/lib/logger');
 
 const should = chai.should();
 const { expect } = chai;
 
-const { validWishlistItem, WishService, WishlistModel } = helper;
+const {
+  WishlistItemModel,
+  WishlistItemService,
+  validWishlist,
+  validUser,
+  validAlias,
+  UserModel,
+  WishlistService,
+  WishlistModel,
+} = helper;
 
-describe('The WishlistItemService', async () => {
+describe('The WishlistService', async () => {
   let wishlistId;
-  //   before(async () => {
-  //     helper.before();
-  //     wishlistId = await WishlistModel.create({ name: "dashie's wishes" });
-  //   });
-  //   after(async () => helper.after());
+  let userId;
+  const wishlistService = new WishlistService(WishlistModel);
+  before(async () => {
+    await helper.before();
+    const user = await UserModel.create(validUser);
+    console.log(user);
+    user.aliases.push(validAlias);
+    userId = user._id;
+    aliasId = user.aliases[0]._id;
+    await user.save();
+  });
+  after(async () => helper.after());
 
-  let wishId;
-  //   context('getWishlistItems', () => {
-  //     it('should find wishlist items for a wishlist', async () => {
-  //       const wishlistService = new WishlistService();
-  //       const data = await wishlistService.getWishlistItems(wishlistId);
-  //       helper.logger.log('debug', data);
-  //       expect(data).to.be.an('array');
-  //     });
-  //   });
-
-  context('addWishlistItem', () => {
-    it('should add a wishlist item to the specified wishlist', async () => {
-      const wishService = new WishService();
-      const { itemName } = validWishlistItem;
-      const wishAdded = await wishService.addWishlistItem(wishlistId, validWishlistItem);
-      console.log('pp-----------pp');
-
-      wishAdded.should.have.property('itemName').and.is.equal(itemName);
+  context('addWishlist', () => {
+    it('should add a wishlist to the specified user alias', async () => {
+      const wishlistAdded = await wishlistService.addWishlist(userId, aliasId, validWishlist);
+      wishlistId = wishlistAdded._id;
+      const user = await UserModel.findById(userId);
+      wishlistAdded.should.be.an('Object');
+      user.aliases[0].wishlists[0]._id.toString().should.be.equal(wishlistId.toString());
     });
   });
+  context('getWishlist', () => {
+    it('should get a wishlist', async () => {
+      const wishlist = await wishlistService.getWishlist(wishlistId);
+      wishlist._id.toString().should.be.equal(wishlistId.toString());
+    });
+  });
+  context('updateWishlist', () => {
+    it('should update a wishlist', async () => {
+      const wishlist = await wishlistService.updateWishlist(wishlistId, {
+        wishlistName: 'Birthday',
+      });
+      wishlist.wishlistName.should.be.equal('Birthday');
+    });
+  });
+  context('deleteWishlist', () => {
+    let item;
+    it('should delete a wishlist', async () => {
+      // for deleting children items test
+      const wishlistItemService = new WishlistItemService(WishlistItemModel);
+      item = await wishlistItemService.addWishlistItem(wishlistId, helper.validWishlistItem);
 
-  //   context('updateWishlistItem', () => {
-  //     it('should update the wishlist item', async () => {
-  //       const wishlistItemUpdate = { price: '30.00' };
-  //       const wishService = new WishService();
-  //       const updated = await wishService.updateWishlistItem(wishId, wishlistItemUpdate);
-  //       updated.should.be.an('object').and.has.property('message').and.is.not.equal('undefined');
-  //       updated.price.should.be.equal('30.00');
-  //     });
-  //   });
-
-  //   context('deleteWishlistItem', () => {
-  //     it('should delete the added wishlist item', async () => {
-  //       const wishService = new WishService();
-  //       await wishService.deleteWish(wishId, (err, docs) => {
-  //         const deleted = docs.deletedCount;
-  //         deleted.should.be.an('object').and.has.property('message').and.is.not.equal('undefined');
-  //       });
-  //     });
-  //   });
+      const wishlist = await wishlistService.deleteWishlist(wishlistId);
+      wishlist._id.toString().should.be.equal(wishlistId.toString());
+    });
+    it('should remove ref from alias', async () => {
+      const user = await UserModel.findById(userId);
+      expect(user.aliases[0].wishlists).to.be.empty;
+    });
+    it('should delete wishlist items', async () => {
+      item = await WishlistItemModel.findById(item._id);
+      expect(item).to.be.null;
+    });
+  });
 });

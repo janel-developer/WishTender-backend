@@ -9,6 +9,7 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
 const cookieParser = require('cookie-parser');
 const auth = require('./lib/auth');
+const handleError = require('./lib/handleError');
 const routes = require('./routes');
 
 module.exports = (config) => {
@@ -55,14 +56,16 @@ module.exports = (config) => {
     return res.status(404).render('404');
   });
 
-  app.use((err, req, res, next) => {
-    if (res.headersSent) {
-      return next(err);
-    }
-    console.err(err);
-    return res.status(500).render('500', {
-      title: '500',
-    });
-  });
+  // error handling function
+  // app.use((err, req, res, next) => {
+  //   if (res.headersSent) {
+  //     return next(err);
+  //   }
+  //   console.err(err);
+  //   return res.status(500).render('500', {
+  //     title: '500',
+  //   });
+  // });
+  app.use(handleError);
   return app;
 };

@@ -6,6 +6,8 @@ let WishlistModel = null;
 let WishlistItemModel = null;
 let AliasSchema = null;
 let WishService = null;
+let UserService = null;
+let WishlistService = null;
 let WishlistItemService = null;
 let db = null;
 
@@ -64,6 +66,21 @@ try {
 try {
   // eslint-disable-next-line import/no-unresolved
   // eslint-disable-next-line global-require
+  UserService = require('../server/services/UserService');
+} catch (err) {
+  console.log('UserService ignored', err);
+}
+try {
+  // eslint-disable-next-line import/no-unresolved
+  // eslint-disable-next-line global-require
+  WishlistService = require('../server/services/WishlistService');
+} catch (err) {
+  console.log('WishlistService ignored');
+}
+
+try {
+  // eslint-disable-next-line import/no-unresolved
+  // eslint-disable-next-line global-require
   WishlistItemService = require('../server/services/WishlistItemService');
 } catch (err) {
   console.log('WishlistItemService ignored');
@@ -81,7 +98,6 @@ module.exports.before = async () => {
   }
   return true;
 };
-
 module.exports.after = async () => {
   if (UserModel) {
     await WishlistModel.deleteMany({});
@@ -120,5 +136,7 @@ module.exports.WishlistItemModel = WishlistItemModel;
 module.exports.AliasSchema = AliasSchema;
 module.exports.config = config;
 module.exports.WishService = WishService;
+module.exports.UserService = UserService;
+module.exports.WishlistService = WishlistService;
 module.exports.WishlistItemService = WishlistItemService;
 module.exports.logger = logger;
