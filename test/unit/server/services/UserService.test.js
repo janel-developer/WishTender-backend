@@ -19,7 +19,6 @@ const {
 
 describe('The UserService', async () => {
   let userId;
-  let aliasId;
   const userService = new UserService(UserModel);
   before(async () => helper.before());
   after(async () => helper.after());
@@ -33,50 +32,51 @@ describe('The UserService', async () => {
     });
   });
 
-  context('getUser(id)', () => {
-    it('should find a user', async () => {
-      const foundUser = await userService.getUser(userId);
-      expect(foundUser).to.be.an('Object');
-    });
-  });
+  // context('getUser(id)', () => {
+  //   it('should find a user', async () => {
+  //     const foundUser = await userService.getUser(userId);
+  //     expect(foundUser).to.be.an('Object');
+  //   });
+  // });
 
-  context('updateUser(id)', () => {
-    it('should update a user', async () => {
-      const updatedUser = await userService.updateUser(userId, { username: 'frankandbeans' });
-      updatedUser.username.should.be.equal('frankandbeans');
-    });
-  });
+  // context('updateUser(id)', () => {
+  //   it('should update a user', async () => {
+  //     const updatedUser = await userService.updateUser(userId, { username: 'frankandbeans' });
+  //     updatedUser.username.should.be.equal('frankandbeans');
+  //   });
+  // });
 
-  context('addAlias(userId, alias)', () => {
-    it('should an alias to a user', async () => {
-      const alias = await userService.addAlias(userId, { aliasName: 'Dash', handle: 'ftftftftf' });
-      aliasId = alias._id;
-    });
-  });
   context('deleteUser(id)', async () => {
+    let alias;
     let wishlist;
     let item;
     it('should delete the user', async () => {
-      // for the next nest
-      const wishlistService = new WishlistService(WishlistModel);
-      const wishlistItemService = new WishlistItemService(WishlistItemModel);
-      wishlist = await wishlistService.addWishlist(userId, aliasId, {
-        wishlistName: 'fun list',
-      });
-      item = await wishlistItemService.addWishlistItem(wishlist._id, {
-        price: '90.00',
-        itemName: 'purse',
-      });
+      // for next tests
+      const { validWishlist, validWishlistItem, validAlias } = helper;
+      validAlias.user = userId;
+      alias = await helper.AliasModel.create(validAlias);
+      validWishlist.alias = alias._id;
+      wishlist = await helper.WishlistModel.create(validWishlist);
+      validWishlistItem.wishlist = wishlist._id;
+      item = await helper.WishlistItemModel.create(validWishlistItem);
 
       // for this test
-      const deletedUser = await userService.deleteUser(userId);
-
-      deletedUser.should.be.an('Object');
+      const user = await UserModel.findById(userId);
+      await user.remove();
+      const deleted = await UserModel.findById(userId);
+      console.log(deleted);
+      expect(deleted).to.be.null;
     });
-    it('should delete the children wishlists and wishlist items', async () => {
-      wishlist = await WishlistItemModel.findById(wishlist.id);
-      item = await WishlistItemModel.findById(item._id);
+    it('should delete the child aliases', async () => {
+      alias = await helper.AliasModel.findById(alias._id);
+      expect(alias).to.be.null;
+    });
+    it(`should delete the ancestral wishlists`, async () => {
+      wishlist = await helper.WishlistModel.findById(wishlist._id);
       expect(wishlist).to.be.null;
+    });
+    it(`should delete ancestral items`, async () => {
+      item = await helper.WishlistItemModel.findById(item._id);
       expect(item).to.be.null;
     });
   });

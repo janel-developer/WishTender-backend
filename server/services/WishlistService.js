@@ -1,4 +1,5 @@
 const UserModel = require('../models/User.Model');
+const AliasModel = require('../models/Alias.Model');
 const { ApplicationError } = require('../lib/Error');
 /**
  * Logic for wishlist
@@ -14,47 +15,38 @@ class WishlistService {
 
   /**
    * creates a wishlist and adds the id
-   * to the specified user-alias's "wishlist" array
-   * @param {string} userId
+   * to the specified alias's "wishlist" array
    * @param {string} aliasId
    * @param {object} wishlistValues the values for the wishlist besides user and alias
    *
    *
    * @returns {object} the wishlist
    */
-  async addWishlist(userId, aliasId, wishlistValues) {
+  async addWishlist(aliasId, wishlistValues) {
     let newWishlist;
-    let user;
+    let alias;
     const wishlist = wishlistValues;
-    wishlist.user = userId;
     wishlist.alias = aliasId;
+
     try {
-      user = await UserModel.findById(userId);
+      alias = await AliasModel.findById(aliasId);
     } catch (err) {
       throw new ApplicationError(
-        { userId, aliasId, wishlist, err },
-        `Not able to add wishlist. User Id not found. ${err.message}`
+        { aliasId, wishlistValues },
+        `Not able to add wishlist. Alias not found. ${err.message}`
       );
     }
-    const alias = user.aliases.find((a) => a._id.toString() === aliasId.toString()); //just finds the first one
-
-    if (!alias)
-      throw new ApplicationError(
-        { userId, aliasId, wishlistValues },
-        `Not able to add wishlist. Alias not found.`
-      );
-
     try {
       newWishlist = await this.WishlistModel.create(wishlist);
     } catch (err) {
       throw new ApplicationError(
-        { userId, aliasId, wishlist, err },
+        { aliasId, wishlist, err },
         `Not able to add wishlist. Wishlist not able to be created. ${err.message}`
       );
     }
 
-    alias.wishlists.push(newWishlist._id);
-    await user.save();
+    alias.wishlists.push({ _id: newWishlist._id });
+    await alias.save();
 
     return newWishlist;
   }

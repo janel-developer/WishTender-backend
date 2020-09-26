@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { ApplicationError } = require('../lib/Error');
 
 const wishlistSchema = new mongoose.Schema(
   {
@@ -11,17 +12,13 @@ const wishlistSchema = new mongoose.Schema(
       // reference, one-to-many
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'wishlistItems',
+        ref: 'WishlistItems',
       },
     ],
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'wishlist',
-      required: true,
-    },
+
     alias: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'alias',
+      ref: 'Alias',
       required: true,
     },
   },
@@ -29,17 +26,33 @@ const wishlistSchema = new mongoose.Schema(
 );
 
 wishlistSchema.pre('remove', async function (next) {
-  const UserModel = require('./User.Model');
+  const AliasModel = require('./Alias.Model');
   const WishlistItemModel = require('./WishlistItem.Model');
-  const user = await UserModel.findById(this.user);
-  const alias = user.aliases.find((a) => a._id.toString() === this.alias.toString());
-  alias.wishlists.pull(this._id);
-  await user.save();
+  const alias = await AliasModel.findById(this.alias);
+  if (alias) {
+    alias.wishlists.pull(this._id);
+    await alias.save();
+  }
 
-  await WishlistItemModel.deleteMany({ _id: { $in: this.wishlistItems } });
+  const items = await WishlistItemModel.find({ wishlist: this._id });
+  console.log('wishlist', items);
+  await items.forEach((it) => it.remove());
 
   next();
 });
+
+wishlistSchema.path('alias').validate(async function (value) {
+  const AliasModel = require('./Alias.Model');
+  const alias = await AliasModel.findOne({ _id: value });
+  if (!alias) {
+    throw new ApplicationError(
+      { user: value },
+      `Invalid Wishlist "alias" property. No alias found with id: ${value}`
+    );
+  } else {
+    return true;
+  }
+}, 'Parent Alias non existent');
 const Wishlist = mongoose.model('Wishlist', wishlistSchema);
 
 module.exports = Wishlist;

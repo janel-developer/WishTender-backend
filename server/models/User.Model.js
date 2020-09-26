@@ -2,7 +2,6 @@
 const mongoose = require('mongoose');
 const emailValidator = require('email-validator');
 const bcrypt = require('bcrypt');
-const AliasSchema = require('./schema/Alias.Schema');
 
 const SALT_ROUNDS = 12;
 const { Schema } = mongoose;
@@ -21,6 +20,7 @@ const userSchema = new Schema(
       trim: true,
     },
     email: {
+      unique: true,
       type: String,
       required: true,
       trim: true,
@@ -38,11 +38,12 @@ const userSchema = new Schema(
       index: { unique: true },
       minlength: 8,
     },
-    aliases: {
-      type: [AliasSchema],
-      trim: true,
-      index: { unique: true },
-    },
+    aliases: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Alias',
+      },
+    ],
   },
   {
     timestamps: { createdAt: 'created_at' },
@@ -63,19 +64,10 @@ userSchema.pre('save', async function preSave(next) {
 });
 
 userSchema.pre('remove', async function (next) {
-  const WishlistModel = require('./Wishlist.Model');
-  const WishlistItemModel = require('./WishlistItem.Model');
+  const AliasModel = require('./Alias.Model');
 
-  this.aliases.forEach(async (alias) => {
-    const wishlists = await WishlistModel.find({ _id: { $in: alias.wishlists } });
-
-    wishlists.forEach(async (wishlist) => {
-      await WishlistItemModel.deleteMany({ _id: { $in: wishlist.wishlistItems } });
-    });
-
-    await WishlistModel.deleteMany({ _id: { $in: alias.wishlists } });
-  });
-  next();
+  const aliases = await AliasModel.find({ user: this._id });
+  await aliases.forEach((al) => al.remove());
 });
 
 userSchema.methods.comparePassword = async function comparePassword(candidate) {

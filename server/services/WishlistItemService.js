@@ -1,5 +1,7 @@
 const WishlistModel = require('../models/Wishlist.Model');
 const { ApplicationError } = require('../lib/Error');
+
+console.log('wishlistitem', ApplicationError);
 /**
  * Logic for fetching wishlist items
  */
@@ -16,44 +18,45 @@ class WishlistItemService {
    * creates a wishlist item and adds the id
    * to the specified wishlist's "wishlistItems" array
    * @param {string} wishlistId
-   * @param {object} wishlistItem
+   * @param {object} wishlistItemValues the wishlist item values except the wishlist id
    *
    *
    * @returns {object} the wishlist item
    */
-  async addWishlistItem(wishlistId, wishlistItem) {
+  async addWishlistItem(wishlistId, wishlistItemValues) {
     let item;
     let wishlist;
-    try {
-      item = await this.WishlistItemModel.create(wishlistItem);
-    } catch (err) {
-      throw new ApplicationError(
-        {
-          wishlistItem,
-          wishlistId,
-          err,
-        },
-        `Unable to add wishlistItem: ${err.name}: ${err.message}`
-      );
-    }
+    const wishlistItem = wishlistItemValues;
+    wishlistItem.wishlist = wishlistId;
+
     try {
       wishlist = await WishlistModel.findById(wishlistId);
     } catch (err) {
       throw new ApplicationError(
         {
-          wishlistItem,
+          wishlistItemValues,
           wishlistId,
           err,
         },
         `Unable to add wishlistItem, wishlistId not found: ${err.name}:${err.message}`
       );
     }
-    item.wishlist = wishlistId;
-    await item.save();
+    try {
+      item = await this.WishlistItemModel.create(wishlistItem);
+    } catch (err) {
+      throw new ApplicationError(
+        {
+          wishlistItemValues,
+          wishlistId,
+          err,
+        },
+        `Unable to add wishlistItem: ${err.name}: ${err.message}`
+      );
+    }
 
     wishlist.wishlistItems.push(item._id);
-
     await wishlist.save();
+
     return item;
   }
 

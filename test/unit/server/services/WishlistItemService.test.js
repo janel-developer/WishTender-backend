@@ -2,7 +2,6 @@
 const chai = require('chai');
 chai.use(require('chai-as-promised'));
 const helper = require('../../../helper');
-const { ApplicationError } = require('../../../../server/lib/Error');
 
 const should = chai.should();
 const { expect, assert } = chai;
@@ -11,14 +10,21 @@ const { validWishlistItem, WishlistItemService, WishlistModel, WishlistItemModel
 
 describe('The WishlistItemService', async () => {
   let wishlistId;
+  let userId;
+  let aliasId;
   const wishlistItemIds = [];
   const wishlistItemService = new WishlistItemService(WishlistItemModel);
   before(async () => {
     await helper.before();
+    let user = await helper.UserModel.create(helper.validUser);
+    userId = user._id;
+    const aliasObject = helper.validAlias;
+    aliasObject.user = userId;
+    let alias = await helper.AliasModel.create(aliasObject);
+    aliasId = alias._id;
     let wishlist = await WishlistModel.create({
       wishlistName: "dashie's wishes",
-      user: '5f67bbc6798ea12d42b7b6d8', // dummy id
-      alias: '5f67bbc6798ea12d42b7b6d8', // dummy id
+      alias: aliasId,
     });
     wishlistId = wishlist._id;
   });

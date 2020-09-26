@@ -81,7 +81,7 @@ class UserService {
    *@param {string} id the user id
    *@param {object} alias the alias object
    *
-   * @returns {object} updated user
+   * @returns {object} updated alias
    */
   async addAlias(userId, alias) {
     let user;
@@ -96,8 +96,35 @@ class UserService {
     user.aliases.push(alias);
     // how to return alias??
     await user.save();
+
     const newAlias = user.aliases.find((a) => a.aliasName === alias.aliasName);
     return newAlias;
+  }
+
+  /**
+   * deletes an alias to a user
+   *
+   *@param {string} userId the user id
+   *@param {object} aliasId the alias is
+   *
+   * @returns {object} deleted alias
+   */
+  async deleteAlias(userId, aliasId) {
+    let user;
+    try {
+      user = await this.UserModel.findById(userId);
+    } catch (err) {
+      throw new ApplicationError(
+        { userId, aliasId, err },
+        `Can't delete alias: ${err.name}:${err.message}.`
+      );
+    }
+    console.log('alid', aliasId);
+    const alias = user.aliases.find((a) => a._id.toString() === aliasId.toString());
+
+    user.aliases.pull(alias);
+    await user.save();
+    return alias;
   }
 
   /**

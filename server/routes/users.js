@@ -1,10 +1,13 @@
 const express = require('express');
 const passport = require('passport');
 const { default: Axios } = require('axios');
+const UserModel = require('../models/User.Model');
+const UserService = require('../services/UserService');
+const { ApplicationError } = require('../lib/Error');
 const User = require('../models/User.Model');
 
 const userRoutes = express.Router();
-
+const userService = new UserService(UserModel);
 module.exports = () => {
   userRoutes.post(
     '/login',
@@ -21,40 +24,47 @@ module.exports = () => {
     return res.send(`You were redirected because your login failed: ${flashmsg}`);
   });
 
-  userRoutes.get('/users', async (req, res, next) => {
-    try {
-      await User.find((err, users) => {
-        if (err) {
-          console.log('err users:', users);
-          console.log(err);
-          return err;
-        }
-        console.log('users:', users);
-        return users;
-      }).catch(console.log);
-      return res.send('oops');
-    } catch (err) {
-      console.log(err);
-      return res.send('oops');
-    }
-  });
   userRoutes.post('/registration', async (req, res, next) => {
     console.log('----------------registration');
     try {
-      const user = new User({
+      const user = userService.addUser({
         username: req.body.username,
         email: req.body.email,
         password: req.body.password,
       });
-      const saveUser = await user.save();
-      if (saveUser) {
-        console.log('saved user');
-        return res.send(user);
-      }
-      // may want to validate if the user or email already exist in the database
-      return res.send(new Error('Failed to save user'));
+      return res.send(user);
     } catch (err) {
-      return res.send(`error saving user:${err}`);
+      next(err);
+    }
+  });
+
+  userRoutes.get('/:id', async (req, res, next) => {
+    const { id } = req.params;
+    try {
+      const user = await userService.getUser(id);
+      return res.send(user);
+    } catch (err) {
+      next(err);
+    }
+  });
+  userRoutes.put('/:id', async (req, res, next) => {
+    const { id } = req.params;
+    const updates = req.body;
+    try {
+      const user = await userService.updateUser(id, updates);
+      return res.send(user);
+    } catch (err) {
+      next(err);
+    }
+  });
+  userRoutes.put('/:id', async (req, res, next) => {
+    const { id } = req.params;
+    const updates = req.body;
+    try {
+      const user = await userService.updateUser(id, updates);
+      return res.send(user);
+    } catch (err) {
+      next(err);
     }
   });
 

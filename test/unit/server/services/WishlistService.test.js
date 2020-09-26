@@ -15,30 +15,34 @@ const {
   UserModel,
   WishlistService,
   WishlistModel,
+  AliasModel,
 } = helper;
 
 describe('The WishlistService', async () => {
   let wishlistId;
-  let userId;
+  let alias;
+  let aliasId;
   const wishlistService = new WishlistService(WishlistModel);
   before(async () => {
     await helper.before();
-    const user = await UserModel.create(validUser);
-    console.log(user);
-    user.aliases.push(validAlias);
-    userId = user._id;
-    aliasId = user.aliases[0]._id;
-    await user.save();
+
+    user = await UserModel.create(validUser);
+    validAlias.user = user._id;
+    alias = await AliasModel.create(validAlias);
+    aliasId = alias._id;
   });
   after(async () => helper.after());
 
   context('addWishlist', () => {
-    it('should add a wishlist to the specified user alias', async () => {
-      const wishlistAdded = await wishlistService.addWishlist(userId, aliasId, validWishlist);
+    it('should add a wishlist to the specified alias', async () => {
+      const wishlistAdded = await wishlistService.addWishlist(aliasId, validWishlist);
       wishlistId = wishlistAdded._id;
-      const user = await UserModel.findById(userId);
+      alias = await AliasModel.findById(aliasId);
+      console.log('alias', alias);
+      const id = alias.wishlists[0]._id.toString();
+
       wishlistAdded.should.be.an('Object');
-      user.aliases[0].wishlists[0]._id.toString().should.be.equal(wishlistId.toString());
+      id.should.be.equal(wishlistId.toString());
     });
   });
   context('getWishlist', () => {
@@ -66,8 +70,8 @@ describe('The WishlistService', async () => {
       wishlist._id.toString().should.be.equal(wishlistId.toString());
     });
     it('should remove ref from alias', async () => {
-      const user = await UserModel.findById(userId);
-      expect(user.aliases[0].wishlists).to.be.empty;
+      alias = await AliasModel.findById(aliasId);
+      expect(alias.wishlists).to.be.empty;
     });
     it('should delete wishlist items', async () => {
       item = await WishlistItemModel.findById(item._id);
