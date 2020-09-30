@@ -1,4 +1,5 @@
 const { createLogger, format, transports } = require('winston');
+
 const { combine, timestamp, printf } = format;
 
 const myFormat = printf(({ level, message, timestamp }) => {
@@ -18,7 +19,7 @@ const logger = createLogger({
     silly: 7,
   },
   format: combine(format.colorize(), timestamp(), myFormat),
-  transports: [new transports.Console({ level: 'debug' })],
+  transports: [new transports.Console({ level: 'silly' })],
 });
 
 module.exports = logger;

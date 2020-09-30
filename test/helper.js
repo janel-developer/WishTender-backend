@@ -11,6 +11,7 @@ let WishService = null;
 let UserService = null;
 let WishlistService = null;
 let WishlistItemService = null;
+let userRoutes = null;
 let db = null;
 
 try {
@@ -22,6 +23,13 @@ try {
 }
 const config = require('../server/config').test;
 
+try {
+  // eslint-disable-next-line import/no-unresolved
+  // eslint-disable-next-line global-require
+  userRoutes = require('../server/routes/users');
+} catch (err) {
+  console.log('users routes ignored');
+}
 try {
   // eslint-disable-next-line import/no-unresolved
   // eslint-disable-next-line global-require
@@ -148,6 +156,7 @@ module.exports.validWishlist = {
   wishlistName: `Dashie's list`,
 };
 
+module.exports.userRoutes = userRoutes;
 module.exports.UserModel = UserModel;
 module.exports.WishModel = WishModel;
 module.exports.WishlistModel = WishlistModel;

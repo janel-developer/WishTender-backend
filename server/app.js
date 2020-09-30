@@ -5,11 +5,12 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const flash = require('connect-flash');
 
-const session = require('express-session');
+const session = require('express-session'); //will not work in production
 const MongoStore = require('connect-mongo')(session);
 const cookieParser = require('cookie-parser');
 const auth = require('./lib/auth');
 const handleError = require('./lib/handleError');
+const logger = require('./lib/logger');
 const routes = require('./routes');
 
 module.exports = (config) => {
@@ -39,6 +40,7 @@ module.exports = (config) => {
   app.use(flash());
 
   app.use(async (req, res, next) => {
+    logger.log('silly', `${req.method}: ${req.path}`);
     try {
       req.session.visits = req.session.visits ? req.session.visits + 1 : 1;
       return next();

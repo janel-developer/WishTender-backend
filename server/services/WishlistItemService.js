@@ -1,7 +1,6 @@
 const WishlistModel = require('../models/Wishlist.Model');
 const { ApplicationError } = require('../lib/Error');
 
-console.log('wishlistitem', ApplicationError);
 /**
  * Logic for fetching wishlist items
  */

@@ -2,7 +2,6 @@
 const chai = require('chai');
 chai.use(require('chai-as-promised'));
 const helper = require('../../../helper');
-const { deleteMany } = require('../../../../server/models/User.Model');
 
 const should = chai.should();
 const { expect } = chai;
@@ -30,21 +29,36 @@ describe('The UserService', async () => {
       addedUser.should.be.an('Object');
       addedUser.username.should.be.equal(validUser.username);
     });
+
+    it('should error when password too short', async () => {
+      let error;
+      try {
+        await userService.addUser({
+          username: 'dashiell',
+          email: 'd@b.com',
+          password: 'butt',
+        });
+      } catch (err) {
+        error = err;
+      }
+      console.log(error);
+      expect(error).to.be.an('Error');
+    });
   });
 
-  // context('getUser(id)', () => {
-  //   it('should find a user', async () => {
-  //     const foundUser = await userService.getUser(userId);
-  //     expect(foundUser).to.be.an('Object');
-  //   });
-  // });
+  context('getUser(id)', () => {
+    it('should find a user', async () => {
+      const foundUser = await userService.getUser(userId);
+      expect(foundUser).to.be.an('Object');
+    });
+  });
 
-  // context('updateUser(id)', () => {
-  //   it('should update a user', async () => {
-  //     const updatedUser = await userService.updateUser(userId, { username: 'frankandbeans' });
-  //     updatedUser.username.should.be.equal('frankandbeans');
-  //   });
-  // });
+  context('updateUser(id)', () => {
+    it('should update a user', async () => {
+      const updatedUser = await userService.updateUser(userId, { username: 'frankandbeans' });
+      updatedUser.username.should.be.equal('frankandbeans');
+    });
+  });
 
   context('deleteUser(id)', async () => {
     let alias;

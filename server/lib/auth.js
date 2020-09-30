@@ -1,6 +1,7 @@
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const UserModel = require('../models/User.Model');
+const logger = require('./logger');
 
 passport.use(
   new LocalStrategy(
@@ -8,8 +9,9 @@ passport.use(
       usernameField: 'email',
     },
     async (username, password, done) => {
+      logger.log('silly', `logging in ${username}`);
+
       try {
-        console.log(`-------trying to login ${username} -------`);
         const user = await UserModel.findOne({ email: username }).exec();
         if (!user) {
           console.log(`Invalid Username`);
@@ -17,13 +19,12 @@ passport.use(
         }
         const passwordOK = await user.comparePassword(password);
         if (!passwordOK) {
-          console.log(`Invalid Password`);
+          logger.log(`silly`, `Invalid Password`);
           return done(null, false, { message: 'Invalid Password.' });
         }
-        console.log(`about to return done`);
         return done(null, user);
       } catch (err) {
-        console.log(`error logging in: ${err}`);
+        logger.log(`error`, `error logging in: ${err}`);
         return done(null);
       }
     }

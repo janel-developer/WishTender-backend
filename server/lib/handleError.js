@@ -5,7 +5,7 @@ module.exports = (err, req, res, next) => {
     return next(err);
   }
 
-  logger.log('Error:', err);
+  logger.log('error', err.message);
   return res.status(500).render('500', {
     title: '500',
   });
