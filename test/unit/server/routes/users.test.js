@@ -11,6 +11,9 @@ chai.use(chaiHttp);
 const url = 'http://localhost:4000';
 const { expect } = chai;
 
+// Log in
+var agent = chai.request.agent(url);
+
 describe('user routes', () => {
   before(async () => helper.before());
   after(async () => helper.after());
@@ -19,7 +22,7 @@ describe('user routes', () => {
 
   describe('/users/registration', () => {
     it('register post', async () => {
-      const response = await chai.request(url).post('/users/registration').send(helper.validUser);
+      const response = await agent.post('/users/registration').send(helper.validUser);
       user = response.body;
       user.should.be.an('Object');
       user.username.should.equal(helper.validUser.username);
@@ -36,8 +39,7 @@ describe('user routes', () => {
   });
   describe('/users/login', () => {
     it('should login a user', async () => {
-      const response = await chai
-        .request(url)
+      const response = await agent
         .post('/users/login')
         .send({ email: helper.validUser.email, password: helper.validUser.password });
       const responseText = response.text;
@@ -62,22 +64,15 @@ describe('user routes', () => {
   });
   describe('/users/:id put', () => {
     it('update user', async () => {
-      const response = await chai
-        .request(url)
-        .put(`/users/${user._id}`)
-        .send({ username: 'Dinky' });
+      console.log('user', user);
+      const response = await agent.put(`/users/${user._id}`).send({ username: 'Dinky' });
       const responseName = JSON.parse(response.text).username;
       responseName.should.equal('Dinky');
     });
     it('not update other user update user', async () => {
-      console.log('user', user2);
-      const response = await chai
-        .request(url)
-        .put(`/users/${user2._id}`)
-        .send({ username: 'Dinky' });
-      console.log('res', response.body);
-      const responseName = response.body.username;
-      responseName.should.equal('Dinky');
+      const response = await agent.put(`/users/${user2._id}`).send({ username: 'Dink00' });
+
+      response.status.should.equal(500); //should actually be 401 not authorized
     });
   });
   // describe('/users/:id put', () => {

@@ -7,6 +7,7 @@ const { ApplicationError } = require('../lib/Error');
 
 function throwIfNotAuthorized(req, res, next) {
   logger.log('silly', `authorizing...`);
+  logger.log('silly', req.user._id.toString());
   if (req.user._id != req.params.id) {
     throw new ApplicationError(
       { currentUser: req.user._id, owner: req.param.id },
@@ -75,7 +76,8 @@ module.exports = () => {
     const { id } = req.params;
 
     const updates = req.body;
-    if (updates.password) return next(new ApplicationError({}, `No password updates allowed`));
+    if (updates.password || updates._id)
+      return next(new ApplicationError({}, `No password or id updates allowed from this route.`));
     let user;
     try {
       user = await userService.updateUser(id, updates);
