@@ -14,15 +14,24 @@ const { expect } = chai;
 describe('user routes', () => {
   before(async () => helper.before());
   after(async () => helper.after());
+  let user;
+  let user2;
 
   describe('/users/registration', () => {
     it('register post', async () => {
       const response = await chai.request(url).post('/users/registration').send(helper.validUser);
-      const jsonResponse = response.body;
-      jsonResponse.should.be.an('Object');
-      jsonResponse.username.should.equal(helper.validUser.username);
-
-      expect(jsonResponse.password).to.be.an('undefined');
+      user = response.body;
+      user.should.be.an('Object');
+      user.username.should.equal(helper.validUser.username);
+      expect(user.password).to.be.an('undefined');
+    });
+    it('register post', async () => {
+      const user2Info = { email: 'p@z.com', username: 'sippy', password: 'passwordzzz' };
+      const response = await chai.request(url).post('/users/registration').send(user2Info);
+      user2 = response.body;
+      user2.should.be.an('Object');
+      user2.username.should.equal(user2.username);
+      expect(user2.password).to.be.an('undefined');
     });
   });
   describe('/users/login', () => {
@@ -31,7 +40,6 @@ describe('user routes', () => {
         .request(url)
         .post('/users/login')
         .send({ email: helper.validUser.email, password: helper.validUser.password });
-      console.log(response.headers.etag);
       const responseText = response.text;
       responseText.should.equal('Welcome ');
     });
@@ -52,16 +60,26 @@ describe('user routes', () => {
     //     responseText.should.equal('You were redirected because your login failed: ');
     //   });
   });
-  // describe('/users/:id put', () => {
-  //   it('update user', async () => {
-  //     const response = await chai
-  //       .request(url)
-  //       .put(`/users/${user._id}`)
-  //       .send({ username: 'Dinky' });
-  //     const responseName = JSON.parse(response.text).username;
-  //     responseName.should.equal('Dinky');
-  //   });
-  // });
+  describe('/users/:id put', () => {
+    it('update user', async () => {
+      const response = await chai
+        .request(url)
+        .put(`/users/${user._id}`)
+        .send({ username: 'Dinky' });
+      const responseName = JSON.parse(response.text).username;
+      responseName.should.equal('Dinky');
+    });
+    it('not update other user update user', async () => {
+      console.log('user', user2);
+      const response = await chai
+        .request(url)
+        .put(`/users/${user2._id}`)
+        .send({ username: 'Dinky' });
+      console.log('res', response.body);
+      const responseName = response.body.username;
+      responseName.should.equal('Dinky');
+    });
+  });
   // describe('/users/:id put', () => {
   //   it('update user', async () => {
   //     const response = await chai

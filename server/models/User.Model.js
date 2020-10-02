@@ -46,6 +46,13 @@ const userSchema = new Schema(
     ],
   },
   {
+    toJSON: {
+      transform(doc, ret) {
+        delete ret.password;
+      },
+    },
+  },
+  {
     timestamps: { createdAt: 'created_at' },
   }
 );

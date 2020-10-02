@@ -1,12 +1,20 @@
 const express = require('express');
 const passport = require('passport');
-const { default: Axios } = require('axios');
 const UserModel = require('../models/User.Model');
 const UserService = require('../services/UserService');
 const logger = require('../lib/logger');
 const { ApplicationError } = require('../lib/Error');
-const User = require('../models/User.Model');
 
+function throwIfNotAuthorized(req, res, next) {
+  logger.log('silly', `authorizing...`);
+  if (req.user._id != req.params.id) {
+    throw new ApplicationError(
+      { currentUser: req.user._id, owner: req.param.id },
+      `Not Authorized ${req.user._id} ${req.params.id} `
+    );
+  }
+  return next();
+}
 const userRoutes = express.Router();
 const userService = new UserService(UserModel);
 module.exports = () => {
@@ -40,45 +48,53 @@ module.exports = () => {
         password: req.body.password,
       });
     } catch (err) {
-      next(err);
+      return next(err);
     }
     logger.log('silly', `user registered`);
-    return res.json({ username: user.username, email: user.email }); // res.json(user) ?
+    // user = user.toObject();
+    // delete user.password;
+    return res.json(user); // res.json(user) ?
   });
 
   userRoutes.get('/:id', async (req, res, next) => {
     logger.log('silly', `getting user by id`);
 
     const { id } = req.params;
+    let user;
     try {
-      const user = await userService.getUser(id);
-      return res.send(user);
+      user = await userService.getUser(id);
     } catch (err) {
-      next(err);
+      return next(err);
     }
+
+    return res.json(user); // res.json(user) ?
   });
 
-  userRoutes.put('/:id', async (req, res, next) => {
+  userRoutes.put('/:id', throwIfNotAuthorized, async (req, res, next) => {
     logger.log('silly', `updating user by id`);
     const { id } = req.params;
+
     const updates = req.body;
+    if (updates.password) return next(new ApplicationError({}, `No password updates allowed`));
     let user;
     try {
       user = await userService.updateUser(id, updates);
     } catch (err) {
-      next(err);
+      return next(err);
     }
+    delete user.password;
     return res.send(user);
   });
-  userRoutes.delete('/:id', async (req, res, next) => {
+  userRoutes.delete('/:id', throwIfNotAuthorized, async (req, res, next) => {
     logger.log('silly', `deleting user by id`);
     const { id } = req.params;
     let user;
     try {
       user = await userService.deleteUser(id, updates);
     } catch (err) {
-      next(err);
+      return next(err);
     }
+    delete user.password;
     return res.send(user);
   });
 

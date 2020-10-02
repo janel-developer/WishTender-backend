@@ -1,0 +1,3 @@
+// function isAuthorized(user, resource){
+
+// }

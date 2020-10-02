@@ -71,7 +71,6 @@ class UserService {
     } else {
       throw new ApplicationError({ id, updates }, 'User not updated.');
     }
-
     return updatedUser;
   }
 
