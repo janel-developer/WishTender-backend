@@ -35,13 +35,7 @@ module.exports = (config) => {
   );
 
   app.use(auth.initialize);
-  app.use(async (req, res, next) => {
-    next();
-  });
   app.use(auth.session);
-  app.use(async (req, res, next) => {
-    next();
-  });
   app.use(auth.setUser);
 
   app.use(flash());

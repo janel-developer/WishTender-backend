@@ -40,7 +40,7 @@ class AliasService {
       newAlias = await this.AliasModel.create(alias);
     } catch (err) {
       throw new ApplicationError(
-        { userId, aliasId, alias, err },
+        { userId, alias, err },
         `Not able to add alias. Alias not able to be created. ${err.message}`
       );
     }

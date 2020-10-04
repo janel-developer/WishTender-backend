@@ -6,7 +6,7 @@ module.exports = (err, req, res, next) => {
   }
 
   logger.log('error', err.message);
-  console.log(err);
+  logger.log('debug', `${err.stack.slice(0, 400)}...`);
   return res.status(500).render('500', {
     title: '500',
   });

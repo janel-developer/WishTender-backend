@@ -45,22 +45,22 @@ describe('user routes', () => {
       const responseText = response.text;
       responseText.should.equal('Welcome ');
     });
-    //   it('fail to login a bad password login post', async () => {
-    //     const response = await chai
-    //       .request(url)
-    //       .post('/users/login')
-    //       .send({ email: helper.validUser.email, password: 'wrongpassword' });
-    //     const responseText = response.text;
-    //     responseText.should.equal('You were redirected because your login failed: ');
-    //   });
-    //   it('fail to login a bad email login post', async () => {
-    //     const response = await chai
-    //       .request(url)
-    //       .post('/users/login')
-    //       .send({ email: 'bademail@butt.com', password: 'wrongpassword' });
-    //     const responseText = response.text;
-    //     responseText.should.equal('You were redirected because your login failed: ');
-    //   });
+    it('fail to login a bad password login post', async () => {
+      const response = await chai
+        .request(url)
+        .post('/users/login')
+        .send({ email: helper.validUser.email, password: 'wrongpassword' });
+      const responseText = response.text;
+      responseText.should.equal('You were redirected because your login failed: ');
+    });
+    it('fail to login a bad email login post', async () => {
+      const response = await chai
+        .request(url)
+        .post('/users/login')
+        .send({ email: 'bademail@butt.com', password: 'wrongpassword' });
+      const responseText = response.text;
+      responseText.should.equal('You were redirected because your login failed: ');
+    });
   });
   describe('/users/:id put', () => {
     it('update user', async () => {
@@ -75,14 +75,16 @@ describe('user routes', () => {
       response.status.should.equal(500); //should actually be 401 not authorized
     });
   });
-  // describe('/users/:id put', () => {
-  //   it('update user', async () => {
-  //     const response = await chai
-  //       .request(url)
-  //       .put(`/users/${user._id}`)
-  //       .send({ username: 'Dinky' });
-  //     const responseName = JSON.parse(response.text).username;
-  //     responseName.should.equal('Dinky');
-  //   });
-  // });
+  describe('/users/:id delete', () => {
+    it('should not delete a different user', async () => {
+      const response = await agent.delete(`/users/${user2._id}`).send({ username: 'Dinky' });
+      response.status.should.equal(500);
+    });
+  });
+  describe('/users/:id delete', () => {
+    it('delete user', async () => {
+      const response = await agent.delete(`/users/${user._id}`);
+      response.body._id.toString().should.equal(user._id);
+    });
+  });
 });

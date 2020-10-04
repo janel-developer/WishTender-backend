@@ -7,7 +7,6 @@ const { ApplicationError } = require('../lib/Error');
 
 function throwIfNotAuthorized(req, res, next) {
   logger.log('silly', `authorizing...`);
-  logger.log('silly', req.user._id.toString());
   if (req.user._id != req.params.id) {
     throw new ApplicationError(
       { currentUser: req.user._id, owner: req.param.id },
@@ -84,7 +83,6 @@ module.exports = () => {
     } catch (err) {
       return next(err);
     }
-    delete user.password;
     return res.send(user);
   });
   userRoutes.delete('/:id', throwIfNotAuthorized, async (req, res, next) => {
@@ -92,12 +90,11 @@ module.exports = () => {
     const { id } = req.params;
     let user;
     try {
-      user = await userService.deleteUser(id, updates);
+      user = await userService.deleteUser(id);
     } catch (err) {
       return next(err);
     }
-    delete user.password;
-    return res.send(user);
+    return res.json(user);
   });
 
   return userRoutes;

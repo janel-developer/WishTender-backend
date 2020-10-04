@@ -19,11 +19,17 @@ const aliasSchema = new mongoose.Schema(
         },
       ],
   },
+  {
+    toJSON: {
+      transform(doc, ret) {
+        delete ret.user;
+      },
+    },
+  },
   { timestamps: { createdAt: 'created_at' } }
 );
 
 aliasSchema.pre('remove', async function (next) {
-  console.log('--------------remove alias');
   const UserModel = require('./User.Model');
   const WishlistModel = require('./Wishlist.Model');
   const user = await UserModel.findById(this.user);
