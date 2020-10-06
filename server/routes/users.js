@@ -42,11 +42,7 @@ module.exports = () => {
     logger.log('silly', `registering user`);
     let user;
     try {
-      user = await userService.addUser({
-        username: req.body.username,
-        email: req.body.email,
-        password: req.body.password,
-      });
+      user = await userService.addUser(req.body);
     } catch (err) {
       return next(err);
     }

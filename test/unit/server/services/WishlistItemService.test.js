@@ -25,6 +25,7 @@ describe('The WishlistItemService', async () => {
     let wishlist = await WishlistModel.create({
       wishlistName: "dashie's wishes",
       alias: aliasId,
+      user: userId,
     });
     wishlistId = wishlist._id;
   });
@@ -33,6 +34,8 @@ describe('The WishlistItemService', async () => {
   context('addWishlistItem', () => {
     it('should add a wishlist item to the specified wishlist', async () => {
       const { itemName } = validWishlistItem;
+      const valuesWishlistItem = validWishlistItem;
+      valuesWishlistItem.user = userId;
       const wishAdded = await wishlistItemService.addWishlistItem(wishlistId, validWishlistItem);
       // helper.logger.log('debug', `Wish added ${wishAdded}`);
       wishlistItemIds.push(wishAdded._id);

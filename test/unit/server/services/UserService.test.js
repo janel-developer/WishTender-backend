@@ -70,8 +70,10 @@ describe('The UserService', async () => {
       validAlias.user = userId;
       alias = await helper.AliasModel.create(validAlias);
       validWishlist.alias = alias._id;
+      validWishlist.user = userId;
       wishlist = await helper.WishlistModel.create(validWishlist);
       validWishlistItem.wishlist = wishlist._id;
+      validWishlistItem.user = userId;
       item = await helper.WishlistItemModel.create(validWishlistItem);
 
       // for this test

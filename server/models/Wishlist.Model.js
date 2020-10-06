@@ -21,6 +21,18 @@ const wishlistSchema = new mongoose.Schema(
       ref: 'Alias',
       required: true,
     },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+  },
+  {
+    toJSON: {
+      transform(doc, ret) {
+        delete ret.user;
+      },
+    },
   },
   { timestamps: { createdAt: 'created_at' } }
 );
@@ -46,13 +58,25 @@ wishlistSchema.path('alias').validate(async function (value) {
   const alias = await AliasModel.findOne({ _id: value });
   if (!alias) {
     throw new ApplicationError(
-      { user: value },
+      { alias: value },
       `Invalid Wishlist "alias" property. No alias found with id: ${value}`
     );
   } else {
     return true;
   }
 }, 'Parent Alias non existent');
+wishlistSchema.path('user').validate(async function (value) {
+  const UserModel = require('./User.Model');
+  const user = await UserModel.findOne({ _id: value });
+  if (!user) {
+    throw new ApplicationError(
+      { user: value },
+      `Invalid Wishlist "user" property. No user found with id: ${value}`
+    );
+  } else {
+    return true;
+  }
+}, 'Parent User non existent');
 const Wishlist = mongoose.model('Wishlist', wishlistSchema);
 
 module.exports = Wishlist;

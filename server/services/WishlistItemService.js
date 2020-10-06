@@ -60,7 +60,7 @@ class WishlistItemService {
   }
 
   /**
-   * gets a wishlist item
+   * gets wishlists item
    *
    * @param {Array.<Sting>} ids the ids of the wishlists
    * @returns {array} an array of wishlist items
@@ -80,6 +80,24 @@ class WishlistItemService {
   }
 
   /**
+   * gets a wishlistItem
+   * @param {string} id the wishlistItem id
+   *
+   *
+   * @returns {object} the wishlistItem
+   */
+  async getWishlistItem(id) {
+    let wishlistItem;
+    try {
+      wishlistItem = await this.WishlistItemModel.findById(id);
+    } catch (err) {
+      throw new ApplicationError({ id, err }, `WishlistItem not found.`);
+    }
+
+    return wishlistItem;
+  }
+
+  /**
    * updates the specified wishlist item
    *
    *@param {string} id the wishlist item id
@@ -89,13 +107,12 @@ class WishlistItemService {
    */
   async updateWishlistItem(id, updates) {
     const output = await this.WishlistItemModel.updateOne({ _id: id }, updates);
-
     let updatedItem;
     if (output.nModified) {
       updatedItem = await this.getWishlistItems([id]);
       [updatedItem] = updatedItem;
     } else {
-      throw new ApplicationError({ id, updates }, 'WishlistItem not updated.');
+      throw new ApplicationError({ id, updates }, `WishlistItem not updated. Updates: ${updates}`);
     }
 
     return updatedItem;

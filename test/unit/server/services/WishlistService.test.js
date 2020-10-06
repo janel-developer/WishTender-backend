@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-expressions */
 const chai = require('chai');
+const { help } = require('../../../../server/lib/logger');
 chai.use(require('chai-as-promised'));
 const helper = require('../../../helper');
 
@@ -22,6 +23,7 @@ describe('The WishlistService', async () => {
   let wishlistId;
   let alias;
   let aliasId;
+  let user;
   const wishlistService = new WishlistService(WishlistModel);
   before(async () => {
     await helper.before();
@@ -35,6 +37,8 @@ describe('The WishlistService', async () => {
 
   context('addWishlist', () => {
     it('should add a wishlist to the specified alias', async () => {
+      const values = validWishlist;
+      values.user = user._id;
       const wishlistAdded = await wishlistService.addWishlist(aliasId, validWishlist);
       wishlistId = wishlistAdded._id;
       alias = await AliasModel.findById(aliasId);
@@ -64,7 +68,9 @@ describe('The WishlistService', async () => {
     it('should delete a wishlist', async () => {
       // for deleting children items test
       const wishlistItemService = new WishlistItemService(WishlistItemModel);
-      item = await wishlistItemService.addWishlistItem(wishlistId, helper.validWishlistItem);
+      const valuesItem = helper.validWishlistItem;
+      valuesItem.user = user._id;
+      item = await wishlistItemService.addWishlistItem(wishlistId, valuesItem);
 
       const wishlist = await wishlistService.deleteWishlist(wishlistId);
       wishlist._id.toString().should.be.equal(wishlistId.toString());

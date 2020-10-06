@@ -12,6 +12,18 @@ const itemSchema = new mongoose.Schema(
       ref: 'Wishlist',
       required: true,
     },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+  },
+  {
+    toJSON: {
+      transform(doc, ret) {
+        delete ret.user;
+      },
+    },
   },
   { timestamps: { createdAt: 'created_at' } }
 );
@@ -37,6 +49,18 @@ itemSchema.path('wishlist').validate(async function (value) {
     return true;
   }
 }, 'Parent Wishlist non existent');
+itemSchema.path('user').validate(async function (value) {
+  const UserModel = require('./User.Model');
+  const user = await UserModel.findOne({ _id: value });
+  if (!user) {
+    throw new ApplicationError(
+      { user: value },
+      `Invalid WishlistItem "user" property. No user found with id: ${value}`
+    );
+  } else {
+    return true;
+  }
+}, 'Parent User non existent');
 
 const WishlistItem = mongoose.model('WishlistItem', itemSchema);
 module.exports = WishlistItem;

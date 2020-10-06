@@ -59,6 +59,8 @@ describe('The AliasService', async () => {
     it('should delete an alias', async () => {
       // for deleting children test
       const wishlistService = new WishlistService(WishlistModel);
+      const wishlistValues = validWishlist;
+      wishlistValues.user = userId;
       wishlist = await wishlistService.addWishlist(aliasId, validWishlist);
 
       const alias = await aliasService.deleteAlias(aliasId);

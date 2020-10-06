@@ -40,11 +40,11 @@ module.exports = () => {
   aliasRoutes.post('/', throwIfNotAuthorized, async (req, res, next) => {
     logger.log('silly', `creating alias`);
     let alias;
+    const values = { ...req.body };
+    delete values.user;
+
     try {
-      alias = await aliasService.addAlias(req.body.user, {
-        aliasName: req.body.aliasName,
-        handle: req.body.handle,
-      });
+      alias = await aliasService.addAlias(req.body.user, values);
     } catch (err) {
       return next(err);
     }

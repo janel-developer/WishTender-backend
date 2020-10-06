@@ -1,6 +1,8 @@
 const { json } = require('body-parser');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
+const { help } = require('../../server/lib/logger');
+const wishlists = require('../../server/routes/wishlists');
 
 const should = chai.should();
 const helper = require('../helper');
@@ -10,7 +12,7 @@ chai.use(chaiHttp);
 const url = 'http://localhost:4000';
 const { expect } = chai;
 
-var agent = chai.request.agent(url);
+const agent = chai.request.agent(url);
 
 describe('user routes', () => {
   before(async () => helper.before());
@@ -19,6 +21,10 @@ describe('user routes', () => {
   let alias;
   let alias2;
   let user2;
+  let wishlist;
+  let wishlist2;
+  let wishlistItem;
+  let wishlistItem2;
 
   describe('/users/registration', () => {
     it('creating user', async () => {
@@ -34,10 +40,21 @@ describe('user routes', () => {
       await agent.post('/users/login').send({ email: 'p@z.com', password: 'passwordzzz' });
       user2 = response.body;
       const newAlias = validAlias;
-      console.log(user, user2);
       newAlias.user = user2._id;
       const aliasResp = await agent.post(`/aliases/`).send(newAlias);
       alias2 = aliasResp.body;
+      const newWishlist = helper.validWishlist;
+      newWishlist.user = user2._id;
+      newWishlist.alias = alias2._id;
+      const wishlistResp = await agent.post(`/wishlists/`).send(newWishlist);
+      wishlist2 = wishlistResp.body;
+      const newItem = helper.validWishlistItem;
+      newItem.wishlist = wishlist2._id;
+      newItem.user = user2._id;
+      wishlistItem2 = await agent.post(`/wishlistItems/`).send(newItem);
+
+      wishlist2 = wishlistResp.body;
+      wishlist2.alias.toString().should.equal(alias2._id);
       user2.should.be.an('Object');
       user2.should.be.an('Object');
       user2.username.should.equal(user2.username);
@@ -84,13 +101,92 @@ describe('user routes', () => {
     });
   });
 
+  describe('/wishlists/ post', () => {
+    it('should add a wishlist', async () => {
+      const body = helper.validWishlist;
+      body.alias = alias._id;
+      body.user = user._id;
+      const response = await agent.post(`/wishlists/`).send(body);
+      wishlist = response.body;
+      response.body.alias.toString().should.equal(alias._id);
+    });
+    it('shouldnt add a wishlist to a different users alias', async () => {
+      const body = helper.validWishlist;
+      body.alias = alias2._id;
+      body.user = user2._id;
+      const response = await agent.post(`/wishlists/`).send(body);
+      response.status.should.equal(500);
+    });
+  });
+  describe('/wishlists/ put', () => {
+    it('should update a wishlist', async () => {
+      const body = { wishlistName: 'newname' };
+      const response = await agent.put(`/wishlists/${wishlist._id}`).send(body);
+      response.body.wishlistName.toString().should.equal('newname');
+    });
+    it('shouldnt update a wishlist of a different user', async () => {
+      const body = helper.validWishlist;
+      body.alias = alias2._id;
+      body.user = user2._id;
+      const response = await agent.put(`/wishlists/${wishlist2._id}`).send(body);
+      response.status.should.equal(500);
+    });
+  });
+  describe('/wishlistItems/ post', () => {
+    it('should create a wishlistItem', async () => {
+      const body = helper.validWishlistItem;
+      body.wishlist = wishlist._id;
+      body.user = user._id;
+      const response = await agent.post(`/wishlistItems/`).send(body);
+      wishlistItem = response.body;
+      response.body.itemName.should.equal(helper.validWishlistItem.itemName);
+    });
+    it('shouldnt add a wishlistItem to of a different users wishlist', async () => {
+      const body = helper.validWishlist;
+      body.alias = alias2._id;
+      body.user = user2._id;
+      const response = await agent.post(`/wishlists/`).send(body);
+      response.status.should.equal(500);
+    });
+  });
+  describe('/wishlistItems/ put', () => {
+    it('should update a wishlistItem', async () => {
+      const body = { itemName: 'newname' };
+      const response = await agent.put(`/wishlistItems/${wishlistItem._id}`).send(body);
+      response.body.itemName.toString().should.equal('newname');
+    });
+    it('shouldnt update a wishlist of a different user', async () => {
+      const body = { itemName: 'newname' };
+      const response = await agent.put(`/wishlistItems/${wishlistItem2._id}`).send(body);
+      response.status.should.equal(500);
+    });
+  });
+  describe('/wishlistItems/:id delete', () => {
+    it('should delete an wishlist item', async () => {
+      const response = await agent.delete(`/wishlistItems/${wishlistItem._id}`);
+      response.body._id.toString().should.equal(wishlistItem._id);
+    });
+    it('shouldnt delete a different users wishlist item', async () => {
+      const response = await agent.delete(`/wishlistItems/${wishlist2._id}`);
+      response.status.should.equal(500);
+    });
+  });
+  describe('/wishlists/:id delete', () => {
+    it('should delete a wishlist', async () => {
+      const response = await agent.delete(`/wishlists/${wishlist._id}`);
+      response.body._id.toString().should.equal(wishlist._id);
+    });
+    it('shouldnt delete a different users wishlist', async () => {
+      const response = await agent.delete(`/wishlists/${wishlist2._id}`);
+      response.status.should.equal(500);
+    });
+  });
   describe('/aliases/:id delete', () => {
     it('should delete an alias', async () => {
       const response = await agent.delete(`/aliases/${alias._id}`);
       response.body._id.toString().should.equal(alias._id);
     });
     it('shouldnt delete a different users alias', async () => {
-      console.log(`/aliases/${alias2._id}`);
       const response = await agent.delete(`/aliases/${alias2._id}`);
       response.status.should.equal(500);
     });
