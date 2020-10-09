@@ -13,6 +13,9 @@ const handleError = require('./lib/handleError');
 const logger = require('./lib/logger');
 const routes = require('./routes');
 
+const ConfirmationEmail = require('./lib/email/ConfirmationEmail');
+const ThankYouEmail = require('./lib/email/ThankYouEmail');
+
 module.exports = (config) => {
   const app = express();
   app.locals.title = config.sitename;

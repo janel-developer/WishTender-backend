@@ -38,6 +38,10 @@ const userSchema = new Schema(
       index: { unique: true },
       minlength: 8,
     },
+    confirmed: {
+      type: Boolean,
+      default: false,
+    },
     aliases: [
       {
         type: mongoose.Schema.Types.ObjectId,
