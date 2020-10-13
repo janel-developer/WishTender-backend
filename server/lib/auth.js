@@ -14,8 +14,12 @@ passport.use(
       try {
         const user = await UserModel.findOne({ email: username }).exec();
         if (!user) {
-          console.log(`Invalid Username`);
+          logger.log('silly', `Invalid Username`);
           return done(null, false, { message: 'Invalid Username.' });
+        }
+        if (!user.confirmed) {
+          logger.log('silly', `User account not confirmed.`);
+          return done(null, false, { message: `User account not confirmed.` });
         }
         const passwordOK = await user.comparePassword(password);
         if (!passwordOK) {

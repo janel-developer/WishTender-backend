@@ -19,24 +19,43 @@ class Email {
     this.html = html;
   }
 
-  send() {
-    const mailOptions = {
+  get mailOptions() {
+    return {
       from: this.from,
       to: this.to,
       subject: this.subject,
       html: this.html,
     };
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.zoho.com',
-      port: 587,
-      secure: false,
-      auth: {
-        user: this.user,
-        pass: this.pass,
-      },
-    });
+  }
 
-    transporter.sendMail(mailOptions, (error, info) => {
+  get transporter() {
+    let transporter;
+    if (process.env.NODE_ENV === 'production') {
+      transporter = nodemailer.createTransport({
+        host: 'smtp.zoho.com',
+        port: 587,
+        secure: false,
+        auth: {
+          user: this.user,
+          pass: this.pass,
+        },
+      });
+    } else {
+      transporter = nodemailer.createTransport({
+        host: 'smtp.ethereal.email',
+        port: 587,
+        secure: false,
+        auth: {
+          user: process.env.TEST_EMAIL,
+          pass: process.env.TEST_PASSWORD,
+        },
+      });
+    }
+    return transporter;
+  }
+
+  send() {
+    this.transporter.sendMail(this.mailOptions, (error, info) => {
       if (error) return console.log(error);
       console.log('message sent', info.messageId);
     });

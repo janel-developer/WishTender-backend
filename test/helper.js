@@ -1,7 +1,9 @@
 const logger = require('../server/lib/logger');
+require('dotenv').config({ path: './backend/.env' }); // why this path?
 
 let UserModel = null;
 let WishModel = null;
+let TokenModel = null;
 let WishlistModel = null;
 let WishlistItemModel = null;
 let AliasSchema = null;
@@ -36,6 +38,13 @@ try {
   UserModel = require('../server/models/User.Model');
 } catch (err) {
   console.log('UserModel ignored');
+}
+try {
+  // eslint-disable-next-line import/no-unresolved
+  // eslint-disable-next-line global-require
+  TokenModel = require('../server/models/Token.Model');
+} catch (err) {
+  console.log('TokenModel ignored');
 }
 
 try {
@@ -121,6 +130,7 @@ module.exports.before = async () => {
     await WishlistItemModel.deleteMany({});
     await UserModel.deleteMany({});
     await AliasModel.deleteMany({});
+    await TokenModel.deleteMany({});
   }
   return true;
 };
@@ -130,6 +140,7 @@ module.exports.after = async () => {
     await WishlistItemModel.deleteMany({});
     await UserModel.deleteMany({});
     await AliasModel.deleteMany({});
+    await TokenModel.deleteMany({});
   }
 };
 
@@ -158,6 +169,7 @@ module.exports.validWishlist = {
 
 module.exports.userRoutes = userRoutes;
 module.exports.UserModel = UserModel;
+module.exports.TokenModel = TokenModel;
 module.exports.WishModel = WishModel;
 module.exports.WishlistModel = WishlistModel;
 module.exports.WishlistItemModel = WishlistItemModel;

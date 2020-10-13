@@ -2,6 +2,7 @@
 const chai = require('chai');
 chai.use(require('chai-as-promised'));
 const helper = require('../../../helper');
+var assert = chai.assert;
 
 const should = chai.should();
 const { expect } = chai;
@@ -13,6 +14,7 @@ const {
   WishlistService,
   WishlistItemService,
   WishlistItemModel,
+  TokenModel,
   UserModel,
 } = helper;
 
@@ -28,6 +30,13 @@ describe('The UserService', async () => {
       userId = addedUser._id;
       addedUser.should.be.an('Object');
       addedUser.username.should.be.equal(validUser.username);
+    });
+    it('should have added an email token', async () => {
+      const token = await TokenModel.findOne({ user: userId });
+      console.log(await TokenModel.findOne());
+      console.log(token, userId);
+      token.should.be.an('Object');
+      token.user.toString().should.be.equal(userId.toString());
     });
 
     it('should error when password too short', async () => {

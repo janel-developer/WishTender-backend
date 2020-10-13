@@ -1,4 +1,6 @@
+const ConfirmationEmail = require('../lib/email/ConfirmationEmail');
 const { ApplicationError } = require('../lib/Error');
+const Token = require('../models/Token.Model');
 /**
  * Logic for fetching wishlist items
  */
@@ -31,6 +33,24 @@ class UserService {
         `Unable to create user: ${err.name}: ${err.message}`
       );
     }
+    let token;
+    try {
+      token = await Token.create({ user: newUser._id });
+    } catch (err) {
+      throw new ApplicationError(
+        {
+          user,
+          err,
+        },
+        `Unable to create email token: ${err.name}: ${err.message}`
+      );
+    }
+
+    const confirmationEmail = new ConfirmationEmail(
+      user.email,
+      `www.wishtender.com/confirmation/${newUser.email}/${token.token}`
+    );
+    confirmationEmail.send();
 
     return newUser;
   }
