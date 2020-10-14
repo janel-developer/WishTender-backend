@@ -12,6 +12,11 @@ const itemSchema = new mongoose.Schema(
       ref: 'Wishlist',
       required: true,
     },
+    alias: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Alias',
+      required: true,
+    },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

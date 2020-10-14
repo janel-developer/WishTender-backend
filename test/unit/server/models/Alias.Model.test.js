@@ -47,7 +47,7 @@ describe('Alias Model', () => {
   });
   let alias;
   context('Create an alias document', () => {
-    it('should make a user with an alias id ref', async () => {
+    it('should make an alias with user id ref', async () => {
       validAlias.user = user._id;
       alias = await AliasModel.create(validAlias);
       user.aliases.push(alias._id);

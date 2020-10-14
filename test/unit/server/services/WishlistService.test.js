@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-expressions */
 const chai = require('chai');
-const { help } = require('../../../../server/lib/logger');
 chai.use(require('chai-as-promised'));
 const helper = require('../../../helper');
 
