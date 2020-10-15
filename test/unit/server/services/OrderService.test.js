@@ -1,10 +1,11 @@
 const chai = require('chai');
-const { help } = require('../../../../server/lib/logger');
-const should = chai.should();
 const Order = require('../../../../server/models/Order.Model');
 const OrderService = require('../../../../server/services/OrderService');
 const helper = require('../../../helper');
+
+const should = chai.should();
 const orderService = new OrderService(Order);
+
 describe('Order Service', () => {
   let user;
   let user2;
