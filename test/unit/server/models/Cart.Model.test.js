@@ -63,24 +63,3 @@ describe('The mongoose schema', () => {
     });
   });
 });
-
-/**
- * Creates car object
- * @param {Sting} model name of
- *
- * @returns {Object} car object
- */
-function Car(model) {
-  this.model = model;
-
-  /**
-   * Makes the car drive
-   * @param {String} speed speed of car
-   */
-  this.drive = (speed) => {
-    console.log(`Car is moving at ${speed} miles per hour`);
-  };
-  return this;
-}
-const car = Car({}); // JsDocs for Car show up here
-car.drive(); // Js

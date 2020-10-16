@@ -33,8 +33,6 @@ describe('The UserService', async () => {
     });
     it('should have added an email token', async () => {
       const token = await TokenModel.findOne({ user: userId });
-      console.log(await TokenModel.findOne());
-      console.log(token, userId);
       token.should.be.an('Object');
       token.user.toString().should.be.equal(userId.toString());
     });
@@ -50,7 +48,6 @@ describe('The UserService', async () => {
       } catch (err) {
         error = err;
       }
-      console.log(error);
       expect(error).to.be.an('Error');
     });
   });
@@ -70,6 +67,7 @@ describe('The UserService', async () => {
   });
 
   context('deleteUser(id)', async () => {
+    // this is on the model not on the service
     let alias;
     let wishlist;
     let item;

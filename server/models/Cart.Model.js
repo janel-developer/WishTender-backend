@@ -7,7 +7,7 @@
 function Cart(oldCart) {
   this.items = oldCart.items || {};
   this.totalQty = oldCart.totalQty || 0;
-  this.totalPrice = oldCart.totalPrice || 0;
+  this.totalPrice = parseFloat(oldCart.totalPrice) || 0;
 
   /**
    * adds to cart
@@ -22,9 +22,9 @@ function Cart(oldCart) {
       storedItem = this.items[id] = { item: item, qty: 0, price: 0 };
     }
     storedItem.qty++;
-    storedItem.price = storedItem.item.price * storedItem.qty;
+    storedItem.price = parseFloat(storedItem.item.price) * storedItem.qty;
     this.totalQty++;
-    this.totalPrice += storedItem.item.price;
+    this.totalPrice += parseFloat(storedItem.item.price);
   };
 
   this.reduceByOne = function (id) {
@@ -55,27 +55,3 @@ function Cart(oldCart) {
 }
 
 module.exports = Cart;
-
-// /**
-//  * Creates car object
-//  * @param {Sting} model name of
-//  *
-//  * @returns {Object} car object
-//  */
-// function Car(model) {
-//   this.model = model;
-
-//   /**
-//    * Makes the car drive
-//    * @param {String} speed speed of car
-//    */
-//   this.drive = (speed) => {
-//     console.log(`Car is moving at ${speed} miles per hour`);
-//   };
-//   return this;
-// }
-
-// const car = Car({});
-// car.drive();
-
-// module.exports = Car;

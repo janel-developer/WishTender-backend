@@ -1,4 +1,3 @@
-const { json } = require('body-parser');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 // const server = require('../../../../bin/www.js');
@@ -12,7 +11,7 @@ const url = 'http://localhost:4000';
 const { expect } = chai;
 
 // Log in
-var agent = chai.request.agent(url);
+const agent = chai.request.agent(url);
 
 describe('user routes', () => {
   before(async () => helper.before());

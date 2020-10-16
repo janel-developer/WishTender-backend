@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { ApplicationError } = require('../lib/Error');
 
 const itemSchema = new mongoose.Schema(
   {

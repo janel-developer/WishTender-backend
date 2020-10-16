@@ -1,5 +1,6 @@
 const logger = require('../server/lib/logger');
 const User = require('../server/models/User.Model');
+const WishlistItem = require('../server/models/WishlistItem.Model');
 require('dotenv').config({ path: './backend/.env' }); // why this path?
 
 let UserModel = null;
@@ -175,6 +176,7 @@ module.exports.validWishlistItem = {
   wishlist: '5f871bbb2e926751b17b2952',
   //add image eventually
 };
+
 module.exports.validWishlist = {
   wishlistName: `Dashie's list`,
 };
@@ -182,6 +184,40 @@ module.exports.validWishlist = {
 module.exports.createTestUser = async (userInfo = this.validUser) => {
   const user = await UserModel.create(userInfo);
   return user;
+};
+module.exports.createTestUserFull = async (
+  userInfo = this.validUser,
+  aliasInfo = this.validAlias,
+  wishlistInfo = this.validWishlist,
+  itemInfo = this.validWishlistItem
+) => {
+  const user = await UserModel.create(userInfo);
+  user.confirmed = true;
+  await user.save();
+  console.log('user---', user);
+  console.log('userres---', await UserModel.findById(user._id));
+  console.log('ppp', user._id, aliasInfo);
+  delete aliasInfo.user;
+  const alias = await AliasModel.create({ user: user._id, ...aliasInfo });
+  delete wishlistInfo.user;
+  delete wishlistInfo.alias;
+  console.log({ wishlistInfo });
+  const wishlist = await WishlistModel.create({
+    user: user._id,
+    alias: alias._id,
+    ...wishlistInfo,
+  });
+  const info = { ...itemInfo };
+  delete info.user;
+  delete info.alias;
+  delete info.wishlist;
+  const wishlistItem = await WishlistItem.create({
+    user: user._id,
+    alias: alias._id,
+    wishlist: wishlist._id,
+    ...info,
+  });
+  return { user, alias, wishlist, wishlistItem };
 };
 
 module.exports.userRoutes = userRoutes;

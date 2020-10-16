@@ -1,9 +1,5 @@
-const { json } = require('body-parser');
-const { use } = require('chai');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const { help } = require('../../server/lib/logger');
-const wishlists = require('../../server/routes/wishlists');
 
 const should = chai.should();
 const helper = require('../helper');
