@@ -38,12 +38,30 @@ describe('user routes', () => {
     });
   });
   describe('/users/login', () => {
-    it('should login a user', async () => {
-      const response = await agent
-        .post('/users/login')
-        .send({ email: helper.validUser.email, password: helper.validUser.password });
-      const responseText = response.text;
-      responseText.should.equal('Welcome ');
+    context('/users/login', () => {
+      it('shouldnt login user before confirming', async () => {
+        const response = await agent
+          .post('/users/login')
+          .send({ email: helper.validUser.email, password: helper.validUser.password });
+        const responseText = response.text;
+        responseText.should.equal(
+          'You were redirected because your login failed: User account not confirmed.'
+        );
+      });
+      it('should confirm a user', async () => {
+        const token = await helper.TokenModel.findOne({ user: user._id });
+        await agent.get(`/confirmation/${user.email}/${token.token}`);
+        const mainUser = await helper.UserModel.findById(user._id);
+        mainUser.confirmed.should.be.equal(true);
+      });
+
+      it('should login user after confirmed changed to true', async () => {
+        const response = await agent
+          .post('/users/login')
+          .send({ email: helper.validUser.email, password: helper.validUser.password });
+        const responseText = response.text;
+        responseText.should.equal('Welcome ');
+      });
     });
     it('fail to login a bad password login post', async () => {
       const response = await chai

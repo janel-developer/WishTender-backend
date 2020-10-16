@@ -10,6 +10,7 @@ const aliasService = new AliasService(AliasModel);
 function throwIfNotAuthorized(req, res, next) {
   logger.log('silly', `authorizing...`);
   // should authorize that req.user is user if adding alias
+  console.log(req.user);
   if (req.user._id != req.body.user) {
     throw new ApplicationError(
       { currentUser: req.user._id, owner: req.body.user },

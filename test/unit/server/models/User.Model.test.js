@@ -6,7 +6,7 @@ const { UserModel } = helper;
 const should = chai.should();
 const { expect } = chai;
 
-describe('The mongoose schema', async () => {
+describe('The mongoose User Model', async () => {
   beforeEach(async () => helper.before());
   afterEach(async () => helper.after());
 
