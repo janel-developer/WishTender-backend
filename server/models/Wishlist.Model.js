@@ -47,7 +47,6 @@ wishlistSchema.pre('remove', async function (next) {
   }
 
   const items = await WishlistItemModel.find({ wishlist: this._id });
-  console.log('wishlist', items);
   await items.forEach((it) => it.remove());
 
   next();

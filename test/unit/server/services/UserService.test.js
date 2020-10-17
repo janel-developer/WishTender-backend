@@ -84,10 +84,8 @@ describe('The UserService', async () => {
       item = await helper.WishlistItemModel.create(validWishlistItem);
 
       // for this test
-      const user = await UserModel.findById(userId);
-      await user.remove();
+      await userService.deleteUser(userId);
       const deleted = await UserModel.findById(userId);
-      console.log(deleted);
       expect(deleted).to.be.null;
     });
     it('should delete the child aliases', async () => {
