@@ -1,8 +1,9 @@
 const ConfirmationEmail = require('../lib/email/ConfirmationEmail');
 const { ApplicationError } = require('../lib/Error');
+const logger = require('../lib/logger');
 const Token = require('../models/Token.Model');
 /**
- * Logic for fetching wishlist items
+ * Logic for interacting with the user model
  */
 class UserService {
   /**
@@ -21,6 +22,7 @@ class UserService {
    * @returns {object} the wishlist item
    */
   async addUser(user) {
+    logger.log('silly', 'adding user');
     let newUser;
     try {
       newUser = await this.UserModel.create(user);

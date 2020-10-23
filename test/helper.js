@@ -194,14 +194,10 @@ module.exports.createTestUserFull = async (
   const user = await UserModel.create(userInfo);
   user.confirmed = true;
   await user.save();
-  console.log('user---', user);
-  console.log('userres---', await UserModel.findById(user._id));
-  console.log('ppp', user._id, aliasInfo);
   delete aliasInfo.user;
   const alias = await AliasModel.create({ user: user._id, ...aliasInfo });
   delete wishlistInfo.user;
   delete wishlistInfo.alias;
-  console.log({ wishlistInfo });
   const wishlist = await WishlistModel.create({
     user: user._id,
     alias: alias._id,
@@ -217,7 +213,14 @@ module.exports.createTestUserFull = async (
     wishlist: wishlist._id,
     ...info,
   });
-  return { user, alias, wishlist, wishlistItem };
+  const wishlistItem2 = await WishlistItem.create({
+    user: user._id,
+    alias: alias._id,
+    wishlist: wishlist._id,
+    ...info,
+    itemName: 'purse',
+  });
+  return { user, alias, wishlist, wishlistItems: [wishlistItem, wishlistItem2] };
 };
 
 module.exports.userRoutes = userRoutes;
