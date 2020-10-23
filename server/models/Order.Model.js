@@ -11,6 +11,9 @@ const orderSchema = new mongoose.Schema(
       type: Object,
       required: true,
     },
+    // need buyers email to send
+    // cart
+    // payment id
     amountToWishTender: {
       type: String,
       required: true,

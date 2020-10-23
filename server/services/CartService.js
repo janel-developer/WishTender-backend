@@ -16,9 +16,7 @@ module.exports.addToCart = async (itemId, currentCart) => {
   cart.add(item, itemId);
   return cart;
 };
-module.exports.checkout = async (itemId, currentCart) => {
-  const cart = new Cart(currentCart || {});
-
+module.exports.checkout = async (cart) => {
   let item;
   try {
     item = await WishlistItem.findById(itemId);
