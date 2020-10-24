@@ -8,7 +8,7 @@
  *
  * @returns {Object} fees object,  fees in pennies
  */
-module.export = function FeesInt(
+function Fees(
   giftPriceTotal,
   appFee,
   firstOfMonthCharge = false,
@@ -46,4 +46,6 @@ module.export = function FeesInt(
   if (!this.balanced || !this.stripeFeesBalanced)
     throw new Error(`fees aren't balanced, refactor this function`);
   return this;
-};
+}
+
+module.exports = Fees;

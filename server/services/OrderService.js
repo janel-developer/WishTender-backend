@@ -4,7 +4,7 @@ const logger = require('../lib/logger');
 const Alias = require('../models/Alias.Model');
 
 /**
- * Logic for Alias
+ * Logic for Order
  */
 class OrderService {
   /**
@@ -72,6 +72,37 @@ class OrderService {
     }
 
     return orders;
+  }
+
+  /**
+   *Returns true if th user got an order in the last 30 days
+   * @param {userId} id the user id
+   *
+   *
+   * @returns {boolean} did get order in the last 30 days
+   */
+  async didGetOrderLast30Days(userId) {
+    let month = new Date();
+    const days = 30;
+    const priorByDays = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+    let orders;
+    try {
+      orders = await this.OrderModel.find({
+        processedBy: userId,
+      });
+      const orders2 = await this.OrderModel.find({});
+      console.log('orders', JSON.stringify(orders), userId);
+      // console.log('all orders', orders2);
+      // orders = await this.OrderModel.find({
+      //   user: userId,
+      //   createdAt: { $gte: priorByDays },
+      // });
+    } catch (err) {
+      throw new ApplicationError({ userId, err }, `Orders not found. ${err}`);
+    }
+
+    return !!orders.length;
   }
 }
 

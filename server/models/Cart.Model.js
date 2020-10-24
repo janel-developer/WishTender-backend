@@ -6,7 +6,6 @@
  */
 function Cart(oldCart) {
   this.aliasCarts = oldCart.aliasCarts || {};
-
   /**
    * adds to cart
    * @param {Object} item
@@ -56,7 +55,6 @@ function Cart(oldCart) {
     aliasCart.totalPrice -= aliasCart.items[itemId].price;
     delete aliasCart.items[itemId];
   };
-
   this.generateArray = function generateArray() {
     const arr = [];
     Object.keys(this.aliasCarts).forEach((key) => {
@@ -64,10 +62,21 @@ function Cart(oldCart) {
     });
     return arr;
   };
+  /**
+   * generate an item array for an alias cart
+   * @param {String} alias
+   * @returns {Object[]}
+   */
+  this.generateItemArray = function generateItemArray(alias) {
+    return Object.values(this.aliasCarts[alias].items);
+  };
   return this;
 }
 
 const c = new Cart({});
-c.add({ _id: '100', itemName: 'coffee grinder', user: '7', alias: '1' });
+c.add({ _id: '100', itemName: 'coffee grinder', user: '7', alias: '1', price: 1000 });
+c.add({ _id: '101', itemName: 'hat', user: '7', alias: '1', price: 2000 });
+c.add({ _id: '101', itemName: 'hat', user: '7', alias: '1', price: 2000 });
+c.add({ _id: '104', itemName: 'collapsible bucket', user: '7', alias: '2', price: 2000 });
 
 module.exports = Cart;

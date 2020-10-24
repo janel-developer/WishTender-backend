@@ -1,16 +1,29 @@
 const chai = require('chai');
+const { MongoClient } = require('mongodb');
 const Order = require('../../../../server/models/Order.Model');
 const OrderService = require('../../../../server/services/OrderService');
 const helper = require('../../../helper');
 
+require('dotenv').config();
+
+const { expect } = chai;
 const should = chai.should();
 const orderService = new OrderService(Order);
 
 describe('Order Service', () => {
   let user;
   let user2;
+  let connection;
+  let db;
   before(async () => {
+    connection = await MongoClient.connect('mongodb://localhost:27017/test', {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    db = await connection.db('test');
+
     await helper.before();
+    Order.deleteMany({});
     user = await helper.createTestUser();
     const userValues = helper.validUser;
     userValues.email = 'p@fee.com';
@@ -46,5 +59,26 @@ describe('Order Service', () => {
 
     const orders = await orderService.getOrdersByUser(user._id);
     orders.length.should.be.equal(2);
+  });
+  it('should tell if didGetOrderLast30Days', async () => {
+    db = await connection.db('test');
+    const orders = db.collection('orders');
+
+    const mockOrder1 = {
+      processedBy: 'Stripe',
+      createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+    };
+    await orders.insertOne(mockOrder1);
+    const mockOrder2 = {
+      processedBy: 'dash',
+      createdAt: new Date(Date.now() - 31 * 24 * 60 * 60 * 1000),
+    };
+
+    await orders.insertOne(mockOrder2);
+    const didGetOrder = await orderService.didGetOrderLast30Days('dash');
+    // const didGetOrder = await orderService.didGetOrderLast30Days('6e6f742061206e756d626572');
+    const didNotGetOrder = await orderService.didGetOrderLast30Days('6e6f742061206e756d626573');
+    didGetOrder.should.be.equal(1);
+    didNotGetOrder.should.be.equal(0);
   });
 });
