@@ -83,21 +83,15 @@ class OrderService {
    */
   async didGetOrderLast30Days(userId) {
     let month = new Date();
-    const days = 30;
-    const priorByDays = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    const prior30Days = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
     let orders;
     try {
       orders = await this.OrderModel.find({
-        processedBy: userId,
+        user: userId,
+        createdAt: { $gte: prior30Days },
       });
-      const orders2 = await this.OrderModel.find({});
-      console.log('orders', JSON.stringify(orders), userId);
-      // console.log('all orders', orders2);
-      // orders = await this.OrderModel.find({
-      //   user: userId,
-      //   createdAt: { $gte: priorByDays },
-      // });
+      console.log({ orders }, userId);
     } catch (err) {
       throw new ApplicationError({ userId, err }, `Orders not found. ${err}`);
     }
