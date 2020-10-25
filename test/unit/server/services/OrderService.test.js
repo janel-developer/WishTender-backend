@@ -63,29 +63,4 @@ describe('Order Service', () => {
     const orders = await orderService.getOrdersByUser(user._id);
     orders.length.should.be.equal(2);
   });
-  it('should tell if didGetOrderLast30Days', async () => {
-    db = await connection.db('test');
-    const orders = db.collection('orders');
-
-    const userId = mongoose.Types.ObjectId('5f9480a69c4fcdc78d55397d');
-    const userId2 = mongoose.Types.ObjectId('5f9480a69c4fcdc78d553971');
-    const mockOrder1 = {
-      user: userId,
-      createdAt: new Date(Date.now() - 29 * 24 * 60 * 60 * 1000),
-    };
-
-    const mockOrder2 = {
-      user: userId2,
-      createdAt: new Date(Date.now() - 31 * 24 * 60 * 60 * 1000),
-    };
-
-    await orders.insertOne(mockOrder1);
-    await orders.insertOne(mockOrder2);
-
-    const didGetOrderRecently = await orderService.didGetOrderLast30Days(userId);
-    const didNotGetOrderRecently = await orderService.didGetOrderLast30Days(userId2);
-
-    didGetOrderRecently.should.be.equal(true);
-    didNotGetOrderRecently.should.be.equal(false);
-  });
 });

@@ -2,7 +2,7 @@
  * Creates Fees object
  * @param {Int} giftPriceTotal price in pennies ($1 would be 100)
  * @param {Number} appFee percent of app takes of gift price (10% would be 10)
- * @param {Boolean} firstOfMonthCharge Is this the first charge of this month to this connected account?
+ * @param {Boolean} accountFeeDue Is the $2.00 account fee due?
  * @param {Boolean} internationalPresentment Is was the currency presented by stripe in a currency other than US?
  * @param {Boolean} internationalDestination Is the wisher an account outside the US?
  *
@@ -11,23 +11,23 @@
 function Fees(
   giftPriceTotal,
   appFee,
-  firstOfMonthCharge = false,
+  accountFeeDue = false,
   internationalPresentment = false,
   internationalDestination = false
 ) {
   const roundToPenny = (pennies) => parseInt(pennies.toFixed());
-  this.firstOfMonthCharge = firstOfMonthCharge ? 200 : 0;
+  this.accountFeeDue = accountFeeDue ? 200 : 0;
   this.currencyConversionPrct = internationalPresentment ? 0.01 : 0;
   this.internationalTransferPrct = internationalDestination ? 0.01 : 0;
   this.appFee = roundToPenny(giftPriceTotal * appFee * 0.01);
   this.charge = roundToPenny(
-    (giftPriceTotal + this.firstOfMonthCharge + this.appFee + 55) /
+    (giftPriceTotal + this.accountFeeDue + this.appFee + 55) /
       (1 - (0.0315 + this.currencyConversionPrct + this.internationalTransferPrct))
   );
   this.stripeTotalFee = roundToPenny(
     this.charge * (0.0315 + this.internationalTransferPrct + this.currencyConversionPrct) +
       55 +
-      this.firstOfMonthCharge
+      this.accountFeeDue
   );
   this.stripeFee = roundToPenny(this.charge * 0.029 + 30);
   this.stripeConnectedFee = roundToPenny(this.charge * 0.0025 + 25);
@@ -36,7 +36,7 @@ function Fees(
   this.stripeFeesBalanced =
     this.stripeFee +
       this.stripeConnectedFee +
-      this.firstOfMonthCharge +
+      this.accountFeeDue +
       this.currencyConversionFee +
       this.internationalTransferFee ==
     this.stripeTotalFee;

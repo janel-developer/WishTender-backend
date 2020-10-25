@@ -1,15 +1,15 @@
 const mongoose = require('mongoose');
 const chai = require('chai');
 const { MongoClient } = require('mongodb');
-const StripeExpressAccountService = require('../../../../server/services/StripeExpressAccountService');
-const StripeExpressAccountModel = require('../../../../server/models/StripeExpressAccount.Model');
+const StripeAccountInfoService = require('../../../../server/services/StripeAccountInfoService');
+const StripeAccountInfoModel = require('../../../../server/models/StripeAccountInfo.Model');
 const helper = require('../../../helper');
 require('dotenv').config();
 
 const { expect } = chai;
 const should = chai.should();
 
-describe('Stripe Service', () => {
+describe('Stripe Express Accounts Service', () => {
   let connection;
   let db;
   let userId;
@@ -21,9 +21,9 @@ describe('Stripe Service', () => {
     });
     db = await connection.db('test');
     await helper.before();
-    await StripeExpressAccountModel.deleteMany({});
+    await StripeAccountInfoModel.deleteMany({});
 
-    const orders = db.collection('stripeexpressaccounts');
+    const orders = db.collection('stripeaccountinfos');
     userId = mongoose.Types.ObjectId('5f9480a69c4fcdc78d55397d');
     userId2 = mongoose.Types.ObjectId('5f9480a69c4fcdc78d55397c');
     const makeMockAccount = async (daysFromNow, user) => {
@@ -37,17 +37,17 @@ describe('Stripe Service', () => {
     await makeMockAccount(-2, userId2);
   });
   after(async () => {
-    await StripeExpressAccountModel.deleteMany({});
+    await StripeAccountInfoModel.deleteMany({});
     helper.after();
   });
   it('should see account fee is not due', async () => {
-    const stripeExpressAccountService = new StripeExpressAccountService(StripeExpressAccountModel);
-    const isAccountFeeDue = await stripeExpressAccountService.isAccountFeeDue(userId);
+    const stripeAccountInfoService = new StripeAccountInfoService(StripeAccountInfoModel);
+    const isAccountFeeDue = await stripeAccountInfoService.isAccountFeeDue(userId);
     isAccountFeeDue.should.be.equal(false);
   });
   it('should see account fee is due', async () => {
-    const stripeExpressAccountService = new StripeExpressAccountService(StripeExpressAccountModel);
-    const isAccountFeeDue = await stripeExpressAccountService.isAccountFeeDue(userId2);
+    const stripeAccountInfoService = new StripeAccountInfoService(StripeAccountInfoModel);
+    const isAccountFeeDue = await stripeAccountInfoService.isAccountFeeDue(userId2);
     isAccountFeeDue.should.be.equal(true);
   });
 });

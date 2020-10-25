@@ -5,6 +5,8 @@ const Token = require('../models/Token.Model');
 const OrderService = require('./OrderService');
 const OrderModel = require('../models/Order.Model');
 const Fees = require('../lib/Fees');
+const StripeAccountInfoService = require('./StripeAccountInfoService');
+const StripeAccountInfoModel = require('../models/StripeAccountInfo.Model');
 require('dotenv').config();
 const orderService = new OrderService(OrderModel);
 
@@ -19,15 +21,7 @@ class StripeService {
   constructor(stripe) {
     this.stripe = stripe;
     this.Fees = Fees;
-  }
-
-  /**
-   * Checks if user will get $2 charge
-   * @param {string} userId
-   */
-  static async isActivatedAccount(userId) {
-    const isActivated = await orderService.didGetOrderLast30Days(userId);
-    return isActivated;
+    this.stripeAccountInfoService = new StripeAccountInfoService(StripeAccountInfoModel);
   }
 
   /**
@@ -42,7 +36,7 @@ class StripeService {
     const itemArray = Object.values(aliasCart.items);
     itemArray.forEach((item) =>
       lineItems.push({
-        name: `WishTender for ${item.item.ItemName}`,
+        name: `WishTender for ${item.item.itemName}`,
         images: ['https://i.ibb.co/1nBVsqw/gift.png'],
         quantity: item.qty,
         currency,
@@ -70,9 +64,8 @@ class StripeService {
 
   /**
    * Stripe session
-   * @param {Int} stripeFee
+   * @param {Int} lineItems
    * @param {Int} wishersTender
-   * @param {Int} appFee
    * @param {String} account
    *
    * creates a stripe checkout session.
@@ -82,7 +75,7 @@ class StripeService {
    * using the stripe client side library
    * ex: stripe.redirectToCheckout({ sessionId: data.session.id });
    */
-  async stripeSession(lineItems, wishersTender, account) {
+  async createStripeSession(lineItems, wishersTender, account) {
     const session = await this.stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: lineItems,
@@ -99,8 +92,69 @@ class StripeService {
     });
     return session;
   }
-}
 
-// const stripes = new StripeService({ hi: 'bye' });
+  /**
+   * Create express account
+   */
+  async createExpressAccount(accountInfo) {
+    // const account = await this.stripe.accounts.create(accountInfo);
+    const account = await this.stripe.accounts.create(accountInfo);
+    return account.id;
+  }
+
+  /**
+   * Create account link
+   */
+  async createAccountLink(accountId) {
+    const accountLinkInfo = {
+      account: accountId,
+
+      // The URL that the user will be redirected to if the account link
+      // is no longer valid. Your refresh_url should trigger a method on
+      // your server to create a new account link using this API,
+      // with the same parameters, and redirect the user to the
+      // new account link.
+      refresh_url: 'http://localhost:3000/refresh',
+
+      // The URL that the user will be redirected to upon leaving or
+      // completing the linked flow.
+      return_url: 'http://localhost:3000/return',
+
+      // account_onboarding for first time.
+      // account_update for when the user updates their account:
+      // Consider framing this (account_update) as “edit my profile” or “update my verification information”.
+      type: 'account_onboarding',
+    };
+    const info = await this.stripe.accountLinks.create(accountLinkInfo);
+    return info.url;
+  }
+
+  async createLoginLink(accountId) {
+    const link = await this.stripe.accounts.createLoginLink(accountId);
+    return link.url;
+  }
+
+  /**
+   * Create account info
+   */
+  static createAccountInfo(country = 'US') {
+    const info = {
+      country,
+      type: 'express',
+      capabilities: {
+        transfers: {
+          requested: true,
+        },
+      },
+    };
+
+    if (country !== 'US') {
+      info.tos_acceptance = {
+        service_agreement: 'recipient',
+      };
+    }
+    return info;
+  }
+}
 
 module.exports = StripeService;

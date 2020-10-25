@@ -3,20 +3,20 @@ const { ApplicationError } = require('../lib/Error');
 /**
  * Logic for interacting with the stripe express account model
  */
-class StripeExpressAccountService {
+class StripeAccountInfoService {
   /**
    * Constructor
    * @param {*} stripe pass in stripe express account model
    */
-  constructor(StripeExpressAccountModel) {
-    this.StripeExpressAccountModel = StripeExpressAccountModel;
+  constructor(StripeAccountInfoModel) {
+    this.StripeAccountInfoModel = StripeAccountInfoModel;
   }
 
   async isAccountFeeDue(userId) {
     let account;
 
     try {
-      account = await this.StripeExpressAccountModel.findOne({
+      account = await this.StripeAccountInfoModel.findOne({
         user: userId,
       });
     } catch (err) {
@@ -26,4 +26,4 @@ class StripeExpressAccountService {
   }
 }
 
-module.exports = StripeExpressAccountService;
+module.exports = StripeAccountInfoService;

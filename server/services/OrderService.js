@@ -73,29 +73,6 @@ class OrderService {
 
     return orders;
   }
-
-  /**
-   *Returns true if th user got an order in the last 30 days
-   * @param {userId} id the user id
-   *
-   *
-   * @returns {boolean} did get order in the last 30 days
-   */
-  async didGetOrderLast30Days(userId) {
-    const prior30Days = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-
-    let orders;
-    try {
-      orders = await this.OrderModel.find({
-        user: userId,
-        createdAt: { $gte: prior30Days },
-      });
-    } catch (err) {
-      throw new ApplicationError({ userId, err }, `Orders not found. ${err}`);
-    }
-
-    return !!orders.length;
-  }
 }
 
 module.exports = OrderService;
