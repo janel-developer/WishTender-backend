@@ -2,12 +2,12 @@ const ConfirmationEmail = require('../lib/email/ConfirmationEmail');
 const { ApplicationError } = require('../lib/Error');
 const logger = require('../lib/logger');
 const Token = require('../models/Token.Model');
-const OrderService = require('OrderService');
-const OrderModel= require('../models/Order.Model');
+const OrderService = require('./OrderService');
+const OrderModel = require('../models/Order.Model');
 const Fees = require('../lib/Fees');
 require('dotenv').config();
+const orderService = new OrderService(OrderModel);
 
-const orderService = new OrderService(OrderModel)
 /**
  * Logic for interacting with the stripe api
  */
@@ -18,19 +18,26 @@ class StripeService {
    */
   constructor(stripe) {
     this.stripe = stripe;
+    this.Fees = Fees;
   }
 
-  checkIfFirstMonthlyOrder(user){
-    // get
+  /**
+   * Checks if user will get $2 charge
+   * @param {string} userId
+   */
+  static async isActivatedAccount(userId) {
+    const isActivated = await orderService.didGetOrderLast30Days(userId);
+    return isActivated;
   }
 
-  createFees(){
-    orderService
-    const fees = new Fees{}
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  lineitems(aliasCart, currency = 'USD') {
+  /**
+   * Create LineItems
+   * @param {Object} aliasCart
+   * @param {Int} stripeFee
+   * @param {Int} appFee
+   * @param {String} currency = 'USD'
+   */
+  static createLineItems(aliasCart, stripeFee, appFee, currency = 'USD') {
     const lineItems = [];
     const itemArray = Object.values(aliasCart.items);
     itemArray.forEach((item) =>
@@ -42,31 +49,24 @@ class StripeService {
         amount: item.price, // item.price is item.item.price * item.qty
       })
     );
-
+    lineItems.push(
+      {
+        name: `Stripe Fee`,
+        images: ['https://i.ibb.co/vmfXbyj/stripe.png'],
+        quantity: 1,
+        currency,
+        amount: stripeFee,
+      },
+      {
+        name: `WishTender Fee`,
+        images: ['https://i.ibb.co/5vQDJFJ/wishtender.png'],
+        quantity: 1,
+        currency,
+        amount: appFee,
+      }
+    );
+    return lineItems;
   }
-  // [
-  //   {
-  //     name: 'Gift',
-  //     images: ['https://i.ibb.co/1nBVsqw/gift.png'],
-  //     quantity: 1,
-  //     currency: 'USD',
-  //     amount: wishersTender, // Keep the amount on the server to prevent customers from manipulating on client
-  //   },
-  //   {
-  //     name: 'Stripe fee',
-  //     images: ['https://i.ibb.co/vmfXbyj/stripe.png'],
-  //     quantity: 1,
-  //     currency: 'USD',
-  //     amount: stripeFee, // Keep the amount on the server to prevent customers from manipulating on client
-  //   },
-  //   {
-  //     name: 'WishTender fee',
-  //     images: ['https://i.ibb.co/5vQDJFJ/wishtender.png'],
-  //     quantity: 1,
-  //     currency: 'USD',
-  //     amount: appFee, // Keep the amount on the server to prevent customers from manipulating on client
-  //   },
-  // ]
 
   /**
    * Stripe session
@@ -74,58 +74,33 @@ class StripeService {
    * @param {Int} wishersTender
    * @param {Int} appFee
    * @param {String} account
+   *
+   * creates a stripe checkout session.
+   * returns the session object.
+   * Use the session object session id to redirect to the stripe.com checkout
+   * session on the front end
+   * using the stripe client side library
+   * ex: stripe.redirectToCheckout({ sessionId: data.session.id });
    */
-  async stripeSession(stripeFee, wishersTender, appFee, account) {
+  async stripeSession(lineItems, wishersTender, account) {
     const session = await this.stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-      line_items: [
-        {
-          name: 'Gift',
-          images: ['https://i.ibb.co/1nBVsqw/gift.png'],
-          quantity: 1,
-          currency: 'USD',
-          amount: wishersTender, // Keep the amount on the server to prevent customers from manipulating on client
-        },
-        {
-          name: 'Stripe fee',
-          images: ['https://i.ibb.co/vmfXbyj/stripe.png'],
-          quantity: 1,
-          currency: 'USD',
-          amount: stripeFee, // Keep the amount on the server to prevent customers from manipulating on client
-        },
-        {
-          name: 'WishTender fee',
-          images: ['https://i.ibb.co/5vQDJFJ/wishtender.png'],
-          quantity: 1,
-          currency: 'USD',
-          amount: appFee, // Keep the amount on the server to prevent customers from manipulating on client
-        },
-      ],
+      line_items: lineItems,
       payment_intent_data: {
         // The account receiving the funds, as passed from the client.
         transfer_data: {
-          amount: wishersTender, //if you ant to take the application fee out
+          amount: wishersTender,
           destination: account,
         },
       },
       // ?session_id={CHECKOUT_SESSION_ID} means the redirect will have the session ID set as a query param
-      success_url: `http://localhost:3000/success`,
-      cancel_url: `http://localhost:3000/canceled`,
+      success_url: `http://localhost:3000/success?session_id={CHECKOUT_SESSION_ID}`, // should clear cart and add order to database
+      cancel_url: `http://localhost:3000/canceled?session_id={CHECKOUT_SESSION_ID}`,
     });
     return session;
   }
 }
-const itemArray = [
-  {
-    item: { _id: '100', itemName: 'coffee grinder', user: '7', alias: '1', price: 1000 },
-    qty: 1,
-    price: 1000,
-  },
-  {
-    item: { _id: '101', itemName: 'hat', user: '7', alias: '1', price: 2000 },
-    qty: 2,
-    price: 4000,
-  },
-];
-s = new StripeService({ stripe: 'StripeService' });
+
+// const stripes = new StripeService({ hi: 'bye' });
+
 module.exports = StripeService;

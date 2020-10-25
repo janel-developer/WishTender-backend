@@ -82,7 +82,6 @@ class OrderService {
    * @returns {boolean} did get order in the last 30 days
    */
   async didGetOrderLast30Days(userId) {
-    let month = new Date();
     const prior30Days = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
     let orders;
@@ -91,7 +90,6 @@ class OrderService {
         user: userId,
         createdAt: { $gte: prior30Days },
       });
-      console.log({ orders }, userId);
     } catch (err) {
       throw new ApplicationError({ userId, err }, `Orders not found. ${err}`);
     }

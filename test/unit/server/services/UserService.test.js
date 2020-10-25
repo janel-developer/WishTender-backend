@@ -94,6 +94,7 @@ describe('The UserService', async () => {
     });
     it(`should delete the ancestral wishlists`, async () => {
       wishlist = await helper.WishlistModel.findById(wishlist._id);
+      console.log({ wishlist });
       expect(wishlist).to.be.null;
     });
     it(`should delete ancestral items`, async () => {
