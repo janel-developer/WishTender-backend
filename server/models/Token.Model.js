@@ -1,3 +1,4 @@
+// email token
 const crypto = require('crypto');
 const mongoose = require('mongoose');
 const { ApplicationError } = require('../lib/Error');

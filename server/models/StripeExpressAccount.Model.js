@@ -1,29 +1,19 @@
 const mongoose = require('mongoose');
 const { ApplicationError } = require('../lib/Error');
 
-const stripeExpress = new mongoose.Schema(
+const stripeExpressSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
     },
+    accountFeeDue: { type: Date },
+    lastAccountFeePaid: { type: Date },
+    accountFeesPaid: [{ type: Date }],
   },
   { timestamps: { createdAt: 'created_at' } }
 );
-
-aliasSchema.pre('remove', async function (next) {
-  const UserModel = require('./User.Model');
-  const WishlistModel = require('./Wishlist.Model');
-  const user = await UserModel.findById(this.user);
-  if (user) {
-    user.aliases.pull(this._id);
-    await user.save();
-  }
-  const wishlists = await WishlistModel.find({ alias: this._id });
-  await wishlists.forEach((al) => al.remove());
-  next();
-});
 
 stripeExpressSchema.path('user').validate(async function (value) {
   const UserModel = require('./User.Model');
@@ -38,5 +28,5 @@ stripeExpressSchema.path('user').validate(async function (value) {
   }
 }, 'Parent User non existent');
 
-const Alias = mongoose.model('Alias', aliasSchema);
-module.exports = Alias;
+const StripeExpressAccount = mongoose.model('StripeExpressAccount', stripeExpressSchema);
+module.exports = StripeExpressAccount;
