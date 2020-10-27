@@ -2,6 +2,7 @@ const logger = require('../lib/logger');
 const Fees = require('../lib/Fees');
 const StripeAccountInfoService = require('./StripeAccountInfoService');
 const StripeAccountInfoModel = require('../models/StripeAccountInfo.Model');
+const CartService = require('./CartService');
 const { AliasModel } = require('../../test/helper');
 const { ApplicationError } = require('../lib/Error');
 require('dotenv').config();
@@ -17,6 +18,7 @@ class StripeService {
   constructor(stripe) {
     this.stripe = stripe;
     this.Fees = Fees;
+    this.CartService = CartService;
     this.stripeAccountInfoService = new StripeAccountInfoService(StripeAccountInfoModel);
     this.StripeAccountInfoService = StripeAccountInfoService;
     this.AliasModel = AliasModel;

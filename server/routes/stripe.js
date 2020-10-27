@@ -2,6 +2,8 @@ const express = require('express');
 const logger = require('../lib/logger');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const StripeService = require('../services/StripeService');
+const CartService = require('./CartService');
+
 const stripeRoutes = express.Router();
 
 const stripeService = new StripeService(stripe);
