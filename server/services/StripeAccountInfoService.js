@@ -12,6 +12,10 @@ class StripeAccountInfoService {
     this.StripeAccountInfoModel = StripeAccountInfoModel;
   }
 
+  static isAccountFeeDue(account) {
+    return account.accountFeeDue < Date.now();
+  }
+
   async isAccountFeeDue(userId) {
     let account;
 
@@ -23,6 +27,19 @@ class StripeAccountInfoService {
       throw new ApplicationError({ userId, err }, `Stripe Express Account not found. ${err}`);
     }
     return account.accountFeeDue < Date.now();
+  }
+
+  async getAccountByUser(userId) {
+    let account;
+
+    try {
+      account = await this.StripeAccountInfoModel.findOne({
+        user: userId,
+      });
+    } catch (err) {
+      throw new ApplicationError({ userId, err }, `Stripe Express Account not found. ${err}`);
+    }
+    return account;
   }
 }
 

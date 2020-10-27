@@ -1,14 +1,10 @@
-const ConfirmationEmail = require('../lib/email/ConfirmationEmail');
-const { ApplicationError } = require('../lib/Error');
 const logger = require('../lib/logger');
-const Token = require('../models/Token.Model');
-const OrderService = require('./OrderService');
-const OrderModel = require('../models/Order.Model');
 const Fees = require('../lib/Fees');
 const StripeAccountInfoService = require('./StripeAccountInfoService');
 const StripeAccountInfoModel = require('../models/StripeAccountInfo.Model');
+const { AliasModel } = require('../../test/helper');
+const { ApplicationError } = require('../lib/Error');
 require('dotenv').config();
-const orderService = new OrderService(OrderModel);
 
 /**
  * Logic for interacting with the stripe api
@@ -22,6 +18,8 @@ class StripeService {
     this.stripe = stripe;
     this.Fees = Fees;
     this.stripeAccountInfoService = new StripeAccountInfoService(StripeAccountInfoModel);
+    this.StripeAccountInfoService = StripeAccountInfoService;
+    this.AliasModel = AliasModel;
   }
 
   /**
@@ -63,10 +61,10 @@ class StripeService {
   }
 
   /**
-   * Stripe session
+   * Create stripe session
    * @param {Int} lineItems
    * @param {Int} wishersTender
-   * @param {String} account
+   * @param {String} account stripe account id
    *
    * creates a stripe checkout session.
    * returns the session object.
@@ -76,25 +74,67 @@ class StripeService {
    * ex: stripe.redirectToCheckout({ sessionId: data.session.id });
    */
   async createStripeSession(lineItems, wishersTender, account) {
-    const session = await this.stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: lineItems,
-      payment_intent_data: {
-        // The account receiving the funds, as passed from the client.
-        transfer_data: {
-          amount: wishersTender,
-          destination: account,
+    console.log('inside createStripeSession');
+    let session;
+    try {
+      session = await this.stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: lineItems,
+        payment_intent_data: {
+          // The account receiving the funds, as passed from the client.
+          transfer_data: {
+            amount: wishersTender,
+            destination: account,
+          },
         },
-      },
-      // ?session_id={CHECKOUT_SESSION_ID} means the redirect will have the session ID set as a query param
-      success_url: `http://localhost:3000/success?session_id={CHECKOUT_SESSION_ID}`, // should clear cart and add order to database
-      cancel_url: `http://localhost:3000/canceled?session_id={CHECKOUT_SESSION_ID}`,
-    });
+        // ?session_id={CHECKOUT_SESSION_ID} means the redirect will have the session ID set as a query param
+        success_url: `http://localhost:3000/success?session_id={CHECKOUT_SESSION_ID}`, // should clear cart and add order to database
+        cancel_url: `http://localhost:3000/canceled?session_id={CHECKOUT_SESSION_ID}`,
+      });
+    } catch (error) {
+      throw new ApplicationError(
+        { lineItems, wishersTender, account },
+        `Couldn't create Stripe checkout session ${error}`
+      );
+    }
+    console.log('before returning session to create stripe session');
+
+    return session;
+  }
+
+  /**
+   * Create checkout session from cart and currency
+   * @param {Object} aliasCart
+   * @param {String} presentmentCurrency
+   *
+   */
+  async checkout(aliasCart, presentmentCurrency) {
+    // Get the stripe account info
+    const stripeAccountInfo = await this.stripeAccountInfoService.getAccountByUser(aliasCart.user);
+    // see if stripe account is due for $2 fee
+    const isAccountFeeDue = this.StripeAccountInfoService.isAccountFeeDue(stripeAccountInfo);
+    // calculate fees
+    const fees = new this.Fees(
+      aliasCart.totalPrice,
+      process.env.APPFEE,
+      isAccountFeeDue,
+      presentmentCurrency !== 'USD',
+      stripeAccountInfo.country !== 'US'
+    );
+    // create line items
+    const lineItems = StripeService.createLineItems(aliasCart, fees.stripeTotalFee, fees.appFee);
+    // create strippe sesstion
+    const session = await this.createStripeSession(
+      lineItems,
+      aliasCart.totalPrice,
+      stripeAccountInfo.stripeAccountId
+    );
     return session;
   }
 
   /**
    * Create express account
+   * @param {Object} accountInfo Account info. can be created with createAccountInfo()
    */
   async createExpressAccount(accountInfo) {
     // const account = await this.stripe.accounts.create(accountInfo);
@@ -104,6 +144,7 @@ class StripeService {
 
   /**
    * Create account link
+   * @param {String} accountId
    */
   async createAccountLink(accountId) {
     const accountLinkInfo = {
@@ -129,6 +170,10 @@ class StripeService {
     return info.url;
   }
 
+  /**
+   * create a login link
+   * @param {String} accountId an account id
+   */
   async createLoginLink(accountId) {
     const link = await this.stripe.accounts.createLoginLink(accountId);
     return link.url;
@@ -136,6 +181,7 @@ class StripeService {
 
   /**
    * Create account info
+   * @param {String} country two letter country code, default US
    */
   static createAccountInfo(country = 'US') {
     const info = {

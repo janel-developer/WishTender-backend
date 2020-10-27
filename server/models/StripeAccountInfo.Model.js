@@ -8,6 +8,7 @@ const stripeInfoSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    stripeAccountId: { type: String, required: true },
     accountFeeDue: { type: Date },
     lastAccountFeePaid: { type: Date },
     accountFeesPaid: [{ type: Date }],

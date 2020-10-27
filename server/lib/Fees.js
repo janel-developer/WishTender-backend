@@ -6,7 +6,8 @@
  * @param {Boolean} internationalPresentment Is was the currency presented by stripe in a currency other than US?
  * @param {Boolean} internationalDestination Is the wisher an account outside the US?
  *
- * @returns {Object} fees object,  fees in pennies
+ * @returns {Object} fees object, fees in pennies most
+ * important: this.stripeTotalFee & this.appFee
  */
 function Fees(
   giftPriceTotal,
