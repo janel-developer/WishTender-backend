@@ -111,6 +111,7 @@ class StripeService {
    *
    */
   async checkout(aliasCart, presentmentCurrency) {
+    const result = await this.CartService.updateAliasCartPrices(aliasCart);
     // Get the stripe account info
     const stripeAccountInfo = await this.stripeAccountInfoService.getAccountByUser(aliasCart.user);
     // see if stripe account is due for $2 fee
@@ -125,7 +126,7 @@ class StripeService {
     );
     // create line items
     const lineItems = StripeService.createLineItems(aliasCart, fees.stripeTotalFee, fees.appFee);
-    // create strippe sesstion
+    // create stripe sesstion
     const session = await this.createStripeSession(
       lineItems,
       aliasCart.totalPrice,

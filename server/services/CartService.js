@@ -41,7 +41,10 @@ const updateAliasCartPrices = async (aliasCart) => {
       try {
         itemInfo = await WishlistItem.findById(itemId);
       } catch (err) {
-        throw new ApplicationError({ itemId }, `Wishlist Item not found: ${itemId}`);
+        throw new ApplicationError(
+          { itemId },
+          `Wishlist Item not found when updating cart prices: ${itemId}`
+        );
       }
       if (aliasCartCopy.items[itemId].price !== itemInfo.price) {
         aliasCartCopy.items[itemId].price = itemInfo.price;
@@ -80,4 +83,4 @@ module.exports.removeByOne = async (currentCart, itemId, aliasId) => {
 
 module.exports.addToCart = addToCart;
 module.exports.updateCart = updateCartPrices;
-module.exports.updateAliasCart = updateAliasCartPrices;
+module.exports.updateAliasCartPrices = updateAliasCartPrices;

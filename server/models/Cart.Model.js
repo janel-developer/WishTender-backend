@@ -88,9 +88,4 @@ function Cart(oldCart) {
   return this;
 }
 
-const c = new Cart({});
-c.add({ itemName: 'purse', _id: 900, alias: 4, price: 900 });
-let p = c.aliasCarts[4].totalPrice;
-c.add({ itemName: 'purse', _id: 900, alias: 4, price: 100 });
-p = c.aliasCarts[4].totalPrice;
 module.exports = Cart;

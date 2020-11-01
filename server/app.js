@@ -1,5 +1,4 @@
 const express = require('express');
-
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -12,9 +11,6 @@ const auth = require('./lib/auth');
 const handleError = require('./lib/handleError');
 const logger = require('./lib/logger');
 const routes = require('./routes');
-
-const ConfirmationEmail = require('./lib/email/ConfirmationEmail');
-const ThankYouEmail = require('./lib/email/ThankYouEmail');
 
 module.exports = (config) => {
   const app = express();
@@ -40,6 +36,8 @@ module.exports = (config) => {
   app.use(auth.initialize);
   app.use(auth.session);
   app.use(auth.setUser);
+
+  // app.use();
 
   app.use(flash());
   app.use(async (req, res, next) => {
