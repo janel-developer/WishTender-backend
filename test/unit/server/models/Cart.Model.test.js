@@ -2,7 +2,7 @@ const chai = require('chai');
 const helper = require('../../../helper');
 const should = chai.should();
 const { expect } = chai;
-const Cart = require('../../../../server/models/Cart.Model');
+const { Cart } = require('../../../../server/models/Cart.Model');
 const aliases = require('../../../../server/routes/aliases');
 
 describe('The mongoose schema', () => {

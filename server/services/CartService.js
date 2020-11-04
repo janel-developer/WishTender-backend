@@ -1,8 +1,6 @@
 const { ApplicationError } = require('../lib/Error');
 const logger = require('../lib/logger');
-const Alias = require('../models/Alias.Model');
-const Cart = require('../models/Cart.Model');
-const Wishlist = require('../models/Wishlist.Model');
+const { Cart, recalculateTotalsAliasCart } = require('../models/Cart.Model');
 const WishlistItem = require('../models/WishlistItem.Model');
 /**
  * add to cart
@@ -54,6 +52,7 @@ const updateAliasCartPrices = async (aliasCart) => {
       if (itemsUpdated === itemIds.length) resolve();
     });
   });
+  recalculateTotalsAliasCart(aliasCartCopy);
   return { aliasCart: aliasCartCopy, modified };
 };
 
@@ -70,10 +69,17 @@ const updateCartPrices = async (cart) => {
   });
 };
 
-module.exports.removeByOne = async (currentCart, itemId, aliasId) => {
+module.exports.reduceByOne = (currentCart, itemId, aliasId) => {
   logger.log('silly', `adding to cart`);
-  currentCart.removeByOne(itemId, aliasId);
-  return currentCart;
+  const cart = new Cart(currentCart);
+  cart.reduceByOne(itemId, aliasId);
+  return cart;
+};
+module.exports.removeItem = (currentCart, itemId, aliasId) => {
+  logger.log('silly', `adding to cart`);
+  const cart = new Cart(currentCart);
+  cart.removeItem(itemId, aliasId);
+  return cart;
 };
 
 // cart should change when:

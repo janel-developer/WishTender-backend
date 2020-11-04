@@ -15,35 +15,25 @@ function Cart(oldCart) {
   this.add = function (item) {
     let aliasCart = this.aliasCarts[item.alias];
     if (!aliasCart) {
-      // eslint-disable-next-line no-multi-assign
-      aliasCart = this.aliasCarts[item.alias] = {
-        items: {},
-        get totalQty() {
-          const keys = Object.keys(this.items);
-          const total = keys.reduce((a, c) => this.items[c].qty + a, 0);
-          return total;
-        },
-        get totalPrice() {
-          const keys = Object.keys(this.items);
-          const total = keys.reduce((a, c) => this.items[c].item.price * this.items[c].qty + a, 0);
-          return total;
-        },
-        alias: item.alias,
-        user: item.user,
-      };
+      aliasCart = this.aliasCarts[item.alias] = { items: {}, totalQty: 0, totalPrice: 0 };
     }
     let storedItem = aliasCart.items[item._id];
     if (!storedItem) {
-      storedItem = aliasCart.items[item._id] = {
-        item: item,
-        qty: 0,
-        get price() {
-          return this.item.price * this.qty;
-        },
-      };
+      storedItem = aliasCart.items[item._id] = { item: item, qty: 0, price: 0 };
     }
     storedItem.qty++;
     storedItem.price = parseFloat(storedItem.item.price) * storedItem.qty;
+    aliasCart.totalQty++;
+    aliasCart.totalPrice += parseFloat(storedItem.item.price);
+  };
+
+  this.recalculateTotals = function () {
+    const aliases = Object.keys(this.aliasCarts);
+
+    aliases.forEach((alias) => {
+      const aliasCart = this.aliasCarts[alias];
+      recalculateTotalsAliasCart(aliasCart);
+    });
   };
 
   /**
@@ -54,6 +44,10 @@ function Cart(oldCart) {
   this.reduceByOne = function (itemId, aliasId) {
     const aliasCart = this.aliasCarts[aliasId];
     aliasCart.items[itemId].qty--;
+    aliasCart.items[itemId].price -= aliasCart.items[itemId].item.price;
+    aliasCart.totalQty--;
+    aliasCart.totalPrice -= aliasCart.items[itemId].item.price;
+
     if (aliasCart.items[itemId].qty <= 0) {
       delete aliasCart.items[itemId];
     }
@@ -70,6 +64,7 @@ function Cart(oldCart) {
     aliasCart.totalPrice -= aliasCart.items[itemId].price;
     delete aliasCart.items[itemId];
   };
+
   this.generateArray = function generateArray() {
     const arr = [];
     Object.keys(this.aliasCarts).forEach((key) => {
@@ -87,5 +82,25 @@ function Cart(oldCart) {
   };
   return this;
 }
+//
+const recalculateTotalsAliasCart = function (aliasCart) {
+  const items = Object.keys(aliasCart.items);
+  const aliasCartCopy = aliasCart;
+  items.forEach((item) => {
+    aliasCartCopy.items[item].price = aliasCart.items[item].item.price * aliasCart.items[item].qty;
+  });
+  aliasCartCopy.totalPrice = items.reduce(
+    (a, item) => aliasCart.items[item].item.price * aliasCart.items[item].qty + a,
+    0
+  );
+  return aliasCart;
+};
 
-module.exports = Cart;
+const c = new Cart({});
+c.add({ itemName: 'purse', _id: 900, alias: 4, price: 900 });
+let p = c.aliasCarts[4].totalPrice;
+c.add({ itemName: 'purse', _id: 900, alias: 4, price: 100 });
+c.recalculateTotals();
+console.log('hihihhi');
+module.exports.Cart = Cart;
+module.exports.recalculateTotalsAliasCart = recalculateTotalsAliasCart;

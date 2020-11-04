@@ -8,7 +8,7 @@ require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_TEST_KEY);
 const helper = require('../../../helper');
 const wishlistItems = require('../../../../server/routes/wishlistItems');
-const CartModel = require('../../../../server/models/Cart.Model');
+const { Cart } = require('../../../../server/models/Cart.Model');
 
 const { expect } = chai;
 const should = chai.should();
@@ -19,7 +19,7 @@ describe('Stripe Service', () => {
   let userId;
   let userId2;
   let wishlistItemId;
-  const cart = new CartModel({});
+  const cart = new Cart({});
   cart.add({ itemName: 'purse', _id: 900, alias: 22, price: 900 });
   before(async () => {
     connection = await MongoClient.connect('mongodb://localhost:27017/test', {
@@ -30,7 +30,7 @@ describe('Stripe Service', () => {
     await helper.before();
     await StripeAccountInfoModel.deleteMany({});
 
-    const orders = db.collection('stripeaccountinfos');
+    const accounts = db.collection('stripeaccountinfos');
     userId = mongoose.Types.ObjectId('5f9480a69c4fcdc78d55397d');
     userId2 = mongoose.Types.ObjectId('5f9480a69c4fcdc78d55397c');
     const makeMockAccount = async (daysFromNow, user) => {
@@ -39,7 +39,7 @@ describe('Stripe Service', () => {
         stripeAccountId: process.env.TEST_EXPRESS_ACCOUNT,
         accountFeeDue: new Date(Date.now() + daysFromNow * 24 * 60 * 60 * 1000),
       };
-      await orders.insertOne(mockAccount);
+      await accounts.insertOne(mockAccount);
     };
     await makeMockAccount(2, userId);
     await makeMockAccount(-2, userId2);
@@ -164,14 +164,13 @@ describe('Stripe Service', () => {
     it('should create a checkout session', async function () {
       this.timeout(10000);
 
-      const orders = db.collection('stripeaccountinfos');
       const stripeService = new StripeService(stripe);
       const aliasCart = { ...cart.aliasCarts[22] };
       aliasCart.items[wishlistItemId] = aliasCart.items[900];
       delete aliasCart.items[900];
       aliasCart.user = userId;
       console.log('before session');
-      const session = await stripeService.checkout(
+      const session = await stripeService.checkoutCart(
         aliasCart,
         'USD',
         process.env.TEST_EXPRESS_ACCOUNT

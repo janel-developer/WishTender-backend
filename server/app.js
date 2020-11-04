@@ -37,8 +37,6 @@ module.exports = (config) => {
   app.use(auth.session);
   app.use(auth.setUser);
 
-  // app.use();
-
   app.use(flash());
   app.use(async (req, res, next) => {
     logger.log('silly', `${req.method}: ${req.path}`);
@@ -49,7 +47,11 @@ module.exports = (config) => {
       return next(err);
     }
   });
-
+  // app.get('/', (req, res) => { //testing session styff. can delete
+  //   req.session.minutes = `${new Date().getMinutes()}:${new Date().getSeconds()}`;
+  //   console.log(req.session);
+  //   res.send('Hello World!');
+  // });
   app.use('/', routes());
   app.set('views', __dirname + '/views');
   app.set('view engine', 'pug');

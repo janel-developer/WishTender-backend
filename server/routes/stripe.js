@@ -11,7 +11,7 @@ const stripeService = new StripeService(stripe);
 module.exports = () => {
   stripeRoutes.post('/checkout', async (req, res, next) => {
     logger.log('silly', `starting stripe checkout flow...`);
-    const aliasId = req.params.alias;
+    const aliasId = req.body.alias;
     const aliasCart = req.session.cart[aliasId];
     const { currency } = req.session;
 
@@ -24,7 +24,12 @@ module.exports = () => {
       );
     }
     // start checkout
-    const checkoutSession = await stripeService.checkout(aliasCart, currency, stripeAccountId);
+    const checkoutSession = await stripeService.checkoutCart(aliasCart, currency, stripeAccountId);
     res.send(checkoutSession.id);
   });
+  stripeRoutes.post('/test', async (req, res, next) => {
+    logger.log('silly', `starting stripe test...`);
+    res.send(req.session);
+  });
+  return stripeRoutes;
 };

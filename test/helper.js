@@ -223,6 +223,13 @@ module.exports.createTestUserFull = async (
   return { user, alias, wishlist, wishlistItems: [wishlistItem, wishlistItem2] };
 };
 
+module.exports.sessionIdFromRes = (res) => {
+  const setCookieHeader = res.header['set-cookie'][0];
+  const regex = /(?<=connect.sid=s%3A)(.*)(?=\.)/g;
+  const sessionId = setCookieHeader.match(regex)[0];
+  return sessionId;
+};
+
 module.exports.userRoutes = userRoutes;
 module.exports.UserModel = UserModel;
 module.exports.TokenModel = TokenModel;

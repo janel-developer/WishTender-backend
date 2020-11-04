@@ -6,6 +6,7 @@ const CartService = require('./CartService');
 const { AliasModel } = require('../../test/helper');
 const { ApplicationError } = require('../lib/Error');
 require('dotenv').config();
+const CurrencyHelper = require('../lib/currency');
 
 /**
  * Logic for interacting with the stripe api
@@ -110,15 +111,16 @@ class StripeService {
    * @param {String} presentmentCurrency
    *
    */
-  async checkout(aliasCart, presentmentCurrency) {
-    const result = await this.CartService.updateAliasCartPrices(aliasCart);
+  async checkoutCart(aliasCart, presentmentCurrency) {
+    // updated cart prices
+    await this.CartService.updateAliasCartPrices(aliasCart);
     // Get the stripe account info
     const stripeAccountInfo = await this.stripeAccountInfoService.getAccountByUser(aliasCart.user);
     // see if stripe account is due for $2 fee
     const isAccountFeeDue = this.StripeAccountInfoService.isAccountFeeDue(stripeAccountInfo);
     // calculate fees
     const fees = new this.Fees(
-      aliasCart.totalPrice,
+      aliasCart.totalPrice, // must convert to pennies/smallest unit
       process.env.APPFEE,
       isAccountFeeDue,
       presentmentCurrency !== 'USD',
