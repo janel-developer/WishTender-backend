@@ -1,9 +1,9 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const sinon = require('sinon');
+const MongoClient = require('mongodb');
 const www = require('../../../../bin/www');
 const WishlistItem = require('../../../../server/models/WishlistItem.Model');
-const MongoClient = require('mongodb');
 const helper = require('../../../helper');
 
 const should = chai.should();

@@ -7,8 +7,7 @@ const wishlistItemRoutes = require('./wishlistItems');
 const { confirmEmail } = require('../services/confirmEmail');
 const cartRoutes = require('./cart');
 const stripeRoutes = require('./stripe');
-const sessions = require('./sessions');
-// console.log(confirmEmail);
+const sessionRoutes = require('./sessions');
 
 const router = express.Router();
 module.exports = () => {
@@ -21,6 +20,6 @@ module.exports = () => {
   router.get('/confirmation/:email/:token', confirmEmail);
   router.use('/cart', cartRoutes());
   router.use('/stripe', stripeRoutes());
-  router.use('/sessions', stripeRoutes());
+  router.use('/sessions', sessionRoutes());
   return router;
 };

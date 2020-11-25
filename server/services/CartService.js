@@ -70,13 +70,13 @@ const updateCartPrices = async (cart) => {
 };
 
 module.exports.reduceByOne = (currentCart, itemId, aliasId) => {
-  logger.log('silly', `adding to cart`);
+  logger.log('silly', `reducing 1 from cart`);
   const cart = new Cart(currentCart);
   cart.reduceByOne(itemId, aliasId);
   return cart;
 };
 module.exports.removeItem = (currentCart, itemId, aliasId) => {
-  logger.log('silly', `adding to cart`);
+  logger.log('silly', `removing item from cart`);
   const cart = new Cart(currentCart);
   cart.removeItem(itemId, aliasId);
   return cart;

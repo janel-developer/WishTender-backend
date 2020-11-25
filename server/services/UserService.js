@@ -27,10 +27,16 @@ class UserService {
     try {
       newUser = await this.UserModel.create(user);
     } catch (err) {
+      let resMsg = null;
+      if (err.code === 11000) {
+        resMsg = 'The email you used is already registered';
+      }
+
       throw new ApplicationError( // custom error object that takes an info object and a message
         {
           user,
           err,
+          resMsg,
         },
         `Unable to create user: ${err.name}: ${err.message}`
       );
@@ -50,7 +56,7 @@ class UserService {
 
     const confirmationEmail = new ConfirmationEmail(
       user.email,
-      `www.wishtender.com/confirmation/${newUser.email}/${token.token}`
+      `/confirmation/${newUser.email}/${token.token}`
     );
     confirmationEmail.send();
 

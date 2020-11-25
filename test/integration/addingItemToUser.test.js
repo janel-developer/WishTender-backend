@@ -1,15 +1,15 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
+const www = require('../../bin/www');
 
-const should = chai.should();
 const helper = require('../helper');
 const { validAlias } = require('../helper');
 
 chai.use(chaiHttp);
-const url = 'http://localhost:4000';
-const { expect } = chai;
+const agent = chai.request.agent(www);
 
-const agent = chai.request.agent(url);
+const should = chai.should();
+const { expect } = chai;
 
 describe('add item to user', () => {
   before(async () => helper.before());
@@ -37,7 +37,7 @@ describe('add item to user', () => {
       const user2Info = { email: 'p@z.com', username: 'user2', password: 'passwordzzz' };
       user2Info.confirmed = true;
       await user2Info;
-      const response = await chai.request(url).post('/users/registration').send(user2Info);
+      const response = await chai.request(www).post('/users/registration').send(user2Info);
       await agent.post('/users/login').send({ email: 'p@z.com', password: 'passwordzzz' });
       user2 = response.body;
 

@@ -38,6 +38,7 @@ module.exports = () => {
     req.logout();
     return res.redirect('/');
   });
+
   userRoutes.post('/registration', async (req, res, next) => {
     logger.log('silly', `registering user`);
     let user;
@@ -47,8 +48,7 @@ module.exports = () => {
       return next(err);
     }
     logger.log('silly', `user registered`);
-    // user = user.toObject();
-    // delete user.password;
+
     return res.json(user); // res.json(user) ?
   });
 
@@ -90,7 +90,7 @@ module.exports = () => {
     } catch (err) {
       return next(err);
     }
-    return res.json(user);
+    return res.json({ success: true, user });
   });
 
   return userRoutes;

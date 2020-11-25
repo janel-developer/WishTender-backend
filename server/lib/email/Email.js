@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const logger = require('../logger');
 
 class Email {
   /**
@@ -31,6 +32,8 @@ class Email {
   get transporter() {
     let transporter;
     if (process.env.NODE_ENV === 'production') {
+      logger.log('debug', 'email sending through zoho');
+      logger.log('debug', `Message: ${this.html}`);
       transporter = nodemailer.createTransport({
         host: 'smtp.zoho.com',
         port: 587,
@@ -41,6 +44,8 @@ class Email {
         },
       });
     } else {
+      logger.log('debug', 'email sending through ethereal');
+      logger.log('debug', `Message: ${this.html}`);
       transporter = nodemailer.createTransport({
         host: 'smtp.ethereal.email',
         port: 587,
@@ -57,7 +62,7 @@ class Email {
   send() {
     this.transporter.sendMail(this.mailOptions, (error, info) => {
       if (error) return console.log(error);
-      console.log('message sent', info.messageId);
+      logger.log('silly', `message sent: ${info.messageId}`);
     });
   }
 }

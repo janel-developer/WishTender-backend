@@ -26,6 +26,7 @@
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "money": "^0.2.0",
+    "mongodb": "^3.6.2",
     "mongoose": "^5.9.25",
     "nodemailer": "^6.4.13",
     "passport": "^0.4.1",

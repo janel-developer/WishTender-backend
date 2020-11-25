@@ -95,43 +95,6 @@ module.exports = () => {
   //   return res.json(wishlist);
   // });
 
-  // userRoutes.post('/logout', (req, res) => {
-  //   logger.log('silly', `logging out`);
-  //   req.logout();
-  //   return res.redirect('/');
-  // });
-  // userRoutes.post('/registration', async (req, res, next) => {
-  //   logger.log('silly', `registering user`);
-  //   let user;
-  //   try {
-  //     user = await userService.addUser({
-  //       username: req.body.username,
-  //       email: req.body.email,
-  //       password: req.body.password,
-  //     });
-  //   } catch (err) {
-  //     return next(err);
-  //   }
-  //   logger.log('silly', `user registered`);
-  //   // user = user.toObject();
-  //   // delete user.password;
-  //   return res.json(user); // res.json(user) ?
-  // });
-
-  // userRoutes.get('/:id', async (req, res, next) => {
-  //   logger.log('silly', `getting user by id`);
-
-  //   const { id } = req.params;
-  //   let user;
-  //   try {
-  //     user = await userService.getUser(id);
-  //   } catch (err) {
-  //     return next(err);
-  //   }
-
-  //   return res.json(user); // res.json(user) ?
-  // });
-
   wishlistRoutes.put('/:id', throwIfNotAuthorizedResource, async (req, res, next) => {
     logger.log('silly', `updating wishlist by id`);
     const { id } = req.params;

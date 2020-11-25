@@ -12,6 +12,12 @@ const handleError = require('./lib/handleError');
 const logger = require('./lib/logger');
 const routes = require('./routes');
 
+if (process.env.NODE_ENV === 'production') {
+  process.env.BASEURL = 'https://wishtender.com/';
+} else {
+  process.env.BASEURL = 'http://localhost:4000';
+}
+
 module.exports = (config) => {
   const app = express();
   app.locals.title = config.sitename;
