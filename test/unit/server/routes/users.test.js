@@ -1,17 +1,14 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-// const server = require('../../../../bin/www.js');
-// const app = require('../../../../server/app');
+const www = require('../../../../bin/www');
 
 const should = chai.should();
 const helper = require('../../../helper');
 
 chai.use(chaiHttp);
-const url = 'http://localhost:4000';
 const { expect } = chai;
 
-// Log in
-const agent = chai.request.agent(url);
+const agent = chai.request.agent(www);
 
 describe('user routes', () => {
   before(async () => helper.before());
@@ -29,7 +26,7 @@ describe('user routes', () => {
     });
     it('register post', async () => {
       const user2Info = { email: 'p@z.com', username: 'sippy', password: 'passwordzzz' };
-      const response = await chai.request(url).post('/users/registration').send(user2Info);
+      const response = await chai.request(www).post('/users/registration').send(user2Info);
       user2 = response.body;
       user2.should.be.an('Object');
       user2.username.should.equal(user2.username);
@@ -64,7 +61,7 @@ describe('user routes', () => {
     });
     it('fail to login a bad password login post', async () => {
       const response = await chai
-        .request(url)
+        .request(www)
         .post('/users/login')
         .send({ email: helper.validUser.email, password: 'wrongpassword' });
       const responseText = response.text;
@@ -72,11 +69,21 @@ describe('user routes', () => {
     });
     it('fail to login a bad email login post', async () => {
       const response = await chai
-        .request(url)
+        .request(www)
         .post('/users/login')
         .send({ email: 'bademail@butt.com', password: 'wrongpassword' });
       const responseText = response.text;
       responseText.should.equal('You were redirected because your login failed: ');
+    });
+  });
+  describe('/users/current', () => {
+    it('should get current user', async () => {
+      const response = await agent.get('/users/current');
+      response.body._id.should.be.equal(user._id);
+    });
+    it('should get no current user', async () => {
+      const response = await chai.request(www).get('/users/current');
+      response.status.should.be.equal(204);
     });
   });
   describe('/users/:id put', () => {
@@ -101,7 +108,7 @@ describe('user routes', () => {
   describe('/users/:id delete', () => {
     it('delete user', async () => {
       const response = await agent.delete(`/users/${user._id}`);
-      response.body._id.toString().should.equal(user._id);
+      response.body.user._id.toString().should.equal(user._id);
     });
   });
 });

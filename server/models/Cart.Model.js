@@ -101,6 +101,5 @@ c.add({ itemName: 'purse', _id: 900, alias: 4, price: 900 });
 let p = c.aliasCarts[4].totalPrice;
 c.add({ itemName: 'purse', _id: 900, alias: 4, price: 100 });
 c.recalculateTotals();
-console.log('hihihhi');
 module.exports.Cart = Cart;
 module.exports.recalculateTotalsAliasCart = recalculateTotalsAliasCart;

@@ -38,6 +38,7 @@ module.exports = (config) => {
       store: new MongoStore({ mongooseConnection: mongoose.connection }),
     })
   );
+  app.use(express.static('public'));
 
   app.use(auth.initialize);
   app.use(auth.session);

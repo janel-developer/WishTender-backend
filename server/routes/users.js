@@ -52,6 +52,15 @@ module.exports = () => {
     return res.json(user); // res.json(user) ?
   });
 
+  userRoutes.get('/current', async (req, res, next) => {
+    let user;
+    if (req.user) {
+      user = req.user.toJSON();
+      res.status(200).send(user);
+    }
+    res.send(204);
+  });
+
   userRoutes.get('/:id', async (req, res, next) => {
     logger.log('silly', `getting user by id`);
 

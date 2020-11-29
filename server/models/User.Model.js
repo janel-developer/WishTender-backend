@@ -85,5 +85,15 @@ userSchema.methods.comparePassword = async function comparePassword(candidate) {
   return bcrypt.compare(candidate, this.password);
 };
 
+/**
+ * @class orderSchema
+ * @param {String} username required
+ * @param {String} fName
+ * @param {String} email required
+ * @param {String} password required
+ * @param {Boolean} confirmed default = false
+ * @param {Array} aliases
+ */
 const User = mongoose.model('User', userSchema);
+
 module.exports = User;
