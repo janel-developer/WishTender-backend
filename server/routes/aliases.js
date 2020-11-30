@@ -23,7 +23,7 @@ function throwIfNotAuthorized(req, res, next) {
 async function throwIfNotAuthorizedResource(req, res, next) {
   logger.log('silly', `authorizing user owns resource...`);
 
-  const alias = await aliasService.getAlias(req.params.id).catch(next);
+  const alias = await aliasService.getAliasById(req.params.id).catch(next);
   // should authorize that user of alias is req.user
   if (alias.user.toString() != req.user._id.toString()) {
     return next(
@@ -52,20 +52,32 @@ module.exports = () => {
     logger.log('silly', `alias created`);
     return res.json(alias);
   });
+  aliasRoutes.get('/:id', async (req, res, next) => {
+    logger.log('silly', `getting alias by id`);
 
-  // aliasRoutes.get('/:id', throwIfNotAuthorizedResource, (req, res) => {
-  //   logger.log('silly', `getting alias by id`);
+    const { id } = req.params;
+    let alias;
+    try {
+      alias = await aliasService.getAliasById(id);
+    } catch (err) {
+      return next(err);
+    }
 
-  //   const { id } = req.params;
-  //   let alias;
-  //   try {
-  //     alias = await aliasService.getAlias(id);
-  //   } catch (err) {
-  //     return next(err);
-  //   }
-
-  //   return res.json(alias);
-  // });
+    return res.json(alias);
+  });
+  aliasRoutes.get('/', async (req, res, next) => {
+    logger.log('silly', `getting alias by query params`);
+    const { query } = req;
+    let alias;
+    try {
+      alias = await aliasService.getAlias(query);
+    } catch (err) {
+      return next(err);
+    }
+    logger.log('silly', `alias found: ${alias}`);
+    if (!alias) return res.send(204);
+    return res.status(200).send(alias);
+  });
 
   // userRoutes.post('/logout', (req, res) => {
   //   logger.log('silly', `logging out`);

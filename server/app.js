@@ -25,6 +25,7 @@ module.exports = (config) => {
   app.set('trust proxy', 1);
 
   app.use(cors());
+  app.use(express.static(`${__dirname}/public`));
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use(cookieParser());
@@ -38,7 +39,6 @@ module.exports = (config) => {
       store: new MongoStore({ mongooseConnection: mongoose.connection }),
     })
   );
-  app.use(express.static('public'));
 
   app.use(auth.initialize);
   app.use(auth.session);

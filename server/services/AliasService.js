@@ -52,13 +52,12 @@ class AliasService {
   }
 
   /**
-   * gets a alias
+   * gets an alias by id
    * @param {string} id the alias id
-   *
    *
    * @returns {object} the alias
    */
-  async getAlias(id) {
+  async getAliasById(id) {
     let alias;
     try {
       alias = await this.AliasModel.findById(id);
@@ -66,6 +65,23 @@ class AliasService {
       throw new ApplicationError({ id, err }, `Alias not found.`);
     }
 
+    return alias;
+  }
+
+  /**
+   * gets an alias
+   * @param {object} query the query
+   *
+   * @returns {object} the alias
+   */
+  async getAlias(query) {
+    let alias;
+    try {
+      alias = await this.AliasModel.findOne(query).populate('wishlists').exec();
+      alias;
+    } catch (err) {
+      throw new ApplicationError({ query, err }, `Alias not found.`);
+    }
     return alias;
   }
 
@@ -81,7 +97,7 @@ class AliasService {
     const output = await this.AliasModel.updateOne({ _id: id }, updates);
     let updatedAlias;
     if (output.nModified) {
-      updatedAlias = await this.getAlias(id);
+      updatedAlias = await this.getAliasById(id);
     } else {
       throw new ApplicationError({ id, updates }, 'Alias not updated.');
     }

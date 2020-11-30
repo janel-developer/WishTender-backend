@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { ApplicationError } = require('../lib/Error');
+const stripe = require('../routes/stripe');
 
 const wishlistSchema = new mongoose.Schema(
   {
@@ -25,6 +26,12 @@ const wishlistSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
+    },
+    wishlistMessage: {
+      type: String,
+    },
+    coverImage: {
+      type: String,
     },
   },
   {

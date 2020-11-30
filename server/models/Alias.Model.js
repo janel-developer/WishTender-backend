@@ -15,9 +15,10 @@ const aliasSchema = new mongoose.Schema(
       [
         {
           type: mongoose.Schema.Types.ObjectId,
-          ref: 'Wishlists',
+          ref: 'Wishlist',
         },
       ],
+    profileImage: { type: String },
   },
   {
     toJSON: {

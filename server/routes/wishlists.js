@@ -28,7 +28,7 @@ async function throwIfNotAuthorizedResource(req, res, next) {
   if (req.method === 'POST') {
     let alias;
     try {
-      alias = await aliasService.getAlias(req.body.alias);
+      alias = await aliasService.getAliasById(req.body.alias);
     } catch (err) {
       next(err);
     }
