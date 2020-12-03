@@ -25,6 +25,16 @@ module.exports = (config) => {
   app.set('trust proxy', 1);
 
   app.use(cors());
+  app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, Accept, Content-Type');
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader(
+      'Access-Control-Allow-Methods',
+      'GET, HEAD, POST, PUT, DELETE, TRACE, OPTIONS, PATCH'
+    );
+    next();
+  });
   app.use(express.static(`${__dirname}/public`));
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
@@ -46,7 +56,9 @@ module.exports = (config) => {
 
   app.use(flash());
   app.use(async (req, res, next) => {
+    logger.log('silly', `cookie: ${req.headers.cookie}`);
     logger.log('silly', `${req.method}: ${req.path}`);
+    logger.log('silly', `sessionID: ${req.sessionID}`);
     try {
       req.session.visits = req.session.visits ? req.session.visits + 1 : 1;
       return next();

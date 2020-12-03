@@ -58,7 +58,7 @@ module.exports = () => {
       user = req.user.toJSON();
       res.status(200).send(user);
     }
-    res.send(204);
+    res.sendStatus(204);
   });
 
   userRoutes.get('/:id', async (req, res, next) => {

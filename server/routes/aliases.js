@@ -75,7 +75,7 @@ module.exports = () => {
       return next(err);
     }
     logger.log('silly', `alias found: ${alias}`);
-    if (!alias) return res.send(204);
+    if (!alias) return res.sendStatus(204);
     return res.status(200).send(alias);
   });
 
