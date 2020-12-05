@@ -42,6 +42,7 @@ module.exports = (config) => {
 
   // Use the session middleware
   app.use(
+    // ['/users/current'],
     session({
       secret: 'very secret 12345',
       resave: true,
@@ -60,7 +61,7 @@ module.exports = (config) => {
     logger.log('silly', `${req.method}: ${req.path}`);
     logger.log('silly', `sessionID: ${req.sessionID}`);
     try {
-      req.session.visits = req.session.visits ? req.session.visits + 1 : 1;
+      // req.session.visits = req.session.visits ? req.session.visits + 1 : 1;
       return next();
     } catch (err) {
       return next(err);
