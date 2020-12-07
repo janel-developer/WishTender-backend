@@ -86,7 +86,7 @@ class AliasService {
   }
 
   /**
-   * update a alias
+   * update an alias
    * @param {string} id the alias id to update
    * @param {object} updates the updates to the alias {property: value}
    *

@@ -21,10 +21,17 @@ module.exports = () => {
   userRoutes.post(
     '/login',
     passport.authenticate('local', {
-      successRedirect: '/users/login?error=false',
-      failureRedirect: '/users/login?error=true',
+      // successRedirect: '/users/login?error=false',
+      // failureRedirect: '/users/login?error=true',
       failureFlash: true,
-    })
+    }),
+    (req, res, next) => {
+      const flashMsg = req.flash('error');
+      if (flashMsg) {
+        return res.status(401).send({ error: flashMsg });
+      }
+      return res.status(200);
+    }
   );
 
   userRoutes.get('/login', (req, res) => {

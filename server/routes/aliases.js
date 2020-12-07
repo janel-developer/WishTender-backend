@@ -4,6 +4,11 @@ const AliasModel = require('../models/Alias.Model');
 const AliasService = require('../services/AliasService');
 const logger = require('../lib/logger');
 const { ApplicationError } = require('../lib/Error');
+const middlewares = require('./middlewares');
+const ImageService = require('../services/ImageService');
+
+const profileImageDirectory = `${__dirname}/../public/data/images/profileImages`;
+const imageService = new ImageService(profileImageDirectory);
 
 const aliasRoutes = express.Router();
 const aliasService = new AliasService(AliasModel);
@@ -52,6 +57,7 @@ module.exports = () => {
     logger.log('silly', `alias created`);
     return res.json(alias);
   });
+
   aliasRoutes.get('/:id', async (req, res, next) => {
     logger.log('silly', `getting alias by id`);
 
@@ -78,6 +84,31 @@ module.exports = () => {
     if (!alias) return res.sendStatus(204);
     return res.status(200).send(alias);
   });
+
+  aliasRoutes.patch(
+    '/:id',
+    middlewares.upload.single('image'),
+    middlewares.handleImage(imageService, { h: 300, w: 300 }),
+    async (req, res, next) => {
+      try {
+        const imageFile = req.file && req.file.storedFilename;
+        const patch = { ...req.body };
+        if (imageFile) patch.profileImage = `/data/images/profileImages/${imageFile}`;
+        await aliasService.updateAlias(req.params.id, patch);
+      } catch (err) {
+        if (req.file && req.file.storedFilename) {
+          await imageService.delete(req.file.storedFilename);
+        }
+        logger.log('silly', `alias could not be updated ${req.body}`);
+        return next(
+          new ApplicationError(
+            { err, body: req.body }`alias could not be updated ${req.body}: ${err}`
+          )
+        );
+      }
+      return res.send(200);
+    }
+  );
 
   // userRoutes.post('/logout', (req, res) => {
   //   logger.log('silly', `logging out`);
