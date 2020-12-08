@@ -91,10 +91,10 @@ module.exports = () => {
     async (req, res, next) => {
       try {
         const imageFile = req.file && req.file.storedFilename;
-        console.log(req.body);
         const patch = { ...req.body };
         if (imageFile) patch.profileImage = `/data/images/profileImages/${imageFile}`;
         await aliasService.updateAlias(req.params.id, patch);
+        //if image uploaded succefully, delete old image
       } catch (err) {
         if (req.file && req.file.storedFilename) {
           await imageService.delete(req.file.storedFilename);

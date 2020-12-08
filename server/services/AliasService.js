@@ -1,6 +1,8 @@
+const fs = require('fs');
 const UserModel = require('../models/User.Model');
-const AliasModel = require('../models/Alias.Model');
 const { ApplicationError } = require('../lib/Error');
+const logger = require('../lib/logger');
+const { deleteImage } = require('./utils');
 /**
  * Logic for Alias
  */
@@ -96,13 +98,16 @@ class AliasService {
     // const output = await this.AliasModel.updateOne({ _id: id }, updates);
     try {
       const alias = await this.AliasModel.findOne({ _id: id });
-      // const alias = await this.AliasModel.find({});
+      const oldImageFile = alias.profileImage;
       Object.entries(updates).forEach((update) => {
         const field = update[0];
         const val = update[1];
         alias[field] = val;
       });
       await alias.save();
+      if (Object.keys(updates).includes('profileImage')) {
+        deleteImage(oldImageFile);
+      }
       return;
     } catch (err) {
       throw new ApplicationError({ id, updates }, `Alias not updated.${err}`);
