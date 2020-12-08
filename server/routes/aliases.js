@@ -33,7 +33,7 @@ async function throwIfUserNotOwner(req, res, next) {
     return next(
       new ApplicationError(
         { usersAliases: req.user.aliases, alias: req.params.id },
-        `Not Authorized. User doesn't own alias. User's Alias's:${req.user.aliases}. Alias: ${alias._id}`
+        `Not Authorized. User doesn't own alias. User's Alias's:${req.user.aliases}. Alias: ${req.params.id}`
       )
     );
   }
@@ -99,11 +99,9 @@ module.exports = () => {
         if (req.file && req.file.storedFilename) {
           await imageService.delete(req.file.storedFilename);
         }
-        logger.log('silly', `alias could not be updated ${req.body}`);
+        logger.log('silly', `alias could not be updated`);
         return next(
-          new ApplicationError(
-            { err, body: req.body }`alias could not be updated ${req.body}: ${err}`
-          )
+          new ApplicationError({ err, body: req.body }, `alias could not be updated: ${err}`)
         );
       }
       return res.send(200);

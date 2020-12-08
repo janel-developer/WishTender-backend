@@ -50,24 +50,25 @@ aliasSchema.pre('remove', async function (next) {
   next();
 });
 
-aliasSchema.post('updateOne', async function (next) {
+aliasSchema.pre('save', async function (next) {
+  if (this.isModified('handle_lowercased')) {
+    throw new Error('handle_lowercased cannot be manually modified');
+  }
   this.handle_lowercased = this.handle.toLowerCase();
   next();
 });
-aliasSchema.path('handle_lowercased').validate(async function (value) {
-  if (value !== this.handle.toLowerCase()) {
-    throw new ApplicationError(
-      { handle_lowercased: value },
-      `Invalid Alias "handle_lowercased" property. Must be lowercase of ${this.handle}`
-    );
-  } else {
-    return true;
-  }
-}, '"handle_lowercased" not lower case of handle');
-aliasSchema.post('save', async function (next) {
-  this.handle_lowercased = this.handle.toLowerCase();
-  // next();
-});
+
+// aliasSchema.path('handle_lowercased').validate(async function (value) {
+//   if (value !== this.handle.toLowerCase()) {
+//     throw new ApplicationError(
+//       { handle_lowercased: value },
+//       `Invalid Alias "handle_lowercased" property. Must be lowercase of ${this.handle}`
+//     );
+//   } else {
+//     return true;
+//   }
+// }, '"handle_lowercased" not lower case of handle');
+
 aliasSchema.path('user').validate(async function (value) {
   const UserModel = require('./User.Model');
   const user = await UserModel.findOne({ _id: value });

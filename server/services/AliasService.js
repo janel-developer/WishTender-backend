@@ -93,15 +93,20 @@ class AliasService {
    * @returns {object} the updated alias
    */
   async updateAlias(id, updates) {
-    const output = await this.AliasModel.updateOne({ _id: id }, updates);
-    let updatedAlias;
-    if (output.nModified) {
-      updatedAlias = await this.getAliasById(id);
-    } else {
-      throw new ApplicationError({ id, updates }, 'Alias not updated.');
+    // const output = await this.AliasModel.updateOne({ _id: id }, updates);
+    try {
+      const alias = await this.AliasModel.findOne({ _id: id });
+      // const alias = await this.AliasModel.find({});
+      Object.entries(updates).forEach((update) => {
+        const field = update[0];
+        const val = update[1];
+        alias[field] = val;
+      });
+      await alias.save();
+      return;
+    } catch (err) {
+      throw new ApplicationError({ id, updates }, `Alias not updated.${err}`);
     }
-
-    return updatedAlias;
   }
 
   /**
