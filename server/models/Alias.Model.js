@@ -4,7 +4,10 @@ const { ApplicationError } = require('../lib/Error');
 const aliasSchema = new mongoose.Schema(
   {
     aliasName: String,
-    handle: { type: String, unique: true },
+    handle: {
+      type: String,
+      unique: true,
+    },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -19,6 +22,10 @@ const aliasSchema = new mongoose.Schema(
         },
       ],
     profileImage: { type: String },
+    handle_lowercased: {
+      type: String,
+      unique: true,
+    },
   },
   {
     toJSON: {
@@ -43,6 +50,24 @@ aliasSchema.pre('remove', async function (next) {
   next();
 });
 
+aliasSchema.post('updateOne', async function (next) {
+  this.handle_lowercased = this.handle.toLowerCase();
+  next();
+});
+aliasSchema.path('handle_lowercased').validate(async function (value) {
+  if (value !== this.handle.toLowerCase()) {
+    throw new ApplicationError(
+      { handle_lowercased: value },
+      `Invalid Alias "handle_lowercased" property. Must be lowercase of ${this.handle}`
+    );
+  } else {
+    return true;
+  }
+}, '"handle_lowercased" not lower case of handle');
+aliasSchema.post('save', async function (next) {
+  this.handle_lowercased = this.handle.toLowerCase();
+  // next();
+});
 aliasSchema.path('user').validate(async function (value) {
   const UserModel = require('./User.Model');
   const user = await UserModel.findOne({ _id: value });

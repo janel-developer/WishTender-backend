@@ -25,20 +25,18 @@ function throwIfNotAuthorized(req, res, next) {
 
   return next();
 }
-async function throwIfNotAuthorizedResource(req, res, next) {
+async function throwIfUserNotOwner(req, res, next) {
   logger.log('silly', `authorizing user owns resource...`);
 
-  const alias = await aliasService.getAliasById(req.params.id).catch(next);
   // should authorize that user of alias is req.user
-  if (alias.user.toString() != req.user._id.toString()) {
+  if (!req.user.aliases.includes(req.params.id)) {
     return next(
       new ApplicationError(
-        { currentUser: req.user._id, owner: alias.user },
-        `Not Authorized. Alias doesn't belong to logged in user. User:${req.user._id}. Owner: ${alias.user}`
+        { usersAliases: req.user.aliases, alias: req.params.id },
+        `Not Authorized. User doesn't own alias. User's Alias's:${req.user.aliases}. Alias: ${alias._id}`
       )
     );
   }
-
   return next();
 }
 
@@ -87,11 +85,13 @@ module.exports = () => {
 
   aliasRoutes.patch(
     '/:id',
+    throwIfUserNotOwner,
     middlewares.upload.single('image'),
     middlewares.handleImage(imageService, { h: 300, w: 300 }),
     async (req, res, next) => {
       try {
         const imageFile = req.file && req.file.storedFilename;
+        console.log(req.body);
         const patch = { ...req.body };
         if (imageFile) patch.profileImage = `/data/images/profileImages/${imageFile}`;
         await aliasService.updateAlias(req.params.id, patch);
@@ -147,7 +147,7 @@ module.exports = () => {
   //   return res.json(user); // res.json(user) ?
   // });
 
-  aliasRoutes.put('/:id', throwIfNotAuthorizedResource, async (req, res, next) => {
+  aliasRoutes.put('/:id', throwIfUserNotOwner, async (req, res, next) => {
     logger.log('silly', `updating alias by id`);
     const { id } = req.params;
 
@@ -162,7 +162,7 @@ module.exports = () => {
     }
     return res.json(alias);
   });
-  aliasRoutes.delete('/:id', throwIfNotAuthorizedResource, async (req, res, next) => {
+  aliasRoutes.delete('/:id', throwIfUserNotOwner, async (req, res, next) => {
     logger.log('silly', `deleting user by id`);
     const { id } = req.params;
     let alias;

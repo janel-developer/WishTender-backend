@@ -20,7 +20,7 @@ const config = require('../config')[process.env.NODE_ENV || 'development'];
   const alias = new Alias({
     aliasName: 'Dashie Bark-Huss',
     user: user._id,
-    handle: 'dangerousdashie',
+    handle: 'DangerousDashie',
     profileImage: '/data/images/profileImages/IMG_9147.jpeg',
   });
 

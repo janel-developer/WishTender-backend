@@ -78,7 +78,6 @@ class AliasService {
     let alias;
     try {
       alias = await this.AliasModel.findOne(query).populate('wishlists').exec();
-      alias;
     } catch (err) {
       throw new ApplicationError({ query, err }, `Alias not found.`);
     }

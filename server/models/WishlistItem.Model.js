@@ -18,6 +18,7 @@ const itemSchema = new mongoose.Schema(
       ref: 'Alias',
       required: true,
     },
+    message: { type: String },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

@@ -11,6 +11,13 @@ const wishlistItems = require('./wishlistItems');
 const wishlistRoutes = express.Router();
 const wishlistService = new WishlistService(WishlistModel);
 const aliasService = new AliasService(AliasModel);
+
+const middlewares = require('./middlewares');
+const ImageService = require('../services/ImageService');
+
+const coverImageDirectory = `${__dirname}/../public/data/images/coverImages`;
+const imageService = new ImageService(coverImageDirectory);
+
 function throwIfNotAuthorized(req, res, next) {
   logger.log('silly', `authorizing...`);
   // should authorize that req.user is owner of alias adding wishlist
@@ -26,15 +33,8 @@ function throwIfNotAuthorized(req, res, next) {
 async function throwIfNotAuthorizedResource(req, res, next) {
   logger.log('silly', `authorizing user owns resource...`);
   if (req.method === 'POST') {
-    let alias;
-    try {
-      alias = await aliasService.getAliasById(req.body.alias);
-    } catch (err) {
-      next(err);
-    }
-    if (!alias) return next(new ApplicationError({}, `Couldn't find alias`)); // throw from getAlias?
     // should authorize that owner of alias is req.user
-    if (alias.user.toString() !== req.user._id.toString()) {
+    if (!req.user.aliases.includes(req.body.alias)) {
       return next(
         new ApplicationError(
           { currentUser: req.user._id, owner: alias.user },
@@ -43,7 +43,7 @@ async function throwIfNotAuthorizedResource(req, res, next) {
       );
     }
   }
-  if (req.method === 'PUT' || req.method === 'DELETE') {
+  if (req.method === 'PUT' || req.method === 'PATCH' || req.method === 'DELETE') {
     let wishlist;
     try {
       wishlist = await wishlistService.getWishlist(req.params.id);
@@ -60,7 +60,6 @@ async function throwIfNotAuthorizedResource(req, res, next) {
       );
     }
   }
-
   return next();
 }
 
@@ -110,6 +109,32 @@ module.exports = () => {
     }
     return res.json(wishlist);
   });
+
+  wishlistRoutes.patch(
+    '/:id',
+    throwIfNotAuthorizedResource,
+    middlewares.upload.single('image'),
+    middlewares.handleImage(imageService, { h: 180, w: 600 }),
+    async (req, res, next) => {
+      try {
+        const imageFile = req.file && req.file.storedFilename;
+        const patch = { ...req.body };
+        if (imageFile) patch.coverImage = `/data/images/coverImages/${imageFile}`;
+        await wishlistService.updateWishlist(req.params.id, patch);
+      } catch (err) {
+        if (req.file && req.file.storedFilename) {
+          await imageService.delete(req.file.storedFilename);
+        }
+        logger.log('silly', `wishlist could not be updated ${err}`);
+        return next(
+          new ApplicationError(
+            { err, body: req.body }`wishlist could not be updated ${req.body}: ${err}`
+          )
+        );
+      }
+      return res.sendStatus(200);
+    }
+  );
   wishlistRoutes.delete('/:id', throwIfNotAuthorizedResource, async (req, res, next) => {
     logger.log('silly', `deleting wishlist by id`);
     const { id } = req.params;

@@ -27,10 +27,10 @@ module.exports = () => {
     }),
     (req, res, next) => {
       const flashMsg = req.flash('error');
-      if (flashMsg) {
+      if (flashMsg.length) {
         return res.status(401).send({ error: flashMsg });
       }
-      return res.status(200);
+      return res.sendStatus(200);
     }
   );
 
