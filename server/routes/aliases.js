@@ -86,7 +86,9 @@ module.exports = () => {
   aliasRoutes.patch(
     '/:id',
     throwIfUserNotOwner,
-    middlewares.upload.single('image'),
+    middlewares.cropImage({ h: 300, w: 300 }),
+    // middlewares.upload.single('image'),
+
     middlewares.handleImage(imageService, { h: 300, w: 300 }),
     async (req, res, next) => {
       try {

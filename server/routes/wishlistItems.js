@@ -13,6 +13,7 @@ const wishlistItemService = new WishlistItemService(WishlistItemModel);
 const wishlistService = new WishlistService(WishlistModel);
 
 async function throwIfNotAuthorizedResource(req, res, next) {
+  // change this to check that wishlist is in user wishlist array
   logger.log('silly', `authorizing user owns resource...`);
   if (req.method === 'POST') {
     let wishlist;

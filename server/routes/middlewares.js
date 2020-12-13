@@ -1,4 +1,5 @@
 const multer = require('multer');
+const { createCroppedImage } = require('../lib/canvas');
 
 const upload = multer({
   limits: {
@@ -19,4 +20,10 @@ module.exports.handleImage = (imageService, dims) => async (req, res, next) => {
   } catch (error) {
     return next(error);
   }
+};
+
+module.exports.cropImage = (dims) => async (req, res, next) => {
+  if (!req.body.imageCrop) return next();
+  req.file = await createCroppedImage(req.body.imageCrop.url, req.body.imageCrop.crop, dims);
+  return next();
 };

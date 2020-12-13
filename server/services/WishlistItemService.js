@@ -1,4 +1,5 @@
 const WishlistModel = require('../models/Wishlist.Model');
+const { createCroppedImage } = require('../lib/canvas');
 const { ApplicationError } = require('../lib/Error');
 
 /**
@@ -40,6 +41,8 @@ class WishlistItemService {
         `Unable to add wishlistItem, wishlistId not found: ${err.name}:${err.message}`
       );
     }
+
+    createCroppedImage(wishlistItem.image.url, wishlist.image.crop, { height: 400, width: 400 });
     try {
       item = await this.WishlistItemModel.create(wishlistItem);
     } catch (err) {
