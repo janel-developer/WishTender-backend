@@ -1,7 +1,7 @@
 const WishlistModel = require('../models/Wishlist.Model');
 const { createCroppedImage } = require('../lib/canvas');
 const { ApplicationError } = require('../lib/Error');
-
+const wishlistItems = require('../routes/wishlistItems');
 /**
  * Logic for fetching wishlist items
  */
@@ -23,39 +23,38 @@ class WishlistItemService {
    *
    * @returns {object} the wishlist item
    */
-  async addWishlistItem(wishlistId, wishlistItemValues) {
+  async addWishlistItem(wishlistItemValues) {
     let item;
     let wishlist;
     const wishlistItem = wishlistItemValues;
-    wishlistItem.wishlist = wishlistId;
 
     try {
-      wishlist = await WishlistModel.findById(wishlistId);
+      wishlist = await WishlistModel.findById(wishlistItem.wishlist);
     } catch (err) {
       throw new ApplicationError(
         {
           wishlistItemValues,
-          wishlistId,
           err,
         },
         `Unable to add wishlistItem, wishlistId not found: ${err.name}:${err.message}`
       );
     }
 
-    createCroppedImage(wishlistItem.image.url, wishlist.image.crop, { height: 400, width: 400 });
+    wishlistItem.user = wishlist.user;
+    wishlistItem.alias = wishlist.alias;
+
     try {
       item = await this.WishlistItemModel.create(wishlistItem);
     } catch (err) {
       throw new ApplicationError(
         {
           wishlistItemValues,
-          wishlistId,
           err,
         },
         `Unable to add wishlistItem: ${err.name}: ${err.message}`
       );
     }
-
+    if (!wishlist.wishlistItems) wishlist.wishlistItems = [];
     wishlist.wishlistItems.push(item._id);
     await wishlist.save();
 

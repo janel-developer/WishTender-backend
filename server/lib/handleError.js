@@ -9,5 +9,5 @@ module.exports = (err, req, res, next) => {
   logger.log('debug', `${err.stack.slice(0, 400)}...`);
   if (err.name === 'ApplicationError')
     return res.status(500).send({ error: err.info.resMsg || err.message });
-  return res.status(500).send(err);
+  return res.status(500).send(err.message);
 };

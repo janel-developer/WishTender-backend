@@ -63,7 +63,8 @@ class WishlistService {
   async getWishlist(id) {
     let wishlist;
     try {
-      wishlist = await this.WishlistModel.findById(id);
+      wishlist = await this.WishlistModel.findOne({ _id: id }).populate('wishlistItems').exec();
+      console.log('d');
     } catch (err) {
       throw new ApplicationError({ id, err }, `Wishlist not found.`);
     }

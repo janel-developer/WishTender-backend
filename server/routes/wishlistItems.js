@@ -7,6 +7,11 @@ const WishlistService = require('../services/WishlistService');
 const logger = require('../lib/logger');
 const { ApplicationError } = require('../lib/Error');
 const wishlists = require('./wishlists');
+const middlewares = require('./middlewares');
+const ImageService = require('../services/ImageService');
+
+const profileImageDirectory = `${__dirname}/../public/data/images/itemImages`;
+const imageService = new ImageService(profileImageDirectory);
 
 const wishlistItemRoutes = express.Router();
 const wishlistItemService = new WishlistItemService(WishlistItemModel);
@@ -57,21 +62,47 @@ async function throwIfNotAuthorizedResource(req, res, next) {
 }
 
 module.exports = () => {
-  wishlistItemRoutes.post('/', throwIfNotAuthorizedResource, async (req, res, next) => {
-    logger.log('silly', `creating wishlistItem`);
-
-    let wishlistItem;
-    const values = { ...req.body };
-    delete values.wishlist;
-
-    try {
-      wishlistItem = await wishlistItemService.addWishlistItem(req.body.wishlist, values);
-    } catch (err) {
-      return next(err);
+  wishlistItemRoutes.post(
+    '/',
+    throwIfNotAuthorizedResource,
+    middlewares.cropImage({ h: 300, w: 300 }),
+    middlewares.handleImage(imageService, { h: 300, w: 300 }),
+    async (req, res, next) => {
+      logger.log('silly', `creating new wishlist item`);
+      try {
+        const imageFile = req.file && req.file.storedFilename;
+        const itemInfo = { ...req.body };
+        if (imageFile) itemInfo.itemImage = `/data/images/itemImages/${imageFile}`;
+        delete itemInfo.imageCrop;
+        await wishlistItemService.addWishlistItem(itemInfo);
+        //if image uploaded succefully, delete old image
+      } catch (err) {
+        if (req.file && req.file.storedFilename) {
+          await imageService.delete(req.file.storedFilename);
+        }
+        logger.log('silly', `wishlist item could not be added`);
+        return next(
+          new ApplicationError({ err, body: req.body }, `wishlist item could not be added: ${err}`)
+        );
+      }
+      return res.send(200);
     }
-    logger.log('silly', `wishlistItem created`);
-    return res.json(wishlistItem);
-  });
+  );
+  // wishlistItemRoutes.post('/', throwIfNotAuthorizedResource, async (req, res, next) => {
+  //   logger.log('silly', `creating wishlistItem`);
+
+  //   let wishlistItem;
+  //   const values = { ...req.body };
+  //   delete values.wishlist;
+
+  //   try {
+  //     wishlistItem = await wishlistItemService.addWishlistItem(req.body.wishlist, values);
+  //   } catch (err) {
+  //     return next(err);
+  //   }
+  //   logger.log('silly', `wishlistItem created`);
+  //   return res.json(wishlistItem);
+  // });
 
   wishlistItemRoutes.put('/:id', throwIfNotAuthorizedResource, async (req, res, next) => {
     logger.log('silly', `updating wishlistItem by id`);

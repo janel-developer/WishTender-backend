@@ -1,5 +1,4 @@
 const { createCanvas, loadImage } = require('canvas');
-const fs = require('fs');
 
 module.exports.createCroppedImage = async (url, crop, dimensions) => {
   const canvas = createCanvas(dimensions.w, dimensions.h);
@@ -17,7 +16,7 @@ module.exports.createCroppedImage = async (url, crop, dimensions) => {
       canvas.width,
       canvas.height
     );
-    let ext = url.split('.').pop();
+    let ext = url.split('.').pop().split('?')[0];
     ext = ext === 'jpg' ? 'jpeg' : ext;
 
     return { buffer: canvas.toBuffer(), mimetype: `image/${ext}` };

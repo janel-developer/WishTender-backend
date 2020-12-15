@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const { ApplicationError } = require('../lib/Error');
-const stripe = require('../routes/stripe');
 
 const wishlistSchema = new mongoose.Schema(
   {
@@ -13,7 +12,7 @@ const wishlistSchema = new mongoose.Schema(
       // reference, one-to-many
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'WishlistItems',
+        ref: 'WishlistItem',
       },
     ],
 

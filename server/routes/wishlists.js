@@ -80,19 +80,19 @@ module.exports = () => {
     return res.json(wishlist);
   });
 
-  // wishlistRoutes.get('/:id', throwIfNotAuthorizedResource, (req, res) => {
-  //   logger.log('silly', `getting wishlist by id`);
+  wishlistRoutes.get('/:id', async (req, res, next) => {
+    logger.log('silly', `getting wishlist by id`);
 
-  //   const { id } = req.params;
-  //   let wishlist;
-  //   try {
-  //     wishlist = await wishlistService.getWishlist(id);
-  //   } catch (err) {
-  //     return next(err);
-  //   }
+    const { id } = req.params;
+    let wishlist;
+    try {
+      wishlist = await wishlistService.getWishlist(id);
+    } catch (err) {
+      return next(err);
+    }
 
-  //   return res.json(wishlist);
-  // });
+    return res.json(wishlist);
+  });
 
   wishlistRoutes.put('/:id', throwIfNotAuthorizedResource, async (req, res, next) => {
     logger.log('silly', `updating wishlist by id`);

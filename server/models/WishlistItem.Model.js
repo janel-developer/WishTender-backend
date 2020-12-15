@@ -18,6 +18,7 @@ const itemSchema = new mongoose.Schema(
       ref: 'Alias',
       required: true,
     },
+    itemImage: { type: String },
     message: { type: String },
     user: {
       type: mongoose.Schema.Types.ObjectId,
