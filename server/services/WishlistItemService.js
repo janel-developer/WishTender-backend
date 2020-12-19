@@ -2,6 +2,8 @@ const WishlistModel = require('../models/Wishlist.Model');
 const { createCroppedImage } = require('../lib/canvas');
 const { ApplicationError } = require('../lib/Error');
 const wishlistItems = require('../routes/wishlistItems');
+const { deleteImage } = require('./utils');
+
 /**
  * Logic for fetching wishlist items
  */
@@ -134,7 +136,14 @@ class WishlistItemService {
     } catch (err) {
       throw new ApplicationError({ id, err }, `Couldn't delete wishlist item. Item not found.`);
     }
-    await item.remove();
+    try {
+      const oldImageFile = item.itemImage;
+      await item.remove();
+      deleteImage(oldImageFile);
+    } catch (err) {
+      throw new ApplicationError({ id, err }, `Couldn't delete wishlist item.${err}`);
+    }
+
     return item;
   }
 }

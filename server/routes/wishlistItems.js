@@ -46,7 +46,7 @@ async function throwIfNotAuthorizedResource(req, res, next) {
       next(err);
     }
     if (!wishlistItem)
-      return next(new ApplicationError({}, `No wishlist found. id: ${req.params.id}`));
+      return next(new ApplicationError({}, `No wishlist item found. id: ${req.params.id}`));
     // should authorize that user of wishlistItem is req.user
     if (wishlistItem.user.toString() !== req.user._id.toString()) {
       return next(
@@ -88,6 +88,33 @@ module.exports = () => {
       return res.send(200);
     }
   );
+
+  wishlistItemRoutes.patch(
+    '/:id',
+    throwIfNotAuthorizedResource,
+    middlewares.upload.single('image'),
+    // middlewares.upload.any(),
+    middlewares.handleImage(imageService, { h: 300, w: 300 }),
+    async (req, res, next) => {
+      try {
+        const imageFile = req.file && req.file.storedFilename;
+        const patch = { ...req.body };
+        if (imageFile) patch.coverImage = `/data/images/itemImages/${imageFile}`;
+        await wishlistItemService.updateWishlistItem(req.params.id, patch);
+      } catch (err) {
+        if (req.file && req.file.storedFilename) {
+          await imageService.delete(req.file.storedFilename);
+        }
+        logger.log('silly', `wishlist item could not be updated ${err}`);
+        return next(
+          new ApplicationError(
+            { err, body: req.body }`wishlist item could not be updated ${req.body}: ${err}`
+          )
+        );
+      }
+      return res.sendStatus(200);
+    }
+  );
   // wishlistItemRoutes.post('/', throwIfNotAuthorizedResource, async (req, res, next) => {
   //   logger.log('silly', `creating wishlistItem`);
 
@@ -126,10 +153,11 @@ module.exports = () => {
     let wishlistItem;
     try {
       wishlistItem = await wishlistItemService.deleteWishlistItem(id);
+      //need to delete image
     } catch (err) {
       return next(err);
     }
-    return res.json(wishlistItem);
+    return res.sendStatus(204);
   });
 
   return wishlistItemRoutes;
