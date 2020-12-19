@@ -20,6 +20,9 @@ const wishlistService = new WishlistService(WishlistModel);
 async function throwIfNotAuthorizedResource(req, res, next) {
   // change this to check that wishlist is in user wishlist array
   logger.log('silly', `authorizing user owns resource...`);
+  if (!req.user) {
+    return next(new ApplicationError({}, `Not Authorized.`));
+  }
   if (req.method === 'POST') {
     let wishlist;
     try {
@@ -27,9 +30,9 @@ async function throwIfNotAuthorizedResource(req, res, next) {
     } catch (err) {
       next(err);
     }
-    if (!wishlist) return next(new ApplicationError({}, `Couldn't find alias`)); // throw from getAlias?
+    if (!wishlist) return next(new ApplicationError({}, `Couldn't find wishlist`)); // throw from getAlias?
     // should authorize that owner of alias is req.user
-    if (wishlist.user.toString() !== wishlist.user._id.toString()) {
+    if (wishlist.user.toString() !== req.user.toString) {
       return next(
         new ApplicationError(
           { currentUser: req.user._id, owner: wishlist.user },
