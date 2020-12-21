@@ -24,15 +24,7 @@ async function throwIfNotAuthorizedResource(req, res, next) {
     return next(new ApplicationError({}, `Not Authorized.`));
   }
   if (req.method === 'POST') {
-    let wishlist;
-    try {
-      wishlist = await wishlistService.getWishlist(req.body.wishlist);
-    } catch (err) {
-      next(err);
-    }
-    if (!wishlist) return next(new ApplicationError({}, `Couldn't find wishlist`)); // throw from getAlias?
-    // should authorize that owner of alias is req.user
-    if (wishlist.user.toString() !== req.user.toString) {
+    if (req.user.wishlists.includes(req.params.id)) {
       return next(
         new ApplicationError(
           { currentUser: req.user._id, owner: wishlist.user },
@@ -102,7 +94,7 @@ module.exports = () => {
       try {
         const imageFile = req.file && req.file.storedFilename;
         const patch = { ...req.body };
-        if (imageFile) patch.coverImage = `/data/images/itemImages/${imageFile}`;
+        if (imageFile) patch.itemImage = `/data/images/itemImages/${imageFile}`;
         await wishlistItemService.updateWishlistItem(req.params.id, patch);
       } catch (err) {
         if (req.file && req.file.storedFilename) {

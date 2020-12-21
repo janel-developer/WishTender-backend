@@ -48,6 +48,12 @@ const userSchema = new Schema(
         ref: 'Alias',
       },
     ],
+    wishlists: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Wishlists',
+      },
+    ],
   },
   {
     toJSON: {

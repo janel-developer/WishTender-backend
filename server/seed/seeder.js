@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const fs = require('fs');
 const Alias = require('../models/Alias.Model');
 const Wishlist = require('../models/Wishlist.Model');
 const User = require('../models/User.Model');
@@ -9,6 +10,14 @@ const config = require('../config')[process.env.NODE_ENV || 'development'];
 // const WishlistItem = require('../models/WishlistItem.Model');
 
 (async () => {
+  await fs.copyFileSync(
+    `${__dirname}/IMG_9495.jpeg`,
+    `${__dirname}/../public/data/images/coverImages/IMG_9495.jpeg`
+  );
+  await fs.copyFileSync(
+    `${__dirname}/IMG_9147.jpeg`,
+    `${__dirname}/../public/data/images/profileImages/IMG_9147.jpeg`
+  );
   await db.connect(config.database.dsn);
   const user = new User({
     username: 'Dashie',
@@ -37,8 +46,10 @@ const config = require('../config')[process.env.NODE_ENV || 'development'];
   });
 
   alias.wishlists.push(wishlist._id);
+  user.wishlists.push(wishlist._id);
   await wishlist.save();
   await alias.save();
+  await user.save();
 
   // const wishlistItems = WishlistItem({
   //   itemName: 'Kion Colostrum',
