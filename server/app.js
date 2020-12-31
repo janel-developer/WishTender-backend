@@ -57,6 +57,19 @@ module.exports = (config) => {
 
   app.use(flash());
   app.use(async (req, res, next) => {
+    if (!req.session.languageCode) [req.session.languageCode] = req.acceptsLanguages();
+    next();
+  });
+  app.get('/sessions', async (req, res, next) => {
+    res.send(req.session);
+  });
+  app.post('/sessions', async (req, res, next) => {
+    req.session;
+    const session = req.body;
+    res.session;
+    res.send(200);
+  });
+  app.use(async (req, res, next) => {
     logger.log('silly', `cookie: ${req.headers.cookie}`);
     logger.log('silly', `${req.method}: ${req.path}`);
     logger.log('silly', `sessionID: ${req.sessionID}`);
