@@ -9,6 +9,7 @@ const stripeInfoSchema = new mongoose.Schema(
       required: true,
     },
     stripeAccountId: { type: String, required: true },
+    currency: { type: String, required: true },
     accountFeeDue: { type: Date },
     lastAccountFeePaid: { type: Date },
     accountFeesPaid: [{ type: Date }],

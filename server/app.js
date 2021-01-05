@@ -7,6 +7,13 @@ const flash = require('connect-flash');
 const session = require('express-session'); //will not work in production
 const MongoStore = require('connect-mongo')(session);
 const cookieParser = require('cookie-parser');
+require('dotenv').config({ path: `${__dirname}/./../../.env` });
+const stripe = require('stripe')(
+  process.env.NODE_END === 'production'
+    ? process.env.STRIPE_SECRET_KEY
+    : process.env.STRIPE_SECRET_TEST_KEY
+);
+const setLocaleCookie = require('./lib/setLocaleCookie');
 const auth = require('./lib/auth');
 const handleError = require('./lib/handleError');
 const logger = require('./lib/logger');
@@ -39,6 +46,7 @@ module.exports = (config) => {
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use(cookieParser());
+  app.use(setLocaleCookie);
 
   // Use the session middleware
   app.use(
@@ -60,15 +68,7 @@ module.exports = (config) => {
     if (!req.session.languageCode) [req.session.languageCode] = req.acceptsLanguages();
     next();
   });
-  app.get('/sessions', async (req, res, next) => {
-    res.send(req.session);
-  });
-  app.post('/sessions', async (req, res, next) => {
-    req.session;
-    const session = req.body;
-    res.session;
-    res.send(200);
-  });
+
   app.use(async (req, res, next) => {
     logger.log('silly', `cookie: ${req.headers.cookie}`);
     logger.log('silly', `${req.method}: ${req.path}`);

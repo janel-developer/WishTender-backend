@@ -1,8 +1,10 @@
 const logger = require('../lib/logger');
+
 const Fees = require('../lib/Fees');
 const StripeAccountInfoService = require('./StripeAccountInfoService');
 const StripeAccountInfoModel = require('../models/StripeAccountInfo.Model');
 const CartService = require('./CartService');
+
 const { AliasModel } = require('../../test/helper');
 const { ApplicationError } = require('../lib/Error');
 require('dotenv').config();
@@ -76,8 +78,8 @@ class StripeService {
    * using the stripe client side library
    * ex: stripe.redirectToCheckout({ sessionId: data.session.id });
    */
-  async createStripeSession(lineItems, wishersTender, account) {
-    console.log('inside createStripeSession');
+  async createStripeSession(lineItems, wishersTender, account, aliasId) {
+    logger.log('silly', 'creating stripe session');
     let session;
     try {
       session = await this.stripe.checkout.sessions.create({
@@ -91,8 +93,8 @@ class StripeService {
           },
         },
         // ?session_id={CHECKOUT_SESSION_ID} means the redirect will have the session ID set as a query param
-        success_url: `http://localhost:3000/success?session_id={CHECKOUT_SESSION_ID}`, // should clear cart and add order to database
-        cancel_url: `http://localhost:3000/canceled?session_id={CHECKOUT_SESSION_ID}`,
+        success_url: `http://localhost:4000/checkout/success?true&session_id={CHECKOUT_SESSION_ID}&alias_id=${aliasId}`, // should clear cart and add order to database
+        cancel_url: `http://localhost:4000/checkout/canceled?session_id={CHECKOUT_SESSION_ID}`,
       });
     } catch (error) {
       throw new ApplicationError(
@@ -100,22 +102,33 @@ class StripeService {
         `Couldn't create Stripe checkout session ${error}`
       );
     }
-    console.log('before returning session to create stripe session');
-
     return session;
   }
 
   /**
    * Create checkout session from cart and currency
    * @param {Object} aliasCart
-   * @param {String} presentmentCurrency
+   * @param {String} presentmentCurrency //buyers currency
    *
    */
   async checkoutCart(aliasCart, presentmentCurrency) {
+    // get alias stripe account
+    const alias = await this.AliasModel.findOne({ _id: aliasCart.alias._id })
+      .populate({
+        path: 'user',
+        model: 'User',
+        populate: {
+          path: 'stripeAccountInfo',
+          model: 'StripeAccountInfo',
+        },
+      })
+      .exec();
+
     // updated cart prices
-    await this.CartService.updateAliasCartPrices(aliasCart);
+    // await this.CartService.updateAliasCartPrices(aliasCart);
     // Get the stripe account info
-    const stripeAccountInfo = await this.stripeAccountInfoService.getAccountByUser(aliasCart.user);
+    // const stripeAccountInfo = await this.stripeAccountInfoService.getAccountByUser(alias.user);
+    const { stripeAccountInfo } = alias.user;
     // see if stripe account is due for $2 fee
     const isAccountFeeDue = this.StripeAccountInfoService.isAccountFeeDue(stripeAccountInfo);
     // calculate fees
@@ -132,8 +145,10 @@ class StripeService {
     const session = await this.createStripeSession(
       lineItems,
       aliasCart.totalPrice,
-      stripeAccountInfo.stripeAccountId
+      stripeAccountInfo.stripeAccountId,
+      aliasCart.alias._id
     );
+
     return session;
   }
 

@@ -3,11 +3,11 @@ const fs = require('fs');
 const Alias = require('../models/Alias.Model');
 const Wishlist = require('../models/Wishlist.Model');
 const User = require('../models/User.Model');
+const StripeAccountInfo = require('../models/StripeAccountInfo.Model');
 const db = require('../lib/db');
-const wishlistItems = require('../routes/wishlistItems');
-const config = require('../config')[process.env.NODE_ENV || 'development'];
+const WishlistItem = require('../models/WishlistItem.Model');
 
-// const WishlistItem = require('../models/WishlistItem.Model');
+const config = require('../config')[process.env.NODE_ENV || 'development'];
 
 (async () => {
   await fs.copyFileSync(
@@ -24,6 +24,7 @@ const config = require('../config')[process.env.NODE_ENV || 'development'];
     email: 'dangerousdashie@gmail.com',
     password: 'abcde123',
     confirmed: true,
+    currency: 'USD',
   });
   await user.save();
   const alias = new Alias({
@@ -51,14 +52,29 @@ const config = require('../config')[process.env.NODE_ENV || 'development'];
   await alias.save();
   await user.save();
 
-  // const wishlistItems = WishlistItem({
-  //   itemName: 'Kion Colostrum',
-  //   price: 54.95,
-  //   currency: 'USD',
-  //   url: 'https://getkion.com/collections/gut-health/products/kion-colostrum',
-  //   image: '/data/images/wishlistItemImages/kdkjfkjskfsjk.webp'
-  // });
+  const stripeAccountInfo = await StripeAccountInfo({
+    user: user._id,
+    stripeAccountId: 'acct_1HfYkjB1MWXqcvcc',
+    currency: 'USD',
+  });
+  user.stripeAccountInfo = stripeAccountInfo._id;
 
+  await user.save();
+  await stripeAccountInfo.save();
+
+  const wishlistItem = await WishlistItem.create({
+    itemName: 'Bottega Veneta ribbed-knit Jumper - Farfetch',
+    price: '180.00',
+    url:
+      'https://www.farfetch.com/shopping/women/bottega-veneta-ribbed-knit-jumper-item-16156077.aspx?storeid=9359',
+    wishlist: wishlist._id,
+    itemImage: '/data/images/itemImages/ca9ffc72-9576-4750-97da-d402865ea1ff.png',
+    currency: 'USD',
+    user: user._id,
+    alias: alias._id,
+  });
+
+  wishlist.wishlistItems.push(wishlistItem._id);
   await wishlist.save();
   mongoose.disconnect();
 })();

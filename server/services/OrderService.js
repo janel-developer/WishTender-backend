@@ -18,44 +18,54 @@ class OrderService {
   /**
    * creates an order
    * to the specified user-alias's "alias"
-   * @param {MongooseDocument} product wishlistItem
-   * @param {string} amountToWishTender
-   * @param {string} amountToUser
-   * @param {string} processorFee
-   * @param {Object} buyerInfo Information about the buyer
+   * @param {Object} order order object {buyerInfo, payment, wishlistItems, processedBy, alias}
    *
    *
    * @returns {MongooseDocument} the order
    */
-  async createOrder(
-    product,
-    amountToWishTender,
-    amountToUser,
-    processorFee,
-    processedBy,
-    buyerInfo
-  ) {
-    const wishlistItemInfo = JSON.parse(JSON.stringify(product));
-    let order;
+  async createOrder(order) {
+    let newOrder;
     try {
-      order = await this.OrderModel.create({
-        buyerInfo,
-        wishlistItemInfo,
-        amountToWishTender,
-        amountToUser,
-        processorFee,
-        processedBy,
-        wishlist: wishlistItemInfo.wishlist,
-        alias: wishlistItemInfo.alias,
-        user: wishlistItemInfo.user,
-      });
+      newOrder = await this.OrderModel.create(order);
     } catch (err) {
-      throw new ApplicationError({ product, buyerInfo }, `Not able to add order. ${err.message}`);
+      throw new ApplicationError({}, `Not able to add order. ${err.message}`);
     }
 
-    return order;
+    return newOrder;
   }
 
+  /**
+   * update order
+   * @param {Object} query
+   * @param {Object} updates
+   *
+   */
+  async updateOrder(query, updates) {
+    let orders;
+    try {
+      orders = await this.OrderModel.update({ query }, updates);
+    } catch (err) {
+      throw new ApplicationError({}, `Couldn't update order. ${err}`);
+    }
+
+    return orders;
+  }
+
+  /**
+   * delete order
+   * @param {Object} query
+   *
+   */
+  async deleteOrder(query) {
+    let orders;
+    try {
+      orders = await this.OrderModel.deleteOne({ query });
+    } catch (err) {
+      throw new ApplicationError({}, `Couldn't delete order. ${err}`);
+    }
+
+    return orders;
+  }
   /**
    * gets orders by user
    * @param {userId} id the user id

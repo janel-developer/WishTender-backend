@@ -7,12 +7,12 @@ const cartRoutes = express.Router();
 module.exports = () => {
   cartRoutes.post('/add-to-cart', async (req, res, next) => {
     logger.log('silly', `adding to cart...`);
-    const itemId = req.body.itemId;
+    const { itemId } = req.body;
     const currentCart = req.session.cart || null;
     const cart = await addToCart(itemId, currentCart);
     req.session.cart = cart;
     logger.log('silly', `Cart in session updated: ${JSON.stringify(req.session.cart)}`);
-    res.send('req.session.cart updated');
+    res.send(req.session.cart);
     // res.redirect('/'); // is this right?
   });
   cartRoutes.post('/remove-from-cart', async (req, res, next) => {
@@ -34,6 +34,10 @@ module.exports = () => {
     req.session.cart = cart;
     logger.log('silly', `Cart in session updated: ${JSON.stringify(req.session.cart)}`);
     res.send('req.session.cart updated');
+  });
+  cartRoutes.get('/', async (req, res, next) => {
+    logger.log('silly', `Getting cart: ${JSON.stringify(req.session.cart)}`);
+    res.send(req.session.cart);
   });
   return cartRoutes;
 };

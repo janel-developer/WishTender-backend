@@ -6,51 +6,34 @@ const orderSchema = new mongoose.Schema(
   // need to add any information about the buyer we can get
   // need to add any information about the wishers stripe account we can get
   {
+    processorPaymentID: { type: String, required: true },
     buyerInfo: { type: Object },
-    wishlistItemInfo: {
-      type: Object,
-      required: true,
-    },
-    // need buyers email to send
-    // cart
-    // payment id
-    amountToWishTender: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    amountToUser: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    processorFee: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+    wishlistItems: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'WishlistItems',
+      },
+    ],
+    noteToWisher: String,
+    payment: { type: Object },
     processedBy: {
       type: String,
       enum: ['Stripe'],
       required: true,
       trim: true,
     },
-
-    wishlist: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Wishlist',
-      required: true,
-    },
     alias: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Alias',
       required: true,
     },
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
+    // user: {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: 'User',
+    //   required: true,
+    // },
+    processed: { type: Boolean, required: true },
+    processedAt: { body: String, date: Date },
   },
   {
     toJSON: {
@@ -62,27 +45,8 @@ const orderSchema = new mongoose.Schema(
   { timestamps: { createdAt: 'created_at' } }
 );
 
-orderSchema.path('wishlistItemInfo').validate(async function (value) {
-  if (value.collection) {
-    throw new ApplicationError(
-      { alias: value },
-      `Wishlist item info should be a deep copy of a wishlist item, not an actual Wishlist Item model document. Try JSON.parse(JSON.stringify(wishlistItem)) : ${value}`
-    );
-  } else {
-    return true;
-  }
-}, `wishlistItemInfo is mongoose document but shouldn't be`);
-
 /**
  * @class orderSchema
- * @param {Object} wishlistItemInfo wishlistItemInfo copy
- * @param {String} amountToWishTender
- * @param {String} amountToUser
- * @param {String} processingFee
- * @param {String} processedBy Enum "Stripe"
- * @param {ObjectId} wishlist
- * @param {ObjectId} alias
- * @param {ObjectId} user
  */
 const Order = mongoose.model('Order', orderSchema);
 

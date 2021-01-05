@@ -60,11 +60,15 @@ module.exports = () => {
   });
 
   userRoutes.get('/current', async (req, res, next) => {
+    logger.log('silly', `getting current user`);
+
     let user;
     if (req.user) {
       user = req.user.toJSON();
-      res.status(200).send(user);
+      logger.log('silly', JSON.stringify(user));
+      return res.status(200).send(user);
     }
+    logger.log('silly', `no user`);
     res.sendStatus(204);
   });
 

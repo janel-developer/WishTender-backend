@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: `${__dirname}/./../../.env` });
 const path = require('path');
 
 module.exports = {

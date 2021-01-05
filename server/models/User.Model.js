@@ -2,6 +2,7 @@
 const mongoose = require('mongoose');
 const emailValidator = require('email-validator');
 const bcrypt = require('bcrypt');
+const StripeAccountInfo = require('./StripeAccountInfo.Model');
 
 const SALT_ROUNDS = 12;
 const { Schema } = mongoose;
@@ -18,6 +19,9 @@ const userSchema = new Schema(
     fName: {
       type: String,
       trim: true,
+    },
+    currency: {
+      type: String,
     },
     email: {
       unique: true,
@@ -54,6 +58,10 @@ const userSchema = new Schema(
         ref: 'Wishlists',
       },
     ],
+    stripeAccountInfo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'StripeAccountInfo',
+    },
   },
   {
     toJSON: {

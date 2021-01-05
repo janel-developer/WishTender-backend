@@ -13,7 +13,12 @@ const addToCart = async (itemId, currentCart) => {
 
   let item;
   try {
-    item = await WishlistItem.findById(itemId);
+    item = await WishlistItem.findOne({ _id: itemId })
+      .populate({
+        path: 'alias',
+        model: 'Alias',
+      })
+      .exec();
   } catch (err) {
     throw new ApplicationError({ itemId }, `Wishlist Item not found: ${itemId}`);
   }
@@ -44,8 +49,9 @@ const updateAliasCartPrices = async (aliasCart) => {
           `Wishlist Item not found when updating cart prices: ${itemId}`
         );
       }
-      if (aliasCartCopy.items[itemId].price !== itemInfo.price) {
-        aliasCartCopy.items[itemId].price = itemInfo.price;
+      if (+aliasCartCopy.items[itemId].item.price !== +itemInfo.price) {
+        aliasCartCopy.items[itemId].price.item.price = itemInfo.price;
+        aliasCartCopy.items[itemId].price = itemInfo.price * aliasCartCopy.items[itemId].qty;
         modified += 1;
       }
       itemsUpdated += 1;

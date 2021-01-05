@@ -13,9 +13,14 @@ function Cart(oldCart) {
    * @returns {Array} cart object
    */
   this.add = function (item) {
-    let aliasCart = this.aliasCarts[item.alias];
+    let aliasCart = this.aliasCarts[item.alias._id];
     if (!aliasCart) {
-      aliasCart = this.aliasCarts[item.alias] = { items: {}, totalQty: 0, totalPrice: 0 };
+      aliasCart = this.aliasCarts[item.alias._id] = {
+        items: {},
+        totalQty: 0,
+        totalPrice: 0,
+        alias: item.alias,
+      };
     }
     let storedItem = aliasCart.items[item._id];
     if (!storedItem) {
@@ -96,10 +101,5 @@ const recalculateTotalsAliasCart = function (aliasCart) {
   return aliasCart;
 };
 
-const c = new Cart({});
-c.add({ itemName: 'purse', _id: 900, alias: 4, price: 900 });
-let p = c.aliasCarts[4].totalPrice;
-c.add({ itemName: 'purse', _id: 900, alias: 4, price: 100 });
-c.recalculateTotals();
 module.exports.Cart = Cart;
 module.exports.recalculateTotalsAliasCart = recalculateTotalsAliasCart;
