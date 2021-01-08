@@ -43,7 +43,7 @@ class StripeService {
         images: ['https://i.ibb.co/1nBVsqw/gift.png'],
         quantity: item.qty,
         currency,
-        amount: item.price, // item.price is item.item.price * item.qty
+        amount: item.item.price, // item.price is item.item.price * item.qty
       })
     );
     lineItems.push(
@@ -111,7 +111,7 @@ class StripeService {
    * @param {String} presentmentCurrency //buyers currency
    *
    */
-  async checkoutCart(aliasCart, presentmentCurrency) {
+  async checkoutCart(aliasCart, presentmentCurrency, usToPresRate) {
     // get alias stripe account
     const alias = await this.AliasModel.findOne({ _id: aliasCart.alias._id })
       .populate({
@@ -137,10 +137,16 @@ class StripeService {
       process.env.APPFEE,
       isAccountFeeDue,
       presentmentCurrency !== 'USD',
-      stripeAccountInfo.country !== 'US'
+      stripeAccountInfo.currency !== 'USD',
+      usToPresRate
     );
     // create line items
-    const lineItems = StripeService.createLineItems(aliasCart, fees.stripeTotalFee, fees.appFee);
+    const lineItems = StripeService.createLineItems(
+      aliasCart,
+      fees.stripeTotalFee,
+      fees.appFee,
+      presentmentCurrency
+    );
     // create stripe sesstion
     const session = await this.createStripeSession(
       lineItems,

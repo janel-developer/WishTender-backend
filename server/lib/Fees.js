@@ -1,3 +1,5 @@
+const { convert } = require('../services/CartService');
+
 /**
  * Creates Fees object
  * @param {Int} giftPriceTotal price in pennies ($1 would be 100)
@@ -5,6 +7,7 @@
  * @param {Boolean} accountFeeDue Is the $2.00 account fee due?
  * @param {Boolean} internationalPresentment Is was the currency presented by stripe in a currency other than US?
  * @param {Boolean} internationalDestination Is the wisher an account outside the US?
+ * @param {Object} usToPresRate exchange rate US to presentment
  *
  * @returns {Object} fees object, fees in pennies most
  * important: this.stripeTotalFee & this.appFee
@@ -14,39 +17,43 @@ function Fees(
   appFee,
   accountFeeDue = false,
   internationalPresentment = false,
-  internationalDestination = false
+  internationalDestination = false,
+  usToPresRate
 ) {
-  const roundToPenny = (pennies) => parseInt(pennies.toFixed());
-  this.accountFeeDue = accountFeeDue ? 200 : 0;
+  const roundToPenny = (pennies) => parseInt(pennies.toFixed(), 10);
+  this.accountFeeDue = accountFeeDue ? usToPresRate * 200 : 0;
   this.currencyConversionPrct = internationalPresentment ? 0.01 : 0;
   this.internationalTransferPrct = internationalDestination ? 0.01 : 0;
-  this.appFee = roundToPenny(giftPriceTotal * appFee * 0.01);
+  this.appFee = roundToPenny(giftPriceTotal * appFee);
   this.charge = roundToPenny(
-    (giftPriceTotal + this.accountFeeDue + this.appFee + 55) /
+    (giftPriceTotal + this.accountFeeDue + this.appFee + usToPresRate * 55) /
       (1 - (0.0315 + this.currencyConversionPrct + this.internationalTransferPrct))
   );
   this.stripeTotalFee = roundToPenny(
     this.charge * (0.0315 + this.internationalTransferPrct + this.currencyConversionPrct) +
-      55 +
+      usToPresRate * 55 +
       this.accountFeeDue
   );
-  this.stripeFee = roundToPenny(this.charge * 0.029 + 30);
-  this.stripeConnectedFee = roundToPenny(this.charge * 0.0025 + 25);
+  this.stripeFee = roundToPenny(this.charge * 0.029 + usToPresRate * 30);
+  this.stripeConnectedFee = roundToPenny(this.charge * 0.0025 + usToPresRate * 25);
   this.internationalTransferFee = roundToPenny(this.charge * this.internationalTransferPrct);
   this.currencyConversionFee = roundToPenny(this.charge * this.currencyConversionPrct);
   this.stripeFeesBalanced =
-    this.stripeFee +
-      this.stripeConnectedFee +
+    this.stripeConnectedFee +
       this.accountFeeDue +
       this.currencyConversionFee +
-      this.internationalTransferFee ==
-    this.stripeTotalFee;
+      this.internationalTransferFee -
+      this.stripeTotalFee <
+    Math.abs(1);
   this.wishersTender = giftPriceTotal;
   this.total = this.wishersTender + this.stripeTotalFee + this.appFee;
-  this.balanced = this.total == this.charge;
+  this.balanced = this.total - this.charge < Math.abs(1);
   if (!this.balanced || !this.stripeFeesBalanced)
     throw new Error(`fees aren't balanced, refactor this function`);
   return this;
 }
+
+const usEquivalent = (exchangeRate, price) =>
+  presentment === 'USD' ? price : usRates[presentment] * price;
 
 module.exports = Fees;

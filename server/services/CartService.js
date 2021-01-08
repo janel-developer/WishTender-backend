@@ -1,7 +1,9 @@
+const _ = require('lodash');
 const { ApplicationError } = require('../lib/Error');
 const logger = require('../lib/logger');
 const { Cart, recalculateTotalsAliasCart } = require('../models/Cart.Model');
 const WishlistItem = require('../models/WishlistItem.Model');
+
 /**
  * add to cart
  * @param {*} itemId
@@ -50,7 +52,7 @@ const updateAliasCartPrices = async (aliasCart) => {
         );
       }
       if (+aliasCartCopy.items[itemId].item.price !== +itemInfo.price) {
-        aliasCartCopy.items[itemId].price.item.price = itemInfo.price;
+        aliasCartCopy.items[itemId].item.price = itemInfo.price;
         aliasCartCopy.items[itemId].price = itemInfo.price * aliasCartCopy.items[itemId].qty;
         modified += 1;
       }
@@ -86,6 +88,26 @@ module.exports.removeItem = (currentCart, itemId, aliasId) => {
   const cart = new Cart(currentCart);
   cart.removeItem(itemId, aliasId);
   return cart;
+};
+/**
+ * update alias cart prices
+ * @param {Object} aliasCart
+ * @param {Object} exchangeRate
+ * returns {Object} {aliasCart, modified}
+ */
+module.exports.convert = (aliasCart, exchangeRate) => {
+  logger.log('silly', `convert alias cart`);
+  const aliasCartCopy = _.cloneDeep(aliasCart);
+  let modified = 0;
+  const itemIds = Object.keys(aliasCartCopy.items);
+  // for each item, update the price
+  itemIds.forEach(async (itemId) => {
+    const convertedPrice = Math.round(aliasCartCopy.items[itemId].item.price * exchangeRate);
+    aliasCartCopy.items[itemId].item.price = convertedPrice;
+    aliasCartCopy.items[itemId].price = convertedPrice * aliasCartCopy.items[itemId].qty;
+  });
+  recalculateTotalsAliasCart(aliasCartCopy);
+  return aliasCartCopy;
 };
 
 // cart should change when:

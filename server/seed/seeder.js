@@ -31,6 +31,7 @@ const config = require('../config')[process.env.NODE_ENV || 'development'];
     aliasName: 'Dashie Bark-Huss',
     user: user._id,
     handle: 'DangerousDashie',
+    currency: 'USD',
     profileImage: '/data/images/profileImages/IMG_9147.jpeg',
   });
 

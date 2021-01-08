@@ -26,6 +26,7 @@ const aliasSchema = new mongoose.Schema(
       type: String,
       unique: true,
     },
+    currency: { type: String, required: true },
   },
   {
     toJSON: {

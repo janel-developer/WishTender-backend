@@ -13,7 +13,7 @@ class StripeAccountInfoService {
   }
 
   static isAccountFeeDue(account) {
-    return account.accountFeeDue < Date.now();
+    return account.accountFeeDue ? account.accountFeeDue < Date.now() : true;
   }
 
   async isAccountFeeDue(userId) {

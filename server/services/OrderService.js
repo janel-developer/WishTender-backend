@@ -59,7 +59,7 @@ class OrderService {
   async deleteOrder(query) {
     let orders;
     try {
-      orders = await this.OrderModel.deleteOne({ query });
+      orders = await this.OrderModel.deleteOne(query);
     } catch (err) {
       throw new ApplicationError({}, `Couldn't delete order. ${err}`);
     }

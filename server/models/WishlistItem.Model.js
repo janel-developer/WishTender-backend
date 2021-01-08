@@ -4,7 +4,7 @@ const { ApplicationError } = require('../lib/Error');
 const itemSchema = new mongoose.Schema(
   {
     itemName: { type: String, required: true, trim: true },
-    price: { type: String, required: true, trim: true },
+    price: { type: Number, required: true, trim: true },
     currency: { type: String, trim: true },
     url: { type: String, trim: true },
     imageUrl: { type: String, trim: true },

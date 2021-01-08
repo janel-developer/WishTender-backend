@@ -27,6 +27,7 @@ const orderSchema = new mongoose.Schema(
       ref: 'Alias',
       required: true,
     },
+    exchangeRate: { wishTender: Number, paymentProcessor: Number },
     // user: {
     //   type: mongoose.Schema.Types.ObjectId,
     //   ref: 'User',
@@ -34,6 +35,12 @@ const orderSchema = new mongoose.Schema(
     // },
     processed: { type: Boolean, required: true },
     processedAt: { body: String, date: Date },
+    createdAt: { type: Date, default: Date.now },
+    expireAt: {
+      type: Date,
+      default: Date.now,
+      index: { expires: '1d' },
+    },
   },
   {
     toJSON: {
@@ -41,8 +48,7 @@ const orderSchema = new mongoose.Schema(
         delete ret.user;
       },
     },
-  },
-  { timestamps: { createdAt: 'created_at' } }
+  }
 );
 
 /**
