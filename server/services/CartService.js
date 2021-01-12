@@ -98,13 +98,24 @@ module.exports.removeItem = (currentCart, itemId, aliasId) => {
 module.exports.convert = (aliasCart, exchangeRate) => {
   logger.log('silly', `convert alias cart`);
   const aliasCartCopy = _.cloneDeep(aliasCart);
-  let modified = 0;
   const itemIds = Object.keys(aliasCartCopy.items);
   // for each item, update the price
   itemIds.forEach(async (itemId) => {
     const convertedPrice = Math.round(aliasCartCopy.items[itemId].item.price * exchangeRate);
     aliasCartCopy.items[itemId].item.price = convertedPrice;
     aliasCartCopy.items[itemId].price = convertedPrice * aliasCartCopy.items[itemId].qty;
+  });
+  recalculateTotalsAliasCart(aliasCartCopy);
+  return aliasCartCopy;
+};
+module.exports.toSmallestUnit = (aliasCart, decimalPlaces) => {
+  logger.log('silly', `convert alias cart`);
+  const aliasCartCopy = _.cloneDeep(aliasCart);
+  const itemIds = Object.keys(aliasCartCopy.items);
+  // for each item, update the price
+  itemIds.forEach(async (itemId) => {
+    aliasCartCopy.items[itemId].item.price *= 10 ** decimalPlaces;
+    aliasCartCopy.items[itemId].price *= 10 ** decimalPlaces;
   });
   recalculateTotalsAliasCart(aliasCartCopy);
   return aliasCartCopy;

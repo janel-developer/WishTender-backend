@@ -8,7 +8,7 @@ const CartService = require('./CartService');
 const { AliasModel } = require('../../test/helper');
 const { ApplicationError } = require('../lib/Error');
 require('dotenv').config();
-const CurrencyHelper = require('../lib/currency');
+const { currencyInfo } = require('../lib/currencyFormatHelpers');
 
 /**
  * Logic for interacting with the stripe api
@@ -132,8 +132,10 @@ class StripeService {
     // see if stripe account is due for $2 fee
     const isAccountFeeDue = this.StripeAccountInfoService.isAccountFeeDue(stripeAccountInfo);
     // calculate fees
+    const { decimalPlaces } = currencyInfo(presentmentCurrency);
+    const cartSmallestUnit = CartService.toSmallestUnit(aliasCart, decimalPlaces); // convert to pennies/smallest unit
     const fees = new this.Fees(
-      aliasCart.totalPrice, // must convert to pennies/smallest unit
+      cartSmallestUnit.totalPrice,
       process.env.APPFEE,
       isAccountFeeDue,
       presentmentCurrency !== 'USD',
@@ -142,7 +144,7 @@ class StripeService {
     );
     // create line items
     const lineItems = StripeService.createLineItems(
-      aliasCart,
+      cartSmallestUnit,
       fees.stripeTotalFee,
       fees.appFee,
       presentmentCurrency
@@ -150,7 +152,7 @@ class StripeService {
     // create stripe sesstion
     const session = await this.createStripeSession(
       lineItems,
-      aliasCart.totalPrice,
+      cartSmallestUnit.totalPrice,
       stripeAccountInfo.stripeAccountId,
       aliasCart.alias._id
     );

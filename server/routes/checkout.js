@@ -37,6 +37,8 @@ module.exports = () => {
       delete req.session.cart.aliasCarts[alias_id];
     }
 
+    // email notify wisher?
+
     res.redirect(301, `http://localhost:3000/order?success=true&session_id=${session_id}`);
   });
   checkoutRoutes.get('/canceled', async (req, res, next) => {

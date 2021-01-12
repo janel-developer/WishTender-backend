@@ -1,5 +1,3 @@
-const { convert } = require('../services/CartService');
-
 /**
  * Creates Fees object
  * @param {Int} giftPriceTotal price in pennies ($1 would be 100)
