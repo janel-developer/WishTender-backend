@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const flash = require('connect-flash');
+const expressValidator = require('express-validator');
 
 const session = require('express-session'); //will not work in production
 const MongoStore = require('connect-mongo')(session);

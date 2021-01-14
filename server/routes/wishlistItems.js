@@ -9,6 +9,63 @@ const { ApplicationError } = require('../lib/Error');
 const wishlists = require('./wishlists');
 const middlewares = require('./middlewares');
 const ImageService = require('../services/ImageService');
+const { body, check, validationResult } = require('express-validator');
+
+const isValidPrice = (value, decimalPlaces) => {
+  const correctDecimalPlaces = value.split(/([,||.])/g).reverse()[0].length === decimalPlaces;
+  const commasNumbersPeriods =
+    /^(0|[1-9][0-9]{0,2}(?:(,[0-9]{3})*|[0-9]*))(\.[0-9]+){0,1}$/.test(value) ||
+    /^(0|[1-9][0-9]{0,2}(?:(.[0-9]{3})*|[0-9]*))(\,[0-9]+){0,1}$/.test(value);
+
+  return correctDecimalPlaces && commasNumbersPeriods;
+};
+
+const toDotDecimal = (price) =>
+  parseFloat(price.replace(/(,|\.)([0-9]{3})/g, `$2`).replace(/(,|\.)/, '.'));
+
+const toSmallestUnit = (price, currency) => {
+  const dotDec = toDotDecimal(price);
+  return new Intl.NumberFormat('en', {
+    style: 'currency',
+    currency,
+  })
+    .formatToParts(dotDec)
+    .reduce((a, c) => {
+      if (c.type === 'integer' || c.type === 'fraction') return a + c.value;
+      return a;
+    }, '');
+};
+const currencyInfo = (currency, locale = 'en') => {
+  const parts = new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: 'USD',
+  }).formatToParts('1000');
+
+  let separator;
+  let decimal;
+  let decimalPlaces;
+  let symbol;
+  parts.forEach((p) => {
+    switch (p.type) {
+      case 'group':
+        separator = p.value;
+        break;
+      case 'decimal':
+        decimal = p.value;
+        break;
+      case 'fraction':
+        decimalPlaces = p.value.length;
+        break;
+      case 'currency':
+        symbol = p.value;
+        break;
+      default:
+      // code block
+    }
+  });
+  const info = { separator, decimal, decimalPlaces, symbol };
+  return info;
+};
 
 const profileImageDirectory = `${__dirname}/../public/data/images/itemImages`;
 const imageService = new ImageService(profileImageDirectory);
@@ -86,10 +143,39 @@ module.exports = () => {
 
   wishlistItemRoutes.patch(
     '/:id',
-    throwIfNotAuthorizedResource,
-    middlewares.upload.single('image'),
-    // middlewares.upload.any(),
+    middlewares.upload.single('image'), //temp disable for testing
+    (req, res, next) => {
+      if (!Object.keys(req.body).length) {
+        return next(new ApplicationError({}, 'No data submitted.'));
+      }
+      return next();
+    },
+    [
+      check('price')
+        .optional()
+        .custom(async (value, { req }) => {
+          // is this a wasteful call to the database when we also call when update? why not save to req?
+          const item = await wishlistItemService.getWishlistItem(req.params.id);
+          req.wishlistItem = item;
+          const { decimalPlaces } = currencyInfo(req.wishlistItem.currency);
+          const valid = isValidPrice(value, decimalPlaces);
+          if (!valid) {
+            throw new ApplicationError({}, 'Price is not a valid format');
+          }
+          return true;
+        })
+        .customSanitizer((value, { req }) => toSmallestUnit(value, req.wishlistItem.currency)),
+    ],
+    (req, res, next) => {
+      const errors = validationResult(req).array();
+      if (errors.length) {
+        return next(new ApplicationError({}, JSON.stringify(errors)));
+      }
+      return next();
+    },
     middlewares.handleImage(imageService, { h: 300, w: 300 }),
+    throwIfNotAuthorizedResource,
+
     async (req, res, next) => {
       try {
         const imageFile = req.file && req.file.storedFilename;
@@ -103,7 +189,8 @@ module.exports = () => {
         logger.log('silly', `wishlist item could not be updated ${err}`);
         return next(
           new ApplicationError(
-            { err, body: req.body }`wishlist item could not be updated ${req.body}: ${err}`
+            { err, body: req.body },
+            `wishlist item could not be updated ${req.body}: ${err}`
           )
         );
       }

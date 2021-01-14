@@ -116,7 +116,10 @@ class WishlistItemService {
       updatedItem = await this.getWishlistItems([id]);
       [updatedItem] = updatedItem;
     } else {
-      throw new ApplicationError({ id, updates }, `WishlistItem not updated. Updates: ${updates}`);
+      throw new ApplicationError(
+        { id, updates },
+        `WishlistItem not updated. Updates: ${JSON.stringify(updates)}`
+      );
     }
 
     return updatedItem;
