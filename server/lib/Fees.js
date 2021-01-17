@@ -28,8 +28,9 @@ function Fees(
       (1 - (0.0315 + this.currencyConversionPrct + this.internationalTransferPrct))
   );
   this.stripeTotalFee = roundToPenny(
+    // 0.0315 = .029 (stripe fee) + .0025 (connected account fee)
     this.charge * (0.0315 + this.internationalTransferPrct + this.currencyConversionPrct) +
-      usToPresRate * 55 +
+    usToPresRate * 55 + // 55 = $0.30 (stripe fee) cents +$0.25 (connected accountfee)
       this.accountFeeDue
   );
   this.stripeFee = roundToPenny(this.charge * 0.029 + usToPresRate * 30);
@@ -50,8 +51,5 @@ function Fees(
     throw new Error(`fees aren't balanced, refactor this function`);
   return this;
 }
-
-const usEquivalent = (exchangeRate, price) =>
-  presentment === 'USD' ? price : usRates[presentment] * price;
 
 module.exports = Fees;

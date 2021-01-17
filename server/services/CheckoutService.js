@@ -2,6 +2,16 @@ const { body } = require('express-validator/check');
 const ExchangeRatesApiInterface = require('../lib/ExchangeRatesApiInterface');
 const OrderService = require('./OrderService');
 const OrderModel = require('../models/Order.Model');
+const CartService = require('./CartService');
+const stripe = require('stripe')(
+  process.env.NODE_END === 'production'
+    ? process.env.STRIPE_SECRET_KEY
+    : process.env.STRIPE_SECRET_TEST_KEY
+);
+const StripeService = require('../services/StripeService');
+const _ = require('lodash');
+
+const stripeService = new StripeService(stripe);
 
 const orderService = new OrderService(OrderModel);
 
@@ -20,20 +30,6 @@ const validate = (method) => {
   }
 };
 
-// {
-//     alias: data.aliasId,
-//     order: {
-//       buyerInfo: {
-//         email: data.email,
-//         fromLine: data.fromLine,
-//       },
-//       alias: data.aliasId,
-//       noteToWisher: data.note,
-//       processedBy: "Stripe",
-//       processed: false,
-//     },
-//   },
-
 const checkout = async (aliasCart, currency, orderObject) => {
   // get exchange rate
   let usToPres = 1;
@@ -44,11 +40,11 @@ const checkout = async (aliasCart, currency, orderObject) => {
     const exchangeRates = await ratesApi.getAllExchangeRates(currency);
     usToPres = 1 / exchangeRates.USD;
     destToPres = 1 / exchangeRates[aliasCurrency];
-    cart = CartService.convert(aliasCart, destToPres);
+    cart = CartService.convert(aliasCart, destToPres, currency);
   }
 
   // start checkout
-  const checkoutSession = await stripeService.checkoutCart(cart, currency, usToPres);
+  const { checkoutSession, fees } = await stripeService.checkoutCart(cart, currency, usToPres);
 
   // create order
   const newOrderObject = { ...orderObject };
@@ -57,7 +53,38 @@ const checkout = async (aliasCart, currency, orderObject) => {
     wishTender: destToPres || null,
   };
   newOrderObject.processedBy = 'Stripe';
-  newOrderObject.processed = false;
+  newOrderObject.paid = false;
+  newOrderObject.total = fees.charge;
+  newOrderObject.wishersTender = fees.wishersTender;
+
+  // this is adding alias to every item. think about redesigning to remove alias from items
+  // temp delete alias from each item
+  const deleteAliasOnItems = (alCart) => {
+    const aliasCartCopy = _.cloneDeep(alCart);
+
+    const items = Object.keys(aliasCartCopy.items);
+    items.forEach((item) => {
+      delete aliasCartCopy.items[item].item.alias;
+    });
+    return aliasCartCopy;
+  };
+
+  newOrderObject.cart = deleteAliasOnItems(aliasCart);
+  newOrderObject.cartConverted = !!cart.convertedTo;
+  if (cart.convertedTo) newOrderObject.convertedCart = deleteAliasOnItems(cart);
+  newOrderObject.fees = {
+    wishTender: fees.appFee,
+    stripe: {
+      charge: fees.stripeFee,
+      connectedAccount: fees.stripeConnectedFee,
+      internationalTransfer: fees.internationalTransferFee,
+      currencyConversion: fees.currencyConversionFee,
+      accountDues: fees.accountFeeDue,
+      total: fees.stripeTotalFee,
+    },
+    total: fees.appFee + fees.stripeTotalFee,
+  };
+
   orderService.createOrder(newOrderObject);
   return checkoutSession;
 };

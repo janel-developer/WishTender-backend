@@ -13,6 +13,7 @@ const itemSchema = new mongoose.Schema(
         message: '{VALUE} is not an integer value',
       },
     },
+
     currency: { type: String, trim: true },
     url: { type: String, trim: true },
     imageUrl: { type: String, trim: true },

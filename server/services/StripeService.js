@@ -124,18 +124,13 @@ class StripeService {
       })
       .exec();
 
-    // updated cart prices
-    // await this.CartService.updateAliasCartPrices(aliasCart);
     // Get the stripe account info
-    // const stripeAccountInfo = await this.stripeAccountInfoService.getAccountByUser(alias.user);
     const { stripeAccountInfo } = alias.user;
     // see if stripe account is due for $2 fee
     const isAccountFeeDue = this.StripeAccountInfoService.isAccountFeeDue(stripeAccountInfo);
     // calculate fees
-    const { decimalPlaces } = currencyInfo(presentmentCurrency);
-    const cartSmallestUnit = CartService.toSmallestUnit(aliasCart, decimalPlaces); // convert to pennies/smallest unit
     const fees = new this.Fees(
-      cartSmallestUnit.totalPrice,
+      aliasCart.totalPrice,
       process.env.APPFEE,
       isAccountFeeDue,
       presentmentCurrency !== 'USD',
@@ -144,20 +139,20 @@ class StripeService {
     );
     // create line items
     const lineItems = StripeService.createLineItems(
-      cartSmallestUnit,
+      aliasCart,
       fees.stripeTotalFee,
       fees.appFee,
       presentmentCurrency
     );
     // create stripe sesstion
-    const session = await this.createStripeSession(
+    const checkoutSession = await this.createStripeSession(
       lineItems,
-      cartSmallestUnit.totalPrice,
+      aliasCart.totalPrice,
       stripeAccountInfo.stripeAccountId,
       aliasCart.alias._id
     );
 
-    return session;
+    return { checkoutSession, fees };
   }
 
   /**

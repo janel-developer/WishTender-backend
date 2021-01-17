@@ -65,12 +65,12 @@ const config = require('../config')[process.env.NODE_ENV || 'development'];
 
   const wishlistItem = await WishlistItem.create({
     itemName: 'Bottega Veneta ribbed-knit Jumper - Farfetch',
-    price: '180.00',
+    price: '18000',
+    currency: 'USD',
     url:
       'https://www.farfetch.com/shopping/women/bottega-veneta-ribbed-knit-jumper-item-16156077.aspx?storeid=9359',
     wishlist: wishlist._id,
     itemImage: '/data/images/itemImages/ca9ffc72-9576-4750-97da-d402865ea1ff.png',
-    currency: 'USD',
     user: user._id,
     alias: alias._id,
   });

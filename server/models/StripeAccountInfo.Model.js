@@ -10,9 +10,11 @@ const stripeInfoSchema = new mongoose.Schema(
     },
     stripeAccountId: { type: String, required: true },
     currency: { type: String, required: true },
-    accountFeeDue: { type: Date },
-    lastAccountFeePaid: { type: Date },
-    accountFeesPaid: [{ type: Date }],
+    accountFees: {
+      due: { type: Date },
+      lastAccountFeePaid: { type: Date },
+      accountFeesPaid: [{ type: Date }],
+    },
   },
   { timestamps: { createdAt: 'created_at' } }
 );

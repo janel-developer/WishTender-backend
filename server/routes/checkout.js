@@ -16,29 +16,82 @@ const checkoutRoutes = express.Router();
 const stripeService = new StripeService(stripe);
 const OrderService = require('../services/OrderService');
 const OrderModel = require('../models/Order.Model');
+const AliasModel = require('../models/Alias.Model');
 
 const orderService = new OrderService(OrderModel);
 
 module.exports = () => {
-  checkoutRoutes.get('/success', async (req, res, next) => {
-    // clear cart
-    const { session_id, alias_id } = req.query;
-    const sess = await stripe.checkout.sessions.retrieve(session_id);
-    // const paymentIntent = await stripe.paymentIntents.retrieve(sess.payment_intent);
-    const order = orderService.updateOrder(
-      { processorPaymentID: session_id },
-      { processed: true, processedAt: Date.now() }
-    );
-    if (Object.keys(req.session.cart.aliasCarts).length <= 1) {
-      delete req.session.cart;
-    } else {
-      delete req.session.cart.aliasCarts[alias_id];
+  checkoutRoutes.get(
+    '/success',
+    // async (req, res, next) => {
+    //   const sess = await stripe.checkout.sessions.retrieve(req.query.session_id);
+    //   if (sess.payment_status !== 'paid') return res.status(401).send("This order wasn't paid for");
+    //   return next();
+    // },
+    async (req, res, next) => {
+      // clear cart
+      // eslint-disable-next-line camelcase
+      const { session_id, alias_id } = req.query;
+
+      // update user account fee due
+      const order = await orderService.getOrder({ processorPaymentID: session_id });
+      // to prevent this request from going through twice
+      if (!order.paid) {
+        order.paid = true;
+        const now = new Date();
+        order.paidOn = now;
+        order.expireAt = null;
+        order.save();
+        let alias;
+        if (order.fees.stripe.accountDues === 200) {
+          alias = await AliasModel.findOne({ _id: alias_id })
+            .populate({
+              path: 'user',
+              model: 'User',
+              populate: {
+                path: 'stripeAccountInfo',
+                model: 'StripeAccountInfo',
+              },
+            })
+            .exec();
+          let inThirtyDays = new Date(now);
+          inThirtyDays = new Date(inThirtyDays.setDate(inThirtyDays.getDate() + 30));
+          alias.user.stripeAccountInfo.accountFees = {
+            due: inThirtyDays,
+            lastAccountFeePaid: now,
+            accountFeesPaid: [...alias.user.stripeAccountInfo.accountFees.accountFeesPaid, now],
+          };
+
+          await alias.user.stripeAccountInfo.save();
+        } else {
+          alias = await AliasModel.findOne({ _id: alias_id })
+            .populate({
+              path: 'user',
+              model: 'User',
+            })
+            .exec();
+        }
+        // send reciept to notify wisher
+        const orderId = order._id;
+        const tenderEmail = order.buyerInfo.email;
+
+        const content = `Thank you for you for your purchase! You purchased a WishTender for ${alias.aliasName} ${alias.handle}. Total: ${order.total}. Items`;
+
+        //send email to notify wisher
+        const wishersEmail = alias.user.email;
+
+        // needs link to manage purchases
+        const content2 = `Someone purchased a gift for you! Send a thank you note to keep your fans happy.`;
+      }
+      if (req.session.cart && Object.keys(req.session.cart.aliasCarts).length <= 1) {
+        delete req.session.cart;
+      } else if (req.session.cart) {
+        delete req.session.cart.aliasCarts[alias_id];
+      }
+
+      res.redirect(301, `http://localhost:3000/order?success=true&session_id=${session_id}`);
     }
-
-    // email notify wisher?
-
-    res.redirect(301, `http://localhost:3000/order?success=true&session_id=${session_id}`);
-  });
+  );
   checkoutRoutes.get('/canceled', async (req, res, next) => {
     const { session_id } = req.query;
     await orderService.deleteOrder({ processorPaymentID: session_id });

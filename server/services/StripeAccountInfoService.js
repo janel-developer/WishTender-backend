@@ -13,7 +13,9 @@ class StripeAccountInfoService {
   }
 
   static isAccountFeeDue(account) {
-    return account.accountFeeDue ? account.accountFeeDue < Date.now() : true;
+    return account.accountFees && account.accountFees.due
+      ? account.accountFees.due < Date.now()
+      : true;
   }
 
   async isAccountFeeDue(userId) {
@@ -26,7 +28,7 @@ class StripeAccountInfoService {
     } catch (err) {
       throw new ApplicationError({ userId, err }, `Stripe Express Account not found. ${err}`);
     }
-    return account.accountFeeDue < Date.now();
+    return account.accountFees.accountFeeDueDue < Date.now();
   }
 
   async getAccountByUser(userId) {

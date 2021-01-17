@@ -143,29 +143,15 @@ module.exports = () => {
 
   wishlistItemRoutes.patch(
     '/:id',
-    middlewares.upload.single('image'), //temp disable for testing
+    throwIfNotAuthorizedResource,
+    middlewares.upload.single('image'),
     (req, res, next) => {
       if (!Object.keys(req.body).length) {
         return next(new ApplicationError({}, 'No data submitted.'));
       }
       return next();
     },
-    [
-      check('price')
-        .optional()
-        .custom(async (value, { req }) => {
-          // is this a wasteful call to the database when we also call when update? why not save to req?
-          const item = await wishlistItemService.getWishlistItem(req.params.id);
-          req.wishlistItem = item;
-          const { decimalPlaces } = currencyInfo(req.wishlistItem.currency);
-          const valid = isValidPrice(value, decimalPlaces);
-          if (!valid) {
-            throw new ApplicationError({}, 'Price is not a valid format');
-          }
-          return true;
-        })
-        .customSanitizer((value, { req }) => toSmallestUnit(value, req.wishlistItem.currency)),
-    ],
+    [check('price', 'Price must be integer').optional().isInt()],
     (req, res, next) => {
       const errors = validationResult(req).array();
       if (errors.length) {
@@ -174,7 +160,6 @@ module.exports = () => {
       return next();
     },
     middlewares.handleImage(imageService, { h: 300, w: 300 }),
-    throwIfNotAuthorizedResource,
 
     async (req, res, next) => {
       try {

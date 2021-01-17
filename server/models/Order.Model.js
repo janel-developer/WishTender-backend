@@ -8,12 +8,9 @@ const orderSchema = new mongoose.Schema(
   {
     processorPaymentID: { type: String, required: true },
     buyerInfo: { type: Object },
-    wishlistItems: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'WishlistItems',
-      },
-    ],
+
+    cart: { type: Object },
+    convertedCart: { type: Object },
     noteToWisher: String,
     payment: { type: Object },
     processedBy: {
@@ -27,14 +24,17 @@ const orderSchema = new mongoose.Schema(
       ref: 'Alias',
       required: true,
     },
+    fees: { type: Object },
     exchangeRate: { wishTender: Number, paymentProcessor: Number },
     // user: {
     //   type: mongoose.Schema.Types.ObjectId,
     //   ref: 'User',
     //   required: true,
     // },
-    processed: { type: Boolean, required: true },
-    processedAt: { body: String, date: Date },
+    wishersTender: { type: Number },
+    total: { type: Number },
+    paid: { type: Boolean, required: true },
+    paidOn: { type: Date },
     createdAt: { type: Date, default: Date.now },
     expireAt: {
       type: Date,

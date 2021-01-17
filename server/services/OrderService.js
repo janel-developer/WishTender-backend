@@ -43,7 +43,7 @@ class OrderService {
   async updateOrder(query, updates) {
     let orders;
     try {
-      orders = await this.OrderModel.update({ query }, updates);
+      orders = await this.OrderModel.update(query, updates);
     } catch (err) {
       throw new ApplicationError({}, `Couldn't update order. ${err}`);
     }
@@ -66,6 +66,7 @@ class OrderService {
 
     return orders;
   }
+
   /**
    * gets orders by user
    * @param {userId} id the user id
@@ -79,6 +80,24 @@ class OrderService {
       orders = await this.OrderModel.find({ user: userId });
     } catch (err) {
       throw new ApplicationError({ userId, err }, `Orders not found. ${err}`);
+    }
+
+    return orders;
+  }
+
+  /**
+   * gets order
+   * @param {Object} query
+   *
+   *
+   * @returns {Object} the order
+   */
+  async getOrder(query) {
+    let orders;
+    try {
+      orders = await this.OrderModel.findOne(query);
+    } catch (err) {
+      throw new ApplicationError({}, `Orders not found. ${err}`);
     }
 
     return orders;
