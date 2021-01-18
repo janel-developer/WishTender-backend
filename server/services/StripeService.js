@@ -93,8 +93,8 @@ class StripeService {
           },
         },
         // ?session_id={CHECKOUT_SESSION_ID} means the redirect will have the session ID set as a query param
-        success_url: `http://localhost:4000/checkout/success?true&session_id={CHECKOUT_SESSION_ID}&alias_id=${aliasId}`, // should clear cart and add order to database
-        cancel_url: `http://localhost:4000/checkout/canceled?session_id={CHECKOUT_SESSION_ID}`,
+        success_url: `http://localhost:4000/api/checkout/success?true&session_id={CHECKOUT_SESSION_ID}&alias_id=${aliasId}`, // should clear cart and add order to database
+        cancel_url: `http://localhost:4000/api/checkout/canceled?session_id={CHECKOUT_SESSION_ID}`,
       });
     } catch (error) {
       throw new ApplicationError(

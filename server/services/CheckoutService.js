@@ -50,7 +50,7 @@ const checkout = async (aliasCart, currency, orderObject) => {
   const newOrderObject = { ...orderObject };
   newOrderObject.processorPaymentID = checkoutSession.id;
   newOrderObject.exchangeRate = {
-    wishTender: destToPres || null,
+    wishTender: 1 / destToPres || null,
   };
   newOrderObject.processedBy = 'Stripe';
   newOrderObject.paid = false;

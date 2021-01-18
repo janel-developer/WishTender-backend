@@ -68,18 +68,18 @@ class OrderService {
   }
 
   /**
-   * gets orders by user
-   * @param {userId} id the user id
+   * gets orders by alias
+   * @param {aliasId} id the user id
    *
    *
    * @returns {Object[]} the orders
    */
-  async getOrdersByUser(userId) {
+  async getOrdersByAlias(aliasId) {
     let orders;
     try {
-      orders = await this.OrderModel.find({ user: userId });
+      orders = await this.OrderModel.find({ alias: aliasId });
     } catch (err) {
-      throw new ApplicationError({ userId, err }, `Orders not found. ${err}`);
+      throw new ApplicationError({ aliasId, err }, `Orders not found. ${err}`);
     }
 
     return orders;

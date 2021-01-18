@@ -81,12 +81,8 @@ module.exports = (config) => {
       return next(err);
     }
   });
-  // app.get('/', (req, res) => { //testing session styff. can delete
-  //   req.session.minutes = `${new Date().getMinutes()}:${new Date().getSeconds()}`;
-  //   console.log(req.session);
-  //   res.send('Hello World!');
-  // });
-  app.use('/', routes());
+
+  app.use('/api', routes());
   app.set('views', __dirname + '/views');
   app.set('view engine', 'pug');
 

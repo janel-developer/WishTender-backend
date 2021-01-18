@@ -7,6 +7,7 @@ const wishlistItemRoutes = require('./wishlistItems');
 const { confirmEmail } = require('../services/confirmEmail');
 const cartRoutes = require('./cart');
 const checkoutRoutes = require('./checkout');
+const orderRoutes = require('./orders');
 
 const router = express.Router();
 module.exports = () => {
@@ -19,5 +20,6 @@ module.exports = () => {
   router.get('/confirmation/:email/:token', confirmEmail);
   router.use('/cart', cartRoutes());
   router.use('/checkout', checkoutRoutes());
+  router.use('/orders', orderRoutes());
   return router;
 };

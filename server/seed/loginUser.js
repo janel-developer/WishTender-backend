@@ -20,7 +20,7 @@ const fetchPostJson = async (data, route, callbacks) => {
 const asyncFunctionCall = async () => {
   fetchPostJson(
     { password: 'abcde123', email: 'dangerousdashie@gmail.com' },
-    '/users/login',
+    '/api/users/login',
     console.log
   );
 };

@@ -24,8 +24,9 @@ const orderSchema = new mongoose.Schema(
       ref: 'Alias',
       required: true,
     },
+
     fees: { type: Object },
-    exchangeRate: { wishTender: Number, paymentProcessor: Number },
+    exchangeRate: { wishTender: Number, stripe: Number },
     // user: {
     //   type: mongoose.Schema.Types.ObjectId,
     //   ref: 'User',
@@ -36,16 +37,13 @@ const orderSchema = new mongoose.Schema(
     paid: { type: Boolean, required: true },
     paidOn: { type: Date },
     createdAt: { type: Date, default: Date.now },
-    expireAt: {
-      type: Date,
-      default: Date.now,
-      index: { expires: '1d' },
-    },
+    expireAt: { type: Date, default: Date.now, index: { expires: '1m' } }, // 1d live as long as the stripe session
   },
   {
     toJSON: {
       transform(doc, ret) {
         delete ret.user;
+        delete ret.buyerInfo.email;
       },
     },
   }

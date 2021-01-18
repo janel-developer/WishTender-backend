@@ -23,12 +23,20 @@ const orderService = new OrderService(OrderModel);
 module.exports = () => {
   checkoutRoutes.get(
     '/success',
-    // async (req, res, next) => {
-    //   const sess = await stripe.checkout.sessions.retrieve(req.query.session_id);
-    //   if (sess.payment_status !== 'paid') return res.status(401).send("This order wasn't paid for");
-    //   return next();
-    // },
     async (req, res, next) => {
+      const sess = await stripe.checkout.sessions.retrieve(req.query.session_id);
+      if (sess.payment_status !== 'paid') return res.status(401).send("This order wasn't paid for");
+      req.payment_intent = sess.payment_intent;
+      return next();
+    },
+    async (req, res, next) => {
+      let balanceTransactionId = await stripe.charges.list({
+        payment_intent: req.payment_intent,
+      });
+      balanceTransactionId = balanceTransactionId.data[0].balance_transaction;
+
+      const balanceTransaction = await stripe.balanceTransactions.retrieve(balanceTransactionId);
+      const stripeExchangeRate = balanceTransaction.exchange_rate;
       // clear cart
       // eslint-disable-next-line camelcase
       const { session_id, alias_id } = req.query;
@@ -37,10 +45,13 @@ module.exports = () => {
       const order = await orderService.getOrder({ processorPaymentID: session_id });
       // to prevent this request from going through twice
       if (!order.paid) {
+        // add the stripe exchange rate
         order.paid = true;
         const now = new Date();
         order.paidOn = now;
-        order.expireAt = null;
+        order.expireAt = undefined;
+
+        order.exchangeRate.stripe = stripeExchangeRate;
         order.save();
         let alias;
         if (order.fees.stripe.accountDues === 200) {
