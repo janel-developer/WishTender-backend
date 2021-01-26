@@ -6,29 +6,52 @@ const OrderService = require('../services/OrderService');
 
 const orderService = new OrderService(OrderModel);
 const orderRoutes = express.Router();
+const ThankYouEmail = require('../lib/email/ThankYouEmail');
+const { readableHighWaterMark } = require('../lib/logger');
 
 module.exports = () => {
-  // orderRoutes.get('/', async (req, res, next) => {
-  //   //clear cart
-  //   const { query } = req;
-  //   if (query.success) {
-  //     const sess = await stripe.checkout.sessions.retrieve(query.session_id);
-  //     // confirm order
-  //     // delete cart
-  //     res.redirect(301, 'http://localhost:3000/order?success=true');
-  //   } else {
-  //     //don't delete cart
-  //     //delete order with session id
-  //     // should this throw an error?
-  //     res.redirect(301, 'http://localhost:3000/order?success=false');
-  //   }
-  // });
   orderRoutes.get('/:alias', async (req, res, next) => {
-    //clear cart
-    logger.log('silly', 'getting orders by user');
+    logger.log('silly', 'getting orders by alias');
     const orders = await orderService.getOrdersByAlias(req.params.alias);
     console.log(orders);
     res.send(orders);
   });
+  orderRoutes.post(
+    '/reply/:id',
+    async (req, res, next) => {
+      if (!req.user) return res.status(401).send('No user logged in.');
+      try {
+        req.order = await orderService.getOrder({ _id: req.params.id });
+        if (req.user.aliases[0].toString() !== req.order.alias.toString())
+          return res.status(401).send("User doesn't have permission.");
+      } catch (err) {
+        return next(new ApplicationError({}, `Couldn't reply to tender ${err}`));
+      }
+      return next();
+    },
+    async (req, res, next) => {
+      logger.log('silly', 'replying to tender');
+      const { message } = req.body;
+      try {
+        const tenderEmail = req.order.buyerInfo.email;
+        const { alias } = req.order.cart;
+        const thankYouEmail = new ThankYouEmail(
+          tenderEmail,
+          alias.aliasName,
+          `http://localhost:4000/${alias.handle}`,
+          message
+        );
+
+        const info = await thankYouEmail.sendSync().then((inf) => inf);
+        if (info) {
+          req.order.noteToTender = message;
+          req.order.save();
+        }
+      } catch (err) {
+        return next(new ApplicationError({}, `Couldn't reply to tender ${err}`));
+      }
+      return res.status(200).send({ messageSent: message });
+    }
+  );
   return orderRoutes;
 };

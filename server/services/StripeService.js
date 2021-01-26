@@ -81,17 +81,29 @@ class StripeService {
   async createStripeSession(lineItems, wishersTender, account, aliasId) {
     logger.log('silly', 'creating stripe session');
     let session;
+
+    // const paymentIntent = await stripe.paymentIntents.create({
+    //   payment_method_types: ['card'],
+    //   amount: 1000,
+    //   currency: 'usd',
+    //   on_behalf_of: '{{CONNECTED_STRIPE_ACCOUNT_ID}}',
+    // });
     try {
       session = await this.stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         line_items: lineItems,
         payment_intent_data: {
           // The account receiving the funds, as passed from the client.
+          //not usd
+
+          //usd account
           transfer_data: {
             amount: wishersTender,
             destination: account,
           },
         },
+        // mode: 'setup',
+        // setup_intent_data: { on_behalf_of: account },
         // ?session_id={CHECKOUT_SESSION_ID} means the redirect will have the session ID set as a query param
         success_url: `http://localhost:4000/api/checkout/success?true&session_id={CHECKOUT_SESSION_ID}&alias_id=${aliasId}`, // should clear cart and add order to database
         cancel_url: `http://localhost:4000/api/checkout/canceled?session_id={CHECKOUT_SESSION_ID}`,
@@ -198,7 +210,9 @@ class StripeService {
    * @param {String} accountId an account id
    */
   async createLoginLink(accountId) {
-    const link = await this.stripe.accounts.createLoginLink(accountId);
+    const link = await this.stripe.accounts.createLoginLink(accountId, {
+      redirect_url: 'http://localhost:3000/wish-tracker',
+    });
     return link.url;
   }
 

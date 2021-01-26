@@ -11,7 +11,8 @@ class ThankYouEmail extends Email {
    */
   constructor(to, aliasName, aliasUrl, thankYouMessage) {
     const pass = process.env.THANKYOU_PASSWORD;
-    const email = process.env.THANKYOU_EMAIL;
+    const email =
+      process.env.NODE_ENV !== 'production' ? process.env.TEST_EMAIL : process.env.THANKYOU_EMAIL;
     const from = `WishTender Wishlist <${email}>`;
     const subject = `Thank You from ${aliasName}`;
     const html = `<h1> Thank you message from <a href = '${aliasUrl}'>${aliasName}</a>: 

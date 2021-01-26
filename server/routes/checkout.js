@@ -24,34 +24,100 @@ module.exports = () => {
   checkoutRoutes.get(
     '/success',
     async (req, res, next) => {
-      const sess = await stripe.checkout.sessions.retrieve(req.query.session_id);
+      const sess = await stripe.checkout.sessions.retrieve(req.query.session_id, {
+        expand: ['payment_intent.charges.data'],
+      });
       if (sess.payment_status !== 'paid') return res.status(401).send("This order wasn't paid for");
-      req.payment_intent = sess.payment_intent;
+      req.stripeExpandedSession = sess;
       return next();
     },
     async (req, res, next) => {
-      let balanceTransactionId = await stripe.charges.list({
-        payment_intent: req.payment_intent,
-      });
-      balanceTransactionId = balanceTransactionId.data[0].balance_transaction;
+      const chargeId = req.stripeExpandedSession.payment_intent.charges.data[0].id;
+      const charge = await stripe.charges.retrieve(
+        chargeId,
+        {
+          expand: [
+            'balance_transaction',
+            'transfer.balance_transaction',
+            'transfer.destination_payment.balance_transaction',
+          ],
+        }
+        // { stripeAccount: 'acct_1Heou2LKojKNEaYI' }
+      );
 
-      const balanceTransaction = await stripe.balanceTransactions.retrieve(balanceTransactionId);
-      const stripeExchangeRate = balanceTransaction.exchange_rate;
-      // clear cart
-      // eslint-disable-next-line camelcase
+      const threeBalance = [
+        charge.balance_transaction,
+        charge.transfer.balance_transaction,
+        charge.transfer.destination_payment.balance_transaction,
+      ];
+
+      const toPlatform = {
+        from: { amount: charge.amount, currency: charge.currency.toUpperCase() },
+        amount: charge.balance_transaction.amount,
+        currency: charge.balance_transaction.currency.toUpperCase(),
+        exchangeRate: charge.balance_transaction.exchange_rate,
+      };
+      const toConnect = {
+        from: {
+          amount: charge.transfer.destination_payment.amount,
+          currency: charge.transfer.destination_payment.currency.toUpperCase(),
+        },
+        amount: charge.transfer.destination_payment.balance_transaction.amount,
+        currency: charge.transfer.destination_payment.balance_transaction.currency.toUpperCase(),
+        exchangeRate: charge.transfer.destination_payment.balance_transaction.exchange_rate,
+      };
+
       const { session_id, alias_id } = req.query;
 
       // update user account fee due
       const order = await orderService.getOrder({ processorPaymentID: session_id });
+      const customerCharged = {
+        from: { amountBeforeFees: order.cart.totalPrice, currency: order.cart.alias.currency },
+        amountBeforeFees: order.convertedCart
+          ? order.convertedCart.totalPrice
+          : order.cart.totalPrice,
+        amount: charge.amount,
+        currency: charge.currency.toUpperCase(),
+        exchangeRate: order.exchangeRate.wishTender.find((e) => e.type === 'connect to customer')
+          .value,
+      };
       // to prevent this request from going through twice
       if (!order.paid) {
         // add the stripe exchange rate
         order.paid = true;
-        const now = new Date();
-        order.paidOn = now;
+        const time = new Date();
+        time.setUTCSeconds(req.stripeExpandedSession.payment_intent.charges.data[0].created);
+        order.paidOn = time;
         order.expireAt = undefined;
+        // order.wishersTender.sent = amountToWisher;
+        order.cashFlow = {
+          customerCharged,
+          toPlatform,
+          toConnect,
+          connectAccount: charge.destination,
+        };
 
-        order.exchangeRate.stripe = stripeExchangeRate;
+        // what is this for?
+        order.exchangeRate.stripe = [
+          {
+            from: req.stripeExpandedSession.currency.toUpperCase(),
+            to: toPlatform.currency,
+            value: toPlatform.exchangeRate,
+            type: 'customer to platform',
+          },
+          {
+            from: 'USD',
+            to: toConnect.currency.toUpperCase(),
+            value: toConnect.exchangeRate,
+            type: 'platform to connect',
+          },
+          {
+            from: toConnect.currency.toUpperCase(),
+            to: req.stripeExpandedSession.currency.toUpperCase(),
+            value: 1 / (toConnect.exchangeRate * toPlatform.exchangeRate),
+            type: 'connect to customer',
+          },
+        ];
         order.save();
         let alias;
         if (order.fees.stripe.accountDues === 200) {
@@ -65,11 +131,11 @@ module.exports = () => {
               },
             })
             .exec();
-          let inThirtyDays = new Date(now);
+          let inThirtyDays = new Date(time);
           inThirtyDays = new Date(inThirtyDays.setDate(inThirtyDays.getDate() + 30));
           alias.user.stripeAccountInfo.accountFees = {
             due: inThirtyDays,
-            lastAccountFeePaid: now,
+            lastAccountFeePaid: time,
             accountFeesPaid: [...alias.user.stripeAccountInfo.accountFees.accountFeesPaid, now],
           };
 

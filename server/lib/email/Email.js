@@ -59,11 +59,26 @@ class Email {
     return transporter;
   }
 
-  send() {
-    this.transporter.sendMail(this.mailOptions, (error, info) => {
-      if (error) return console.log(error);
-      logger.log('silly', `message sent: ${info.messageId}`);
-    });
+  send(cb) {
+    this.transporter.sendMail(
+      this.mailOptions,
+      cb ||
+        ((error, info) => {
+          if (error) console.log(error);
+          if (info) logger.log('silly', `message sent: ${info.messageId}`);
+          this.transporter.close();
+        })
+    );
+  }
+
+  sendSync() {
+    return new Promise((res, rej) =>
+      this.transporter.sendMail(this.mailOptions, (error, info) => {
+        if (error) rej(error);
+        else res(info);
+        this.transporter.close();
+      })
+    );
   }
 }
 

@@ -50,12 +50,14 @@ const checkout = async (aliasCart, currency, orderObject) => {
   const newOrderObject = { ...orderObject };
   newOrderObject.processorPaymentID = checkoutSession.id;
   newOrderObject.exchangeRate = {
-    wishTender: 1 / destToPres || null,
+    wishTender: [
+      { from: aliasCurrency, to: currency, value: destToPres || null, type: 'connect to customer' },
+    ],
   };
   newOrderObject.processedBy = 'Stripe';
   newOrderObject.paid = false;
-  newOrderObject.total = fees.charge;
-  newOrderObject.wishersTender = fees.wishersTender;
+  newOrderObject.total = { amount: fees.charge, currency };
+  newOrderObject.wishersTender = { intended: { amount: fees.wishersTender, currency } };
 
   // this is adding alias to every item. think about redesigning to remove alias from items
   // temp delete alias from each item
@@ -83,6 +85,7 @@ const checkout = async (aliasCart, currency, orderObject) => {
       total: fees.stripeTotalFee,
     },
     total: fees.appFee + fees.stripeTotalFee,
+    currency,
   };
 
   orderService.createOrder(newOrderObject);

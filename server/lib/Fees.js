@@ -18,25 +18,25 @@ function Fees(
   internationalDestination = false,
   usToPresRate
 ) {
-  const roundToPenny = (pennies) => parseInt(pennies.toFixed(), 10);
-  this.accountFeeDue = accountFeeDue ? usToPresRate * 200 : 0;
+  const roundToInt = (num) => parseInt(num.toFixed(), 10);
+  this.accountFeeDue = accountFeeDue ? roundToInt(usToPresRate * 200) : 0;
   this.currencyConversionPrct = internationalPresentment ? 0.01 : 0;
   this.internationalTransferPrct = internationalDestination ? 0.01 : 0;
-  this.appFee = roundToPenny(giftPriceTotal * appFee);
-  this.charge = roundToPenny(
+  this.appFee = roundToInt(giftPriceTotal * appFee);
+  this.charge = roundToInt(
     (giftPriceTotal + this.accountFeeDue + this.appFee + usToPresRate * 55) /
       (1 - (0.0315 + this.currencyConversionPrct + this.internationalTransferPrct))
   );
-  this.stripeTotalFee = roundToPenny(
+  this.stripeTotalFee = roundToInt(
     // 0.0315 = .029 (stripe fee) + .0025 (connected account fee)
     this.charge * (0.0315 + this.internationalTransferPrct + this.currencyConversionPrct) +
     usToPresRate * 55 + // 55 = $0.30 (stripe fee) cents +$0.25 (connected accountfee)
       this.accountFeeDue
   );
-  this.stripeFee = roundToPenny(this.charge * 0.029 + usToPresRate * 30);
-  this.stripeConnectedFee = roundToPenny(this.charge * 0.0025 + usToPresRate * 25);
-  this.internationalTransferFee = roundToPenny(this.charge * this.internationalTransferPrct);
-  this.currencyConversionFee = roundToPenny(this.charge * this.currencyConversionPrct);
+  this.stripeFee = roundToInt(this.charge * 0.029 + usToPresRate * 30);
+  this.stripeConnectedFee = roundToInt(this.charge * 0.0025 + usToPresRate * 25);
+  this.internationalTransferFee = roundToInt(this.charge * this.internationalTransferPrct);
+  this.currencyConversionFee = roundToInt(this.charge * this.currencyConversionPrct);
   this.stripeFeesBalanced =
     this.stripeConnectedFee +
       this.accountFeeDue +

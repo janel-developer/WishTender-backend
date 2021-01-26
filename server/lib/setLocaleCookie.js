@@ -27,7 +27,7 @@ const makeLocaleObj = (locale) => {
 
 const setLocaleCookie = (req, res, next) => {
   const cookieLocale = req.cookies.locale;
-  if (!cookieLocale) {
+  if (!cookieLocale && req.headers['accept-language']) {
     const locale = getPreferredLocale(req.headers['accept-language']);
     const localeObj = makeLocaleObj(locale);
     res.cookie('locale', JSON.stringify(localeObj), { maxAge: new Date() * 0.001 + 300 });
