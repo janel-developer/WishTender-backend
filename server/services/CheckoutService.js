@@ -1,15 +1,16 @@
-const { body } = require('express-validator/check');
-const ExchangeRatesApiInterface = require('../lib/ExchangeRatesApiInterface');
-const OrderService = require('./OrderService');
-const OrderModel = require('../models/Order.Model');
-const CartService = require('./CartService');
+require('express-validator');
+const _ = require('lodash');
 const stripe = require('stripe')(
   process.env.NODE_END === 'production'
     ? process.env.STRIPE_SECRET_KEY
     : process.env.STRIPE_SECRET_TEST_KEY
 );
+const ExchangeRatesApiInterface = require('../lib/ExchangeRatesApiInterface');
+const OrderService = require('./OrderService');
+const OrderModel = require('../models/Order.Model');
+const CartService = require('./CartService');
 const StripeService = require('../services/StripeService');
-const _ = require('lodash');
+const { currencyInfo } = require('../lib/currencyFormatHelpers');
 
 const stripeService = new StripeService(stripe);
 
@@ -18,13 +19,22 @@ const orderService = new OrderService(OrderModel);
 const ratesApi = new ExchangeRatesApiInterface();
 
 const validate = (method) => {
+  // eslint-disable-next-line default-case
   switch (method) {
     case 'checkout': {
       return [
         body('order', `order doesn't exist`).exists(),
         body('email', 'Invalid email').exists().isEmail(),
-        body('phone').optional().isInt(),
-        body('status').optional().isIn(['enabled', 'disabled']),
+        // body('order.noteToWisher', 'Note to wisher too long')
+        //   .optional()
+        //   .custom((value) => {
+        //     const aliasId = req.body.alias;
+        //     const aliasCart = req.session.cart.aliasCarts[aliasId];
+        //     const { currency } = aliasCart.alias;
+        //     const total = aliasCart.alias.totalPrice;
+        //     if (value.length <= total) return true;
+        //     if (value.length > total) return false;
+        //   }),
       ];
     }
   }
@@ -35,16 +45,24 @@ const checkout = async (aliasCart, currency, orderObject) => {
   let usToPres = 1;
   let cart = aliasCart;
   let destToPres;
+  let decimalMultiplierUsToPres = 1;
   const aliasCurrency = aliasCart.alias.currency;
   if (aliasCurrency !== currency) {
     const exchangeRates = await ratesApi.getAllExchangeRates(currency);
     usToPres = 1 / exchangeRates.USD;
     destToPres = 1 / exchangeRates[aliasCurrency];
     cart = CartService.convert(aliasCart, destToPres, currency);
+    decimalMultiplierUsToPres =
+      10 ** (currencyInfo(currency).decimalPlaces - currencyInfo('USD').decimalPlaces);
   }
 
   // start checkout
-  const { checkoutSession, fees } = await stripeService.checkoutCart(cart, currency, usToPres);
+  const { checkoutSession, fees } = await stripeService.checkoutCart(
+    cart,
+    currency,
+    usToPres,
+    decimalMultiplierUsToPres
+  );
 
   // create order
   const newOrderObject = { ...orderObject };
@@ -92,4 +110,4 @@ const checkout = async (aliasCart, currency, orderObject) => {
   return checkoutSession;
 };
 
-module.exports = { checkout };
+module.exports = { checkout, validate };

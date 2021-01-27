@@ -30,6 +30,12 @@ module.exports = () => {
       return next();
     },
     async (req, res, next) => {
+      if (req.order.noteToTender)
+        return res.status(409).send({ message: 'Note to tender already sent.' });
+      // if (req.order.noteToTender) return res.status(409).send('Not to tender already sent.');
+      return next();
+    },
+    async (req, res, next) => {
       logger.log('silly', 'replying to tender');
       const { message } = req.body;
       try {

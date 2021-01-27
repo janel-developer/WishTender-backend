@@ -123,7 +123,7 @@ class StripeService {
    * @param {String} presentmentCurrency //buyers currency
    *
    */
-  async checkoutCart(aliasCart, presentmentCurrency, usToPresRate) {
+  async checkoutCart(aliasCart, presentmentCurrency, usToPresRate, decimalMultiplierUsToPres) {
     // get alias stripe account
     const alias = await this.AliasModel.findOne({ _id: aliasCart.alias._id })
       .populate({
@@ -147,7 +147,8 @@ class StripeService {
       isAccountFeeDue,
       presentmentCurrency !== 'USD',
       stripeAccountInfo.currency !== 'USD',
-      usToPresRate
+      usToPresRate,
+      decimalMultiplierUsToPres
     );
     // create line items
     const lineItems = StripeService.createLineItems(

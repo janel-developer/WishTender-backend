@@ -3,7 +3,7 @@ const { ApplicationError } = require('../lib/Error');
 const logger = require('../lib/logger');
 const { Cart, recalculateTotalsAliasCart } = require('../models/Cart.Model');
 const WishlistItem = require('../models/WishlistItem.Model');
-
+const { currencyInfo } = require('../lib/currencyFormatHelpers');
 /**
  * add to cart
  * @param {*} itemId
@@ -99,11 +99,16 @@ module.exports.convert = (aliasCart, exchangeRate, toCurrency) => {
   logger.log('silly', `convert alias cart`);
   const aliasCartCopy = _.cloneDeep(aliasCart);
   aliasCartCopy.convertedTo = toCurrency;
+  const aliasCurrencyDecimal = currencyInfo(aliasCart.alias.currency).decimalPlaces;
+  const clientCurrencyDecimal = currencyInfo(toCurrency).decimalPlaces;
+  const decimalMultiplier = 10 ** (clientCurrencyDecimal - aliasCurrencyDecimal);
 
   const itemIds = Object.keys(aliasCartCopy.items);
   // for each item, update the price
   itemIds.forEach(async (itemId) => {
-    const convertedPrice = Math.round(aliasCartCopy.items[itemId].item.price * exchangeRate);
+    const convertedPrice = Math.round(
+      aliasCartCopy.items[itemId].item.price * exchangeRate * decimalMultiplier
+    );
     aliasCartCopy.items[itemId].item.price = convertedPrice;
     aliasCartCopy.items[itemId].item.convertedTo = toCurrency;
     aliasCartCopy.items[itemId].price = convertedPrice * aliasCartCopy.items[itemId].qty;

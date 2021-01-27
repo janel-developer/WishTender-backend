@@ -1,7 +1,7 @@
 const currencyInfo = (currency, locale = 'en') => {
   const parts = new Intl.NumberFormat(locale, {
     style: 'currency',
-    currency: 'USD',
+    currency: currency,
   }).formatToParts('1000');
 
   let separator;
@@ -27,6 +27,8 @@ const currencyInfo = (currency, locale = 'en') => {
     }
   });
   const info = { separator, decimal, decimalPlaces, symbol };
+  if (info.decimalPlaces === undefined) info.decimalPlaces = 0;
+  if (info.decimal === undefined) info.decimal = null;
   return info;
 };
 

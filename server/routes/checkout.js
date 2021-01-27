@@ -17,6 +17,11 @@ const stripeService = new StripeService(stripe);
 const OrderService = require('../services/OrderService');
 const OrderModel = require('../models/Order.Model');
 const AliasModel = require('../models/Alias.Model');
+const { validate } = require('email-validator');
+const { body, check, validationResult } = require('express-validator');
+
+const ExchangeRatesApiInterface = require('../lib/ExchangeRatesApiInterface');
+const ratesApi = new ExchangeRatesApiInterface();
 
 const orderService = new OrderService(OrderModel);
 
@@ -174,31 +179,61 @@ module.exports = () => {
     await orderService.deleteOrder({ processorPaymentID: session_id });
     res.redirect(301, `http://localhost:3000/cart`);
   });
-  checkoutRoutes.post('/', async (req, res, next) => {
-    logger.log('silly', `starting checkout flow...`);
-    // check price updates
-    const aliasId = req.body.alias;
-    const aliasCart = req.session.cart.aliasCarts[aliasId];
-    const result = await CartService.updateAliasCartPrices(aliasCart);
-    if (result.modified) {
-      req.session.cart.aliasCarts[aliasId] = result.aliasCart;
+  checkoutRoutes.post(
+    '/',
+    // body('Order', `Order doesn't exist`).exists(),
+    // body('order.noteToWisher', `Note too long.`)
+    //   .optional()
+    //   .custom(async (note, { req, location, path }) => {
+    //     const aliasCart = req.session.cart.aliasCarts[req.body.alias];
+    //     const { currency } = aliasCart.alias;
+    //     const { totalPrice } = aliasCart;
+    //     // get US price in dollar units
+    //     let itemToUSD;
+    //     if (currency === 'USD') {
+    //       itemToUSD = totalPrice;
+    //     } else {
+    //       // get conversion
+    //       const rate = await ratesApi.getExchangeRate(currency, 'USD');
 
-      return next(
-        new ApplicationError(
-          {},
-          'Some prices in your cart have been updated by the wishlist owner. Please check prices before continuing'
-        )
-      );
+    //       // we have to convert the price to the correct units, test with other units that this whole thing works
+    //       itemToUSD = rate * totalPrice;
+    //     }
+    //     return note.length <= itemToUSD;
+    //   }),
+    // (req, res, next) => {
+    //   const errors = validationResult(req).array();
+    //   if (errors.length) {
+    //     return next(new ApplicationError({}, JSON.stringify(errors)));
+    //   }
+    //   return next();
+    // },
+    async (req, res, next) => {
+      logger.log('silly', `starting checkout flow...`);
+      // check price updates
+      const aliasId = req.body.alias;
+      const aliasCart = req.session.cart.aliasCarts[aliasId];
+      const result = await CartService.updateAliasCartPrices(aliasCart);
+      if (result.modified) {
+        req.session.cart.aliasCarts[aliasId] = result.aliasCart;
+
+        return next(
+          new ApplicationError(
+            {},
+            'Some prices in your cart have been updated by the wishlist owner. Please check prices before continuing'
+          )
+        );
+      }
+      const currency = req.session.user ? req.session.user.currency : null || req.cookies.currency;
+      const orderObject = req.body.order;
+      try {
+        const checkoutSession = await CheckoutService.checkout(aliasCart, currency, orderObject);
+        res.send(JSON.stringify({ checkoutSessionId: checkoutSession.id }));
+      } catch (err) {
+        next(err);
+      }
     }
-    const currency = req.session.user ? req.session.user.currency : null || req.cookies.currency;
-    const orderObject = req.body.order;
-    try {
-      const checkoutSession = await CheckoutService.checkout(aliasCart, currency, orderObject);
-      res.send(JSON.stringify({ checkoutSessionId: checkoutSession.id }));
-    } catch (err) {
-      next(err);
-    }
-  });
+  );
 
   return checkoutRoutes;
 };
