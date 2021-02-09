@@ -1,7 +1,7 @@
 const currencyInfo = (currency, locale = 'en') => {
   const parts = new Intl.NumberFormat(locale, {
     style: 'currency',
-    currency: currency,
+    currency,
   }).formatToParts('1000');
 
   let separator;

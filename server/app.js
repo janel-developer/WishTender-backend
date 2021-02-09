@@ -62,6 +62,7 @@ module.exports = (config) => {
 
   app.use(auth.initialize);
   app.use(auth.session);
+
   app.use(auth.setUser);
 
   app.use(flash());

@@ -224,7 +224,7 @@ module.exports = () => {
           )
         );
       }
-      const currency = req.session.user ? req.session.user.currency : null || req.cookies.currency;
+      const currency = req.user ? req.user.currency : null || req.cookies.currency;
       const orderObject = req.body.order;
       try {
         const checkoutSession = await CheckoutService.checkout(aliasCart, currency, orderObject);

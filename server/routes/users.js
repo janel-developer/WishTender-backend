@@ -5,6 +5,12 @@ const UserService = require('../services/UserService');
 const logger = require('../lib/logger');
 const { ApplicationError } = require('../lib/Error');
 
+const authUserLoggedIn = (req, res, next) => {
+  if (req.user) {
+    next();
+  }
+  res.status(401).send({ message: 'No user logged in' });
+};
 function throwIfNotAuthorized(req, res, next) {
   logger.log('silly', `authorizing...`);
   if (req.user._id != req.params.id) {
@@ -86,7 +92,7 @@ module.exports = () => {
     return res.json(user); // res.json(user) ?
   });
 
-  userRoutes.put('/:id', throwIfNotAuthorized, async (req, res, next) => {
+  userRoutes.put('/:id', authUserLoggedIn, throwIfNotAuthorized, async (req, res, next) => {
     logger.log('silly', `updating user by id`);
     const { id } = req.params;
 
@@ -101,7 +107,7 @@ module.exports = () => {
     }
     return res.send(user);
   });
-  userRoutes.delete('/:id', throwIfNotAuthorized, async (req, res, next) => {
+  userRoutes.delete('/:id', authUserLoggedIn, throwIfNotAuthorized, async (req, res, next) => {
     logger.log('silly', `deleting user by id`);
     const { id } = req.params;
     let user;

@@ -86,6 +86,24 @@ class OrderService {
   }
 
   /**
+   * gets completed orders by alias
+   * @param {aliasId} id the user id
+   *
+   *
+   * @returns {Object[]} the orders
+   */
+  async getCompletedOrdersByAlias(aliasId) {
+    let orders;
+    try {
+      orders = await this.OrderModel.find({ alias: aliasId, paid: true });
+    } catch (err) {
+      throw new ApplicationError({ aliasId, err }, `Orders not found. ${err}`);
+    }
+
+    return orders;
+  }
+
+  /**
    * gets order
    * @param {Object} query
    *

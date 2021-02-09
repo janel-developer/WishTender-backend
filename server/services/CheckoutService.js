@@ -51,9 +51,9 @@ const checkout = async (aliasCart, currency, orderObject) => {
     const exchangeRates = await ratesApi.getAllExchangeRates(currency);
     usToPres = 1 / exchangeRates.USD;
     destToPres = 1 / exchangeRates[aliasCurrency];
-    cart = CartService.convert(aliasCart, destToPres, currency);
-    decimalMultiplierUsToPres =
-      10 ** (currencyInfo(currency).decimalPlaces - currencyInfo('USD').decimalPlaces);
+    decimalMultiplierUsToPres = StripeService.decimalMultiplier('USD', currency);
+    const decimalMultiplierSettleToPres = StripeService.decimalMultiplier(aliasCurrency, currency);
+    cart = CartService.convert(aliasCart, destToPres, currency, decimalMultiplierSettleToPres);
   }
 
   // start checkout

@@ -93,6 +93,10 @@ userSchema.pre('remove', async function (next) {
 
   const aliases = await AliasModel.find({ user: this._id });
   await aliases.forEach((al) => al.remove());
+  const StripeAccountInfoModel = require('./StripeAccountInfo.Model');
+  if (this.stripeAccountInfo) {
+    await StripeAccountInfoModel.deleteOne({ _id: this.stripeAccountInfo });
+  }
 });
 
 userSchema.methods.comparePassword = async function comparePassword(candidate) {

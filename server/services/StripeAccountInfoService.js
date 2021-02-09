@@ -26,7 +26,7 @@ class StripeAccountInfoService {
         user: userId,
       });
     } catch (err) {
-      throw new ApplicationError({ userId, err }, `Stripe Express Account not found. ${err}`);
+      throw new ApplicationError({ userId, err }, `Stripe Express Account Info not found. ${err}`);
     }
     return account.accountFees.accountFeeDueDue < Date.now();
   }
@@ -39,10 +39,23 @@ class StripeAccountInfoService {
         user: userId,
       });
     } catch (err) {
-      throw new ApplicationError({ userId, err }, `Stripe Express Account not found. ${err}`);
+      throw new ApplicationError({ userId, err }, `Stripe Express Account Info not found. ${err}`);
     }
     return account;
   }
+
+  async createAccount(accountInfo) {
+    let account;
+
+    try {
+      account = await this.StripeAccountInfoModel.create(accountInfo);
+    } catch (err) {
+      throw new ApplicationError({}, `Stripe Express Account Info not created. ${err}`);
+    }
+    return account;
+  }
+
+  // async deleteAccount() {}
 }
 
 module.exports = StripeAccountInfoService;

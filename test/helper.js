@@ -9,6 +9,7 @@ let TokenModel = null;
 let OrderModel = null;
 let WishlistModel = null;
 let WishlistItemModel = null;
+let StripeAccountInfoModel = null;
 let AliasSchema = null;
 let AliasModel = null;
 let AliasService = null;
@@ -71,6 +72,13 @@ try {
   WishlistModel = require('../server/models/Wishlist.Model');
 } catch (err) {
   console.log('WishlistModel ignored');
+}
+try {
+  // eslint-disable-next-line import/no-unresolved
+  // eslint-disable-next-line global-require
+  StripeAccountInfoModel = require('../server/models/StripeAccountInfo.Model');
+} catch (err) {
+  console.log('Account info ignored');
 }
 try {
   // eslint-disable-next-line import/no-unresolved
@@ -141,6 +149,7 @@ module.exports.before = async () => {
     await UserModel.deleteMany({});
     await AliasModel.deleteMany({});
     await TokenModel.deleteMany({});
+    await StripeAccountInfoModel.deleteMany({});
   }
   return true;
 };
@@ -152,6 +161,7 @@ module.exports.after = async () => {
     await AliasModel.deleteMany({});
     await TokenModel.deleteMany({});
     await OrderModel.deleteMany({});
+    await StripeAccountInfoModel.deleteMany({});
   }
 };
 
@@ -234,6 +244,7 @@ module.exports.userRoutes = userRoutes;
 module.exports.UserModel = UserModel;
 module.exports.TokenModel = TokenModel;
 module.exports.OrderModel = OrderModel;
+module.exports.StripeAccountInfoModel = StripeAccountInfoModel;
 module.exports.WishModel = WishModel;
 module.exports.WishlistModel = WishlistModel;
 module.exports.WishlistItemModel = WishlistItemModel;

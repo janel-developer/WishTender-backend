@@ -12,7 +12,7 @@ const { readableHighWaterMark } = require('../lib/logger');
 module.exports = () => {
   orderRoutes.get('/:alias', async (req, res, next) => {
     logger.log('silly', 'getting orders by alias');
-    const orders = await orderService.getOrdersByAlias(req.params.alias);
+    const orders = await orderService.getCompletedOrdersByAlias(req.params.alias);
     console.log(orders);
     res.send(orders);
   });
@@ -32,7 +32,6 @@ module.exports = () => {
     async (req, res, next) => {
       if (req.order.noteToTender)
         return res.status(409).send({ message: 'Note to tender already sent.' });
-      // if (req.order.noteToTender) return res.status(409).send('Not to tender already sent.');
       return next();
     },
     async (req, res, next) => {

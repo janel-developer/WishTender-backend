@@ -1,3 +1,4 @@
+const { v4: uuidv4 } = require('uuid');
 const logger = require('../lib/logger');
 
 const Fees = require('../lib/Fees');
@@ -25,6 +26,58 @@ class StripeService {
     this.stripeAccountInfoService = new StripeAccountInfoService(StripeAccountInfoModel);
     this.StripeAccountInfoService = StripeAccountInfoService;
     this.AliasModel = AliasModel;
+    this.supportedPayoutCountries = [
+      'AT',
+      'AU',
+      'BE',
+      'BG',
+      'CA',
+      'CH',
+      'CY',
+      'CZ',
+      'DE',
+      'DK',
+      'EE',
+      'ES',
+      'FI',
+      'FR',
+      'GB',
+      'GR',
+      'HK',
+      'HU',
+      'IE',
+      'IN',
+      'IT',
+      'JP',
+      'LT',
+      'LU',
+      'LV',
+      'MT',
+      'MY',
+      'NL',
+      'NO',
+      'NZ',
+      'PL',
+      'PT',
+      'RO',
+      'SE',
+      'SG',
+      'SI',
+      'SK',
+      'US',
+    ];
+  }
+
+  /**
+   * Create LineItems
+   * @param {String} fromCurrency
+   * @param {String} toCurrency
+   */
+  static decimalMultiplier(fromCurrency, toCurrency) {
+    const stripeDecimalPlaces = (cur) => (cur !== 'UGX' ? currencyInfo(cur).decimalPlaces : 2);
+    const fromDecimals = stripeDecimalPlaces(fromCurrency);
+    const toDecimals = stripeDecimalPlaces(toCurrency);
+    return 10 ** (toDecimals - fromDecimals);
   }
 
   /**
@@ -172,15 +225,16 @@ class StripeService {
    * Create express account
    * @param {Object} accountInfo Account info. can be created with createAccountInfo()
    */
-  async createExpressAccount(accountInfo) {
-    // const account = await this.stripe.accounts.create(accountInfo);
+  async createExpressAccount(country, email) {
+    const accountInfo = await StripeService.createAccountInfo(country, email);
     const account = await this.stripe.accounts.create(accountInfo);
-    return account.id;
+    return account;
   }
 
   /**
    * Create account link
    * @param {String} accountId
+   * @param {String} country two letter code
    */
   async createAccountLink(accountId) {
     const accountLinkInfo = {
@@ -191,18 +245,20 @@ class StripeService {
       // your server to create a new account link using this API,
       // with the same parameters, and redirect the user to the
       // new account link.
-      refresh_url: 'http://localhost:3000/refresh',
+      refresh_url: `http://localhost:4000/api/refreshConnectLink`,
 
       // The URL that the user will be redirected to upon leaving or
       // completing the linked flow.
-      return_url: 'http://localhost:3000/return',
+      return_url: `http://localhost:3000/connect-success`,
 
       // account_onboarding for first time.
       // account_update for when the user updates their account:
       // Consider framing this (account_update) as “edit my profile” or “update my verification information”.
       type: 'account_onboarding',
     };
-    const info = await this.stripe.accountLinks.create(accountLinkInfo);
+    const info = await this.stripe.accountLinks.create(accountLinkInfo, {
+      idempotencyKey: uuidv4(),
+    });
     return info.url;
   }
 
@@ -211,9 +267,13 @@ class StripeService {
    * @param {String} accountId an account id
    */
   async createLoginLink(accountId) {
-    const link = await this.stripe.accounts.createLoginLink(accountId, {
-      redirect_url: 'http://localhost:3000/wish-tracker',
-    });
+    const link = await this.stripe.accounts.createLoginLink(
+      accountId,
+      {
+        redirect_url: 'http://localhost:3000/wish-tracker',
+      },
+      { idempotencyKey: uuidv4() } // correct?
+    );
     return link.url;
   }
 
@@ -221,10 +281,13 @@ class StripeService {
    * Create account info
    * @param {String} country two letter country code, default US
    */
-  static createAccountInfo(country = 'US') {
+  static createAccountInfo(country, email) {
     const info = {
       country,
       type: 'express',
+      email,
+
+      //
       capabilities: {
         transfers: {
           requested: true,
@@ -238,6 +301,30 @@ class StripeService {
       };
     }
     return info;
+  }
+
+  /**
+   * delete account
+   * @param {String} id
+   */
+  async deleteAccount(id) {
+    try {
+      await this.stripe.accounts.del(id);
+    } catch (err) {
+      throw new ApplicationError(`Couldn't delete account ${err}`);
+    }
+  }
+
+  /**
+   * retrieve account
+   * @param {String} id
+   */
+  async retrieveAccount(id) {
+    try {
+      await this.stripe.accounts.retrieve(id);
+    } catch (err) {
+      throw new ApplicationError(`Couldn't retrieve account ${err}`);
+    }
   }
 }
 

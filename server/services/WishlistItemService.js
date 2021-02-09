@@ -1,9 +1,12 @@
 const WishlistModel = require('../models/Wishlist.Model');
 const { createCroppedImage } = require('../lib/canvas');
 const { ApplicationError } = require('../lib/Error');
-const wishlistItems = require('../routes/wishlistItems');
 const { deleteImage } = require('./utils');
+const { decimalMultiplier } = require('./StripeService');
 
+const ExchangeRatesApiInterface = require('../lib/ExchangeRatesApiInterface');
+const { resolveContent } = require('nodemailer/lib/shared');
+const ratesAPI = new ExchangeRatesApiInterface();
 /**
  * Logic for fetching wishlist items
  */
@@ -81,6 +84,80 @@ class WishlistItemService {
       );
     }
     return wishlistItems;
+  }
+
+  /**
+   * gets wishlist item that aren't the correct currency
+   *
+   * @param {Sting} alias alias id
+   * @param {Sting} currency uppercase 3 letters
+   */
+  async wishlistItemsNotCurrency(alias, currency) {
+    let wishlistItems;
+    try {
+      // wishlistItems = await this.WishlistItemModel.find({});
+      wishlistItems = await this.WishlistItemModel.find({
+        alias,
+        currency: { $ne: currency },
+      });
+    } catch (err) {
+      throw new ApplicationError({}, `Unable to get wishlist items: ${err}.`);
+    }
+    return wishlistItems;
+  }
+
+  /**
+   * convert wishlist items to correct currency
+   *
+   * @param {Sting} alias alias id
+   * @param {Sting} currency uppercase 3 letters
+   * @param {Boolean}  changeValue if true convert the values
+   *
+   */
+  async correctCurrency(alias, currency, changeValue) {
+    try {
+      let wishlistItems;
+      if (changeValue) {
+        wishlistItems = await this.WishlistItemModel.find({
+          alias,
+          currency: { $ne: currency },
+        });
+        if (!wishlistItems.length) {
+          return;
+        }
+        const exchangeRates = await ratesAPI.getAllExchangeRates(currency);
+        await new Promise((res, rej) => {
+          let itemsUpdated = 0;
+          wishlistItems.forEach(async (item) => {
+            const multiplier =
+              (1 / exchangeRates[item.currency]) * decimalMultiplier(item.currency, currency);
+            item.price *= multiplier;
+            item.price = Math.round(item.price);
+            item.currency = currency;
+            try {
+              await item.save();
+            } catch (error) {
+              throw new ApplicationError({}, `Couldn't update item currency:${console.error}`);
+            }
+            itemsUpdated += 1;
+            if (itemsUpdated === wishlistItems.length) {
+              res();
+            }
+          });
+        });
+      } else {
+        await this.WishlistItemModel.update(
+          {
+            alias,
+            currency: { $ne: currency },
+          },
+          { $set: currency },
+          { multi: true }
+        );
+      }
+    } catch (err) {
+      throw new ApplicationError({}, `Unable to update currencies: ${err}.`);
+    }
   }
 
   /**

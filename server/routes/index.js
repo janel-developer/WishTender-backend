@@ -9,6 +9,7 @@ const cartRoutes = require('./cart');
 const checkoutRoutes = require('./checkout');
 const orderRoutes = require('./orders');
 const stripeRoutes = require('./stripe');
+const connectAccountRoutes = require('./connectAccount');
 
 const router = express.Router();
 module.exports = () => {
@@ -23,5 +24,6 @@ module.exports = () => {
   router.use('/checkout', checkoutRoutes());
   router.use('/orders', orderRoutes());
   router.use('/stripe', stripeRoutes());
+  router.use('/connectAccount', connectAccountRoutes());
   return router;
 };
