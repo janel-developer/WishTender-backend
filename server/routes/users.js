@@ -59,7 +59,7 @@ module.exports = () => {
   userRoutes.post('/logout', (req, res) => {
     logger.log('silly', `logging out`);
     req.logout();
-    return res.redirect('/');
+    return res.status(201).send();
   });
 
   userRoutes.post('/registration', async (req, res, next) => {
