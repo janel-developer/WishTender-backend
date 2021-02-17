@@ -45,7 +45,7 @@ describe('connect account routes', async function () {
   context('create account', async () => {
     it('should send a link', async function () {
       sinon.stub(StripeService.prototype, 'createExpressAccount').callsFake((country, email) => {
-        account = { id: 'acct_123', country, save() {} };
+        account = { id: 'acct_123', country, default_currency: 'gbp', save() {} };
         return account;
       });
       sinon.stub(StripeAccountInfoService.prototype, 'createAccount').callsFake((info) => {
@@ -54,6 +54,7 @@ describe('connect account routes', async function () {
       });
       sinon.stub(StripeService.prototype, 'createAccountLink').returns('http://example.com');
 
+      sinon.stub(AliasService.prototype, 'getAlias').returns(alias);
       this.timeout(500000);
       const response = await agent
         .post('/api/connectAccount/createConnect')
@@ -65,11 +66,9 @@ describe('connect account routes', async function () {
       sinon
         .stub(StripeAccountInfoService.prototype, 'getAccountByUser')
         .callsFake(() => accountInfo);
-      sinon.stub(AliasService.prototype, 'getAlias').returns(alias);
       sinon.stub(ItemService.prototype, 'wishlistItemsNotCurrency').returns([]);
       sinon.stub(StripeService.prototype, 'retrieveAccount').callsFake(() => {
         account.capabilities = {};
-        account.default_currency = 'gbp';
         account.capabilities.transfers = 'active';
         return account;
       });
@@ -79,32 +78,25 @@ describe('connect account routes', async function () {
   });
 
   context('not create account because item not correct currency', async () => {
-    it('should create account', async function () {
+    const incorrectItemCurrencyArray = [{ itemName: 'Shoe', currency: 'USD', price: '2000' }];
+    it('should not create account', async function () {
+      this.timeout(500000);
       user = {
         _id: '123',
         aliases: [1234],
         save() {},
       };
 
-      this.timeout(500000);
-      const response = await agent
-        .post('/api/connectAccount/createConnect')
-        .send({ country: 'GB' });
-      expect(response.body.onboardLink).to.equal('http://example.com');
-    });
-    const incorrectItemCurrencyArray = [{ itemName: 'Shoe', currency: 'USD', price: '2000' }];
-    it('should not activate the account', async function () {
-      this.timeout(500000);
-      accountInfo.activated = false;
-
       ItemService.prototype.wishlistItemsNotCurrency.restore();
       sinon
         .stub(ItemService.prototype, 'wishlistItemsNotCurrency')
         .callsFake(() => incorrectItemCurrencyArray);
-
-      const response = await agent.patch('/api/connectAccount/activateConnect');
+      const response = await agent
+        .post('/api/connectAccount/createConnect')
+        .send({ country: 'GB' });
       expect(response.body.error).to.equal('Currency Conflict');
     });
+
     it('should correct the currency', async function () {
       this.timeout(500000);
       accountInfo.activated = false;
@@ -114,7 +106,7 @@ describe('connect account routes', async function () {
       });
       const response = await agent
         .patch('/api/connectAccount/correctCurrency')
-        .send({ changeValue: true });
+        .send({ changeValue: true, currency: 'GBP' });
       expect(response.status).to.equal(201);
     });
   });

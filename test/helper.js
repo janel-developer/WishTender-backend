@@ -138,18 +138,27 @@ try {
   console.log('WishlistItemService ignored');
 }
 
-/* eslint-disable global-require */
-module.exports.before = async () => {
+module.exports.connect = async () => {
   if (db) {
     await db.connect(config.database.dsn);
   }
+};
+module.exports.deleteMany = async () => {
+  await WishlistModel.deleteMany({});
+  await WishlistItemModel.deleteMany({});
+  await UserModel.deleteMany({});
+  await AliasModel.deleteMany({});
+  await TokenModel.deleteMany({});
+  await StripeAccountInfoModel.deleteMany({});
+};
+
+/* eslint-disable global-require */
+module.exports.before = async () => {
+  if (db) {
+    await module.exports.connect(config.database.dsn);
+  }
   if (UserModel) {
-    await WishlistModel.deleteMany({});
-    await WishlistItemModel.deleteMany({});
-    await UserModel.deleteMany({});
-    await AliasModel.deleteMany({});
-    await TokenModel.deleteMany({});
-    await StripeAccountInfoModel.deleteMany({});
+    await module.deleteMany;
   }
   return true;
 };
@@ -193,6 +202,7 @@ module.exports.validWishlist = {
 
 module.exports.createTestUser = async (userInfo = this.validUser) => {
   const user = await UserModel.create(userInfo);
+
   return user;
 };
 module.exports.createTestUserFull = async (

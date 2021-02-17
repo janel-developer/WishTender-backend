@@ -237,29 +237,33 @@ class StripeService {
    * @param {String} country two letter code
    */
   async createAccountLink(accountId) {
-    const accountLinkInfo = {
-      account: accountId,
+    try {
+      const accountLinkInfo = {
+        account: accountId,
 
-      // The URL that the user will be redirected to if the account link
-      // is no longer valid. Your refresh_url should trigger a method on
-      // your server to create a new account link using this API,
-      // with the same parameters, and redirect the user to the
-      // new account link.
-      refresh_url: `http://localhost:4000/api/refreshConnectLink`,
+        // The URL that the user will be redirected to if the account link
+        // is no longer valid. Your refresh_url should trigger a method on
+        // your server to create a new account link using this API,
+        // with the same parameters, and redirect the user to the
+        // new account link.
+        refresh_url: `http://localhost:4000/api/refreshConnectLink`,
 
-      // The URL that the user will be redirected to upon leaving or
-      // completing the linked flow.
-      return_url: `http://localhost:3000/connect-success`,
+        // The URL that the user will be redirected to upon leaving or
+        // completing the linked flow.
+        return_url: `http://localhost:3000/connect-success`,
 
-      // account_onboarding for first time.
-      // account_update for when the user updates their account:
-      // Consider framing this (account_update) as “edit my profile” or “update my verification information”.
-      type: 'account_onboarding',
-    };
-    const info = await this.stripe.accountLinks.create(accountLinkInfo, {
-      idempotencyKey: uuidv4(),
-    });
-    return info.url;
+        // account_onboarding for first time.
+        // account_update for when the user updates their account:
+        // Consider framing this (account_update) as “edit my profile” or “update my verification information”.
+        type: 'account_onboarding',
+      };
+      const info = await this.stripe.accountLinks.create(accountLinkInfo, {
+        idempotencyKey: uuidv4(),
+      });
+      return info.url;
+    } catch (error) {
+      throw new ApplicationError({}, `Couldn't create onboard linke:${error}`);
+    }
   }
 
   /**
@@ -321,7 +325,8 @@ class StripeService {
    */
   async retrieveAccount(id) {
     try {
-      await this.stripe.accounts.retrieve(id);
+      const account = await this.stripe.accounts.retrieve(id);
+      return account;
     } catch (err) {
       throw new ApplicationError(`Couldn't retrieve account ${err}`);
     }

@@ -24,28 +24,38 @@ function throwIfNotAuthorized(req, res, next) {
 const userRoutes = express.Router();
 const userService = new UserService(UserModel);
 module.exports = () => {
+  /*
+   * POST /login
+   * {email: String, password: String}
+   *
+   * authenticates user
+   *
+   * res 200
+   */
   userRoutes.post(
     '/login',
     passport.authenticate('local', {
-      // successRedirect: '/users/login?error=false',
-      // failureRedirect: '/users/login?error=true',
+      successRedirect: '/api/users/login?error=false',
+      failureRedirect: '/api/users/login?error=true',
       failureFlash: true,
-    }),
-    (req, res, next) => {
-      const flashMsg = req.flash('error');
-      if (flashMsg.length) {
-        return res.status(401).send({ error: flashMsg });
-      }
-      return res.sendStatus(200);
-    }
+    })
+    // (req, res, next) => {
+    //   const flashMsg = req.flash('error');
+    //   if (flashMsg.length) {
+    //     return res.status(401).send({ error: flashMsg });
+    //   }
+    //   return res.sendStatus(201);
+    // }
   );
 
   userRoutes.get('/login', (req, res) => {
-    logger.log('silly', `getting login page`);
+    logger.log('silly', `sending login response`);
     const flashmsg = req.flash('error');
-    if (req.query.error === 'false') return res.send(`Welcome `);
-    return res.send(`You were redirected because your login failed: ${flashmsg}`);
+    if (req.query.error === 'false') return res.sendStatus(201);
+
+    return res.status(401).send({ message: flashmsg });
   });
+
   userRoutes.post('/logout', (req, res) => {
     logger.log('silly', `logging out`);
     req.logout();

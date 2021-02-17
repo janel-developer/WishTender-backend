@@ -26,6 +26,7 @@ chai.use(chaiHttp);
 
 describe('connect account routes', () => {
   let connection;
+  let loggedInUser;
   let user1;
   let user2;
   let alias1;
@@ -111,7 +112,6 @@ describe('connect account routes', () => {
   before(async function () {
     this.timeout(5000000);
 
-    console.log('before');
     connection = await MongoClient.connect('mongodb://localhost:27017/test', {
       useNewUrlParser: true,
       useUnifiedTopology: true,
@@ -120,19 +120,16 @@ describe('connect account routes', () => {
     await helper.before();
     await seedTestDatabase();
     sinon.stub(auth, 'session').callsFake((req, res, next) => {
-      req.user = user1;
+      req.user = loggedInUser;
       next();
     });
     www = require('../../bin/www');
     agent = chai.request.agent(www);
     let accountInfo = { capabilities: { transfers: 'active' } };
-    sinon.stub(StripeService.prototype, 'retrieveAccount').callsFake((accountId) => {
-      return {};
-    });
+    sinon.stub(StripeService.prototype, 'retrieveAccount').returns(accountInfo);
   });
 
   after(async () => {
-    console.log('after');
     helper.after();
 
     const deleteAccount = async (user, accountId) => {
@@ -145,27 +142,39 @@ describe('connect account routes', () => {
     };
 
     deleteAccount(user1, accountId1);
-    // deleteAccount(user2, accountId2);
+    deleteAccount(user2, accountId2);
   });
 
   context('create account', function () {
-    it('create account', async function () {
+    it('should not send account link because wrong currency', async function () {
+      loggedInUser = user1;
       this.timeout(5000000);
-      console.log('it');
+      const response = await agent
+        .post('/api/connectAccount/createConnect')
+        .send({ country: 'GB' });
+      expect(response.body.error).to.be.equal('Currency Conflict');
+    });
+    it('shout create account', async function () {
+      this.timeout(5000000);
+      loggedInUser = user2;
       const response = await agent
         .post('/api/connectAccount/createConnect')
         .send({ country: 'GB' });
       expect(response.body).to.have.property('onboardLink');
-      console.log(response.body);
     });
   });
-  context.skip('create account', function () {
-    it('create account', async function () {
+  context('activate account', async function () {
+    it('should activate account', async function () {
       this.timeout(5000000);
-      console.log('it');
-      const response = await agent.get('api/connectAccount/successConnect');
+      loggedInUser = user2;
+      const response = await agent.patch('/api/connectAccount/activateConnect');
       expect(response.status).to.be.equal(201);
-      console.log(response.body);
+    });
+    it('should not activate account a second time', async function () {
+      this.timeout(5000000);
+      loggedInUser = user2;
+      const response = await agent.patch('/api/connectAccount/activateConnect');
+      expect(response.body.error).to.be.equal('Account Activated');
     });
   });
 });

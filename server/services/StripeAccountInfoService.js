@@ -55,7 +55,16 @@ class StripeAccountInfoService {
     return account;
   }
 
-  // async deleteAccount() {}
+  async deleteAccount(id) {
+    try {
+      const deleted = await this.StripeAccountInfoModel.deleteOne({
+        _id: id,
+      });
+      return;
+    } catch (err) {
+      throw new ApplicationError({}, `Stripe Express Account Info could not be deleted. ${err}`);
+    }
+  }
 }
 
 module.exports = StripeAccountInfoService;

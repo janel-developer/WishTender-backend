@@ -71,15 +71,20 @@ aliasSchema.pre('save', async function (next) {
 // }, '"handle_lowercased" not lower case of handle');
 
 aliasSchema.path('user').validate(async function (value) {
-  const UserModel = require('./User.Model');
-  const user = await UserModel.findOne({ _id: value });
-  if (!user) {
-    throw new ApplicationError(
-      { user: value },
-      `Invalid Alias "user" property. No user found with id: ${value}`
-    );
-  } else {
-    return true;
+  try {
+    const UserModel = require('./User.Model');
+
+    const user = await UserModel.findOne({ _id: value });
+    if (!user) {
+      throw new ApplicationError(
+        { user: value },
+        `Invalid Alias "user" property. No user found with id: ${value}`
+      );
+    } else {
+      return true;
+    }
+  } catch (error) {
+    throw new ApplicationError({}, `Can't validate User on Alias: ${error}`);
   }
 }, 'Parent User non existent');
 

@@ -151,7 +151,7 @@ class WishlistItemService {
             alias,
             currency: { $ne: currency },
           },
-          { $set: currency },
+          { $set: { currency } },
           { multi: true }
         );
       }

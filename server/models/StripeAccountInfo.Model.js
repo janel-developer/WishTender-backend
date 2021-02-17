@@ -19,6 +19,13 @@ const stripeInfoSchema = new mongoose.Schema(
       accountFeesPaid: [{ type: Date }],
     },
   },
+  {
+    toJSON: {
+      transform(doc, ret) {
+        delete ret.user;
+      },
+    },
+  },
   { timestamps: { createdAt: 'created_at' } }
 );
 
