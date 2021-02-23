@@ -4,12 +4,12 @@ const userRoutes = require('./users');
 const aliasRoutes = require('./aliases');
 const wishlistRoutes = require('./wishlists');
 const wishlistItemRoutes = require('./wishlistItems');
-const { confirmEmail } = require('../services/confirmEmail');
 const cartRoutes = require('./cart');
 const checkoutRoutes = require('./checkout');
 const orderRoutes = require('./orders');
 const stripeRoutes = require('./stripe');
 const connectAccountRoutes = require('./connectAccount');
+const confirmation = require('./confirmation');
 
 const router = express.Router();
 module.exports = () => {
@@ -19,7 +19,7 @@ module.exports = () => {
   router.use('/aliases', aliasRoutes());
   router.use('/wishlists', wishlistRoutes());
   router.use('/wishlistItems', wishlistItemRoutes());
-  router.get('/confirmation/:email/:token', confirmEmail);
+  router.use('/confirmation', confirmation());
   router.use('/cart', cartRoutes());
   router.use('/checkout', checkoutRoutes());
   router.use('/orders', orderRoutes());

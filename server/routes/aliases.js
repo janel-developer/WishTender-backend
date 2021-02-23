@@ -12,36 +12,49 @@ const imageService = new ImageService(profileImageDirectory);
 
 const aliasRoutes = express.Router();
 const aliasService = new AliasService(AliasModel);
-function throwIfNotAuthorized(req, res, next) {
+
+function authLoggedIn(req, res, next) {
+  logger.log('silly', `authorizing logged in user exists...`);
+  if (!req.user) {
+    res.status(403).send(`No user logged`);
+  }
+  return next();
+}
+
+function authUser(req, res, next) {
   logger.log('silly', `authorizing...`);
   // should authorize that req.user is user if adding alias
-  console.log(req.user);
-  if (req.user._id != req.body.user) {
-    throw new ApplicationError(
-      { currentUser: req.user._id, owner: req.body.user },
-      `Not Authorized. Cannot add alias to a different user. User:${req.user._id}. Owner: ${req.body.user} `
-    );
+  if (req.user._id !== req.body.user) {
+    res.status(403).send({
+      message: `Cannot add alias to a different user. User:${req.user._id}. Owner: ${req.body.user} `,
+    });
   }
 
   return next();
 }
-async function throwIfUserNotOwner(req, res, next) {
+async function authUserOwnsAlias(req, res, next) {
   logger.log('silly', `authorizing user owns resource...`);
 
   // should authorize that user of alias is req.user
   if (!req.user.aliases.includes(req.params.id)) {
-    return next(
-      new ApplicationError(
-        { usersAliases: req.user.aliases, alias: req.params.id },
-        `Not Authorized. User doesn't own alias. User's Alias's:${req.user.aliases}. Alias: ${req.params.id}`
-      )
-    );
+    return res.status(403).send({
+      message: `User doesn't own alias.`,
+    });
+  }
+  return next();
+}
+async function authUserHasNoAlias(req, res, next) {
+  logger.log('silly', `authorizing user has no other alias...`);
+
+  // should authorize that user of alias is req.user
+  if (req.user.aliases.length) {
+    return res.status(409).send({ message: `User already has alias.` });
   }
   return next();
 }
 
 module.exports = () => {
-  aliasRoutes.post('/', throwIfNotAuthorized, async (req, res, next) => {
+  aliasRoutes.post('/', authLoggedIn, authUser, authUserHasNoAlias, async (req, res, next) => {
     logger.log('silly', `creating alias`);
     let alias;
     const values = { ...req.body };
@@ -53,7 +66,7 @@ module.exports = () => {
       return next(err);
     }
     logger.log('silly', `alias created`);
-    return res.json(alias);
+    return res.status(200).json(alias);
   });
 
   aliasRoutes.get('/:id', async (req, res, next) => {
@@ -85,7 +98,7 @@ module.exports = () => {
 
   aliasRoutes.patch(
     '/:id',
-    throwIfUserNotOwner,
+    authUserOwnsAlias,
     middlewares.upload.single('image'),
     middlewares.handleImage(imageService, { h: 300, w: 300 }),
     async (req, res, next) => {
@@ -145,7 +158,7 @@ module.exports = () => {
   //   return res.json(user); // res.json(user) ?
   // });
 
-  aliasRoutes.put('/:id', throwIfUserNotOwner, async (req, res, next) => {
+  aliasRoutes.put('/:id', authUserOwnsAlias, async (req, res, next) => {
     logger.log('silly', `updating alias by id`);
     const { id } = req.params;
 
@@ -160,7 +173,7 @@ module.exports = () => {
     }
     return res.json(alias);
   });
-  aliasRoutes.delete('/:id', throwIfUserNotOwner, async (req, res, next) => {
+  aliasRoutes.delete('/:id', authUserOwnsAlias, async (req, res, next) => {
     logger.log('silly', `deleting user by id`);
     const { id } = req.params;
     let alias;

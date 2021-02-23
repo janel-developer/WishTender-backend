@@ -9,13 +9,13 @@ const { Schema } = mongoose;
 
 const userSchema = new Schema(
   {
-    username: {
-      type: String,
-      require: true,
-      trim: true,
-      index: { unique: true },
-      minlength: 3,
-    },
+    // username: { //commented out because I don't think we ever use username
+    //   type: String,
+    //   require: true,
+    //   trim: true,
+    //   index: { unique: true },
+    //   minlength: 3,
+    // },
     fName: {
       type: String,
       trim: true,

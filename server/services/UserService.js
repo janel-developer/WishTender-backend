@@ -2,6 +2,8 @@ const ConfirmationEmail = require('../lib/email/ConfirmationEmail');
 const { ApplicationError } = require('../lib/Error');
 const logger = require('../lib/logger');
 const Token = require('../models/Token.Model');
+const ConfirmationEmailService = require('./ConfirmationEmailService');
+const confirmationEmailService = new ConfirmationEmailService();
 /**
  * Logic for interacting with the user model
  */
@@ -41,24 +43,11 @@ class UserService {
         `Unable to create user: ${err.name}: ${err.message}`
       );
     }
-    let token;
     try {
-      token = await Token.create({ user: newUser._id });
-    } catch (err) {
-      throw new ApplicationError(
-        {
-          user,
-          err,
-        },
-        `Unable to create email token: ${err.name}: ${err.message}`
-      );
+      await confirmationEmailService.send(newUser);
+    } catch (error) {
+      throw new ApplicationError({}, `Couldn't send confirmation email:${error}`);
     }
-
-    const confirmationEmail = new ConfirmationEmail(
-      user.email,
-      `/confirmation/${newUser.email}/${token.token}`
-    );
-    confirmationEmail.send();
 
     return newUser;
   }
