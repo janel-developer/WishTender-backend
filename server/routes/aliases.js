@@ -6,6 +6,9 @@ const logger = require('../lib/logger');
 const { ApplicationError } = require('../lib/Error');
 const middlewares = require('./middlewares');
 const ImageService = require('../services/ImageService');
+const Wishlist = require('../models/Wishlist.Model');
+const WishlistService = require('../services/WishlistService');
+const wishlistService = new WishlistService(Wishlist);
 
 const profileImageDirectory = `${__dirname}/../public/data/images/profileImages`;
 const imageService = new ImageService(profileImageDirectory);
@@ -13,25 +16,68 @@ const imageService = new ImageService(profileImageDirectory);
 const aliasRoutes = express.Router();
 const aliasService = new AliasService(AliasModel);
 
+const defaultCurrencies = {
+  AU: 'aud',
+  AT: 'eur',
+  BE: 'eur',
+  BG: 'bgn',
+  CA: 'cad',
+  CY: 'eur',
+  CZ: 'eur',
+  DK: 'dkk',
+  EE: 'eur',
+  FI: 'eur',
+  FR: 'eur',
+  DE: 'eur',
+  GR: 'eur',
+  HK: 'hkd',
+  IE: 'eur',
+  IT: 'eur',
+  LV: 'eur',
+  LT: 'eur',
+  LU: 'eur',
+  MT: 'eur',
+  NL: 'eur',
+  NZ: 'nzd',
+  NO: 'nok',
+  PL: 'pln',
+  PT: 'eur',
+  RO: 'ron',
+  SG: 'sgd',
+  SK: 'eur',
+  SI: 'eur',
+  ES: 'eur',
+  SE: 'sek',
+  CH: 'eur',
+  GB: 'gbp',
+  US: 'usd',
+};
+
 function authLoggedIn(req, res, next) {
   logger.log('silly', `authorizing logged in user exists...`);
   if (!req.user) {
-    res.status(403).send(`No user logged`);
+    return res.status(403).send(`No user logged`);
   }
   return next();
+}
+function authCountrySupported(req, res, next) {
+  logger.log('silly', `checking that country is supported...`);
+  if (defaultCurrencies[req.body.country] !== undefined) return next();
+  return res.status(400).send(`Country not supported: ${req.body.country}`);
 }
 
 function authUser(req, res, next) {
   logger.log('silly', `authorizing...`);
   // should authorize that req.user is user if adding alias
   if (req.user._id !== req.body.user) {
-    res.status(403).send({
+    return res.status(403).send({
       message: `Cannot add alias to a different user. User:${req.user._id}. Owner: ${req.body.user} `,
     });
   }
 
   return next();
 }
+
 async function authUserOwnsAlias(req, res, next) {
   logger.log('silly', `authorizing user owns resource...`);
 
@@ -43,6 +89,7 @@ async function authUserOwnsAlias(req, res, next) {
   }
   return next();
 }
+
 async function authUserHasNoAlias(req, res, next) {
   logger.log('silly', `authorizing user has no other alias...`);
 
@@ -54,20 +101,31 @@ async function authUserHasNoAlias(req, res, next) {
 }
 
 module.exports = () => {
-  aliasRoutes.post('/', authLoggedIn, authUser, authUserHasNoAlias, async (req, res, next) => {
-    logger.log('silly', `creating alias`);
-    let alias;
-    const values = { ...req.body };
-    delete values.user;
-
-    try {
-      alias = await aliasService.addAlias(req.body.user, values);
-    } catch (err) {
-      return next(err);
+  aliasRoutes.post(
+    '/',
+    authLoggedIn,
+    authUserHasNoAlias,
+    authCountrySupported,
+    async (req, res, next) => {
+      logger.log('silly', `creating alias`);
+      try {
+        const currency = defaultCurrencies[req.body.country];
+        const values = { ...req.body };
+        delete values.user;
+        values.currency = currency.toUpperCase();
+        const alias = await aliasService.addAlias(req.user._id, values);
+        logger.log('silly', `alias created`);
+        const wishlist = await wishlistService.addWishlist(alias._id, {
+          user: req.user._id,
+          wishlistName: `${alias.aliasName}'s Wishlist`,
+        });
+        logger.log('silly', `wishlist created`);
+        return res.status(200).json(alias);
+      } catch (err) {
+        return next(err);
+      }
     }
-    logger.log('silly', `alias created`);
-    return res.status(200).json(alias);
-  });
+  );
 
   aliasRoutes.get('/:id', async (req, res, next) => {
     logger.log('silly', `getting alias by id`);

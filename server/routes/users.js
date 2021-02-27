@@ -2,8 +2,13 @@ const express = require('express');
 const passport = require('passport');
 const UserModel = require('../models/User.Model');
 const UserService = require('../services/UserService');
+const AliasModel = require('../models/Alias.Model');
+const AliasService = require('../services/AliasService');
+
+const aliasService = new AliasService(AliasModel);
 const logger = require('../lib/logger');
 const { ApplicationError } = require('../lib/Error');
+const auth = require('../lib/auth');
 
 const authUserLoggedIn = (req, res, next) => {
   if (req.user) {
@@ -48,10 +53,16 @@ module.exports = () => {
     // }
   );
 
-  userRoutes.get('/login', (req, res) => {
+  userRoutes.get('/login', async (req, res) => {
     logger.log('silly', `sending login response`);
     const flashmsg = req.flash('error');
-    if (req.query.error === 'false') return res.sendStatus(201);
+    if (req.query.error === 'false') {
+      if (!req.user.aliases[0]) {
+        res.status(200).send({ profile: null });
+      }
+      const alias = await aliasService.getAliasById(req.user.aliases[0]);
+      return res.status(200).send({ profile: alias.handle_lowercased });
+    }
 
     return res.status(401).send({ message: flashmsg });
   });
@@ -62,18 +73,27 @@ module.exports = () => {
     return res.status(201).send();
   });
 
-  userRoutes.post('/registration', async (req, res, next) => {
-    logger.log('silly', `registering user`);
-    let user;
-    try {
-      user = await userService.addUser(req.body);
-    } catch (err) {
-      return next(err);
-    }
-    logger.log('silly', `user registered`);
+  userRoutes.post(
+    '/registration',
 
-    return res.json(user); // res.json(user) ?
-  });
+    async (req, res, next) => {
+      logger.log('silly', `registering user`);
+      let user;
+      try {
+        user = await userService.addUser(req.body);
+      } catch (err) {
+        return next(err);
+      }
+      logger.log('silly', `user registered`);
+      req.login(user, function (err) {
+        if (err) {
+          return next(err);
+        }
+        logger.log('silly', `user logged in`);
+        return res.status(200).send(user);
+      });
+    }
+  );
 
   userRoutes.get('/current', async (req, res, next) => {
     logger.log('silly', `getting current user`);
