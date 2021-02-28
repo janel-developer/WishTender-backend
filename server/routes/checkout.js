@@ -181,6 +181,8 @@ module.exports = () => {
   });
   checkoutRoutes.post(
     '/',
+    // validate that stripe account confirmed
+
     // body('Order', `Order doesn't exist`).exists(),
     // body('order.noteToWisher', `Note too long.`)
     //   .optional()

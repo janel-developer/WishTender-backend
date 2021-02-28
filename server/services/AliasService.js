@@ -88,6 +88,14 @@ class AliasService {
             model: 'WishlistItem',
           },
         })
+        .populate({
+          path: 'user',
+          model: 'User',
+          populate: {
+            path: 'stripeAccountInfo',
+            model: 'StripeAccountInfo',
+          },
+        })
         .exec();
     } catch (err) {
       throw new ApplicationError({ query, err }, `Alias not found.`);

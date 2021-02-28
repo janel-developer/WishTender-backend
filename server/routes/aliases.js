@@ -151,6 +151,15 @@ module.exports = () => {
     }
     logger.log('silly', `alias found: ${alias}`);
     if (!alias) return res.sendStatus(204);
+    alias.activated = alias.user.stripeAccountInfos.activated;
+    if (
+      (!req.user || req.user._id.toString() !== alias.user._id.toString()) &&
+      (!alias.stripeAccountInfos || !alias.stripeAccountInfos.activated)
+    )
+      alias.wishlists[0].wishlistItems = [];
+    if (!req.user || req.user._id.toString() !== alias.user._id.toString()) {
+      delete alias.user;
+    }
     return res.status(200).send(alias);
   });
 
