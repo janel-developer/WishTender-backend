@@ -37,10 +37,14 @@ const authUserLoggedIn = async (req, res, next) => {
 };
 
 const authCountrySupported = async (req, res, next) => {
-  if (stripeService.supportedPayoutCountries.includes(req.body.country)) {
+  if (req.body.country) {
+    if (stripeService.supportedPayoutCountries.includes(req.body.country)) {
+      return next();
+    }
+  } else if (stripeService.supportedPayoutCountries.includes(req.user.country)) {
     return next();
   }
-  return res.status(400).send(`Country not supported: ${req.body.country}`);
+  return res.status(400).send(`Country not supported: ${req.body.country || req.user.country}`);
 };
 
 const authStripeAccountInfoExists = async (req, res, next) => {
@@ -95,7 +99,7 @@ module.exports = () => {
       // check if activated and get onboardlink
 
       req.stripeAccountInfo = await stripeAccountInfoService.getAccountByUser(req.user._id);
-      if (!req.stripeAccountInfo) next();
+      if (!req.stripeAccountInfo) return next();
       req.stripeAccount = await stripeService.retrieveAccount(
         req.stripeAccountInfo.stripeAccountId
       );
@@ -106,8 +110,8 @@ module.exports = () => {
       if (req.stripeAccount.capabilities.transfers === 'active') {
         return res.status(409).send('Your stripe account has already been set up.');
       }
-
-      if (req.body.country === req.stripeAccountInfo.country) {
+      const country = req.body.country || req.user.county;
+      if (country === req.stripeAccountInfo.country) {
         const onboardLink = await stripeService.createAccountLink(
           req.stripeAccountInfo.stripeAccountId
         );
@@ -122,7 +126,7 @@ module.exports = () => {
     },
     authCountrySupported,
     async (req, res, next) => {
-      const { country } = req.body;
+      const country = req.body.country || req.user.country;
       let account;
       try {
         account = await stripeService.createExpressAccount(country, req.user.email);
@@ -314,6 +318,7 @@ module.exports = () => {
 
   /*
    * GET /refreshConnectLink
+  
    *
    * • stripe creates the account link
    *

@@ -23,6 +23,8 @@ const userSchema = new Schema(
     currency: {
       type: String,
     },
+    country: { type: String },
+
     email: {
       unique: true,
       type: String,

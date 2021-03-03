@@ -48,6 +48,8 @@ class AliasService {
     }
 
     user.aliases.push({ _id: newAlias._id });
+    user.currency = aliasValues.currency;
+    user.country = aliasValues.country;
     await user.save();
 
     return newAlias;

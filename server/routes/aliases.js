@@ -115,7 +115,8 @@ module.exports = () => {
         values.currency = currency.toUpperCase();
         const alias = await aliasService.addAlias(req.user._id, values);
         logger.log('silly', `alias created`);
-        const wishlist = await wishlistService.addWishlist(alias._id, {
+
+        await wishlistService.addWishlist(alias._id, {
           user: req.user._id,
           wishlistName: `${alias.aliasName}'s Wishlist`,
         });
@@ -151,16 +152,19 @@ module.exports = () => {
     }
     logger.log('silly', `alias found: ${alias}`);
     if (!alias) return res.sendStatus(204);
-    alias.activated = alias.user.stripeAccountInfos.activated;
+    const aliasCopy = alias.toJSON();
+    aliasCopy.activated = alias.user.stripeAccountInfo
+      ? alias.user.stripeAccountInfo.activated
+      : false;
     if (
       (!req.user || req.user._id.toString() !== alias.user._id.toString()) &&
       (!alias.stripeAccountInfos || !alias.stripeAccountInfos.activated)
     )
-      alias.wishlists[0].wishlistItems = [];
-    if (!req.user || req.user._id.toString() !== alias.user._id.toString()) {
-      delete alias.user;
+      aliasCopy.wishlists[0].wishlistItems = [];
+    if (!req.user || (req.user._id.toString() !== alias.user._id.toString() && aliasCopy.user)) {
+      delete aliasCopy.user;
     }
-    return res.status(200).send(alias);
+    return res.status(200).send(aliasCopy);
   });
 
   aliasRoutes.patch(
