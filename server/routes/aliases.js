@@ -141,31 +141,46 @@ module.exports = () => {
 
     return res.json(alias);
   });
-  aliasRoutes.get('/', async (req, res, next) => {
-    logger.log('silly', `getting alias by query params`);
-    const { query } = req;
-    let alias;
-    try {
-      alias = await aliasService.getAlias(query);
-    } catch (err) {
-      return next(err);
+  aliasRoutes.get(
+    '/',
+    (req, res, next) => {
+      // we don't want people to be able to associate a user with an alias
+      if (req.query.user) {
+        if (!req.user || req.query.user !== req.user._id.toString()) {
+          return res.status(401).send({
+            message: `User must be signed in to get alias.`,
+          });
+        }
+      }
+      return next();
+    },
+    async (req, res, next) => {
+      logger.log('silly', `getting alias by query params`);
+      const { query } = req;
+
+      let alias;
+      try {
+        alias = await aliasService.getAlias(query);
+      } catch (err) {
+        return next(err);
+      }
+      logger.log('silly', `alias found: ${alias}`);
+      if (!alias) return res.sendStatus(204);
+      const aliasCopy = alias.toJSON();
+      aliasCopy.activated = alias.user.stripeAccountInfo
+        ? alias.user.stripeAccountInfo.activated
+        : false;
+      if (
+        (!req.user || req.user._id.toString() !== alias.user._id.toString()) &&
+        (!alias.user.stripeAccountInfo || !alias.user.stripeAccountInfo.activated)
+      )
+        aliasCopy.wishlists[0].wishlistItems = [];
+      if (!req.user || (req.user._id.toString() !== alias.user._id.toString() && aliasCopy.user)) {
+        delete aliasCopy.user;
+      }
+      return res.status(200).send(aliasCopy);
     }
-    logger.log('silly', `alias found: ${alias}`);
-    if (!alias) return res.sendStatus(204);
-    const aliasCopy = alias.toJSON();
-    aliasCopy.activated = alias.user.stripeAccountInfo
-      ? alias.user.stripeAccountInfo.activated
-      : false;
-    if (
-      (!req.user || req.user._id.toString() !== alias.user._id.toString()) &&
-      (!alias.stripeAccountInfos || !alias.stripeAccountInfos.activated)
-    )
-      aliasCopy.wishlists[0].wishlistItems = [];
-    if (!req.user || (req.user._id.toString() !== alias.user._id.toString() && aliasCopy.user)) {
-      delete aliasCopy.user;
-    }
-    return res.status(200).send(aliasCopy);
-  });
+  );
 
   aliasRoutes.patch(
     '/:id',
@@ -178,7 +193,7 @@ module.exports = () => {
         const patch = { ...req.body };
         if (imageFile) patch.profileImage = `/data/images/profileImages/${imageFile}`;
         await aliasService.updateAlias(req.params.id, patch);
-        //if image uploaded succefully, delete old image
+        // if image uploaded succefully, delete old image
       } catch (err) {
         if (req.file && req.file.storedFilename) {
           await imageService.delete(req.file.storedFilename);
@@ -191,43 +206,6 @@ module.exports = () => {
       return res.send(200);
     }
   );
-
-  // userRoutes.post('/logout', (req, res) => {
-  //   logger.log('silly', `logging out`);
-  //   req.logout();
-  //   return res.redirect('/');
-  // });
-  // userRoutes.post('/registration', async (req, res, next) => {
-  //   logger.log('silly', `registering user`);
-  //   let user;
-  //   try {
-  //     user = await userService.addUser({
-  //       username: req.body.username,
-  //       email: req.body.email,
-  //       password: req.body.password,
-  //     });
-  //   } catch (err) {
-  //     return next(err);
-  //   }
-  //   logger.log('silly', `user registered`);
-  //   // user = user.toObject();
-  //   // delete user.password;
-  //   return res.json(user); // res.json(user) ?
-  // });
-
-  // userRoutes.get('/:id', async (req, res, next) => {
-  //   logger.log('silly', `getting user by id`);
-
-  //   const { id } = req.params;
-  //   let user;
-  //   try {
-  //     user = await userService.getUser(id);
-  //   } catch (err) {
-  //     return next(err);
-  //   }
-
-  //   return res.json(user); // res.json(user) ?
-  // });
 
   aliasRoutes.put('/:id', authUserOwnsAlias, async (req, res, next) => {
     logger.log('silly', `updating alias by id`);
