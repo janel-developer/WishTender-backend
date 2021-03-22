@@ -10,6 +10,7 @@ const StripeService = require('../services/StripeService');
 const CartService = require('../services/CartService');
 const CheckoutService = require('../services/CheckoutService');
 const { ApplicationError } = require('../lib/Error');
+const { currencyInfo, unitToStandard } = require('../lib/currencyFormatHelpers');
 
 const checkoutRoutes = express.Router();
 
@@ -183,33 +184,42 @@ module.exports = () => {
     '/',
     // validate that stripe account confirmed
 
-    // body('Order', `Order doesn't exist`).exists(),
-    // body('order.noteToWisher', `Note too long.`)
-    //   .optional()
-    //   .custom(async (note, { req, location, path }) => {
-    //     const aliasCart = req.session.cart.aliasCarts[req.body.alias];
-    //     const { currency } = aliasCart.alias;
-    //     const { totalPrice } = aliasCart;
-    //     // get US price in dollar units
-    //     let itemToUSD;
-    //     if (currency === 'USD') {
-    //       itemToUSD = totalPrice;
-    //     } else {
-    //       // get conversion
-    //       const rate = await ratesApi.getExchangeRate(currency, 'USD');
-
-    //       // we have to convert the price to the correct units, test with other units that this whole thing works
-    //       itemToUSD = rate * totalPrice;
-    //     }
-    //     return note.length <= itemToUSD;
-    //   }),
-    // (req, res, next) => {
-    //   const errors = validationResult(req).array();
-    //   if (errors.length) {
-    //     return next(new ApplicationError({}, JSON.stringify(errors)));
-    //   }
-    //   return next();
-    // },
+    body('alias', `No alias id included.`).exists(),
+    body('order', `No order information included.`).exists(),
+    body('order.noteToWisher', `Note too long.`)
+      .optional()
+      .custom(async (note, { req, location, path }) => {
+        const aliasCart = req.session.cart.aliasCarts[req.body.alias];
+        const { currency } = aliasCart.alias;
+        const { totalPrice } = aliasCart;
+        // get US price in dollar units
+        let itemToUSD;
+        if (currency === 'USD') {
+          itemToUSD = totalPrice;
+        } else {
+          // get conversion
+          const rate = await ratesApi.getExchangeRate(currency, 'USD');
+          const decimalMultiplier = StripeService.decimalMultiplier(currency, 'USD');
+          // we have to convert the price to the correct units, test with other units that this whole thing works
+          itemToUSD = Math.round(rate * totalPrice * decimalMultiplier);
+        }
+        const usdDollars = unitToStandard(itemToUSD, 'USD');
+        const noteLengthOK = note.length <= usdDollars;
+        if (!noteLengthOK)
+          throw new Error(
+            `Note must be less than ${usdDollars} characters. You're note is ${
+              note.length - usdDollars
+            } characters too long. Or add items to your gift to access more characters.`
+          );
+        return true;
+      }),
+    (req, res, next) => {
+      const errors = validationResult(req).array();
+      if (errors.length) {
+        return res.status(400).send({ message: 'Form validation errors', errors });
+      }
+      return next();
+    },
     async (req, res, next) => {
       logger.log('silly', `starting checkout flow...`);
       // check price updates
@@ -230,7 +240,7 @@ module.exports = () => {
       const orderObject = req.body.order;
       try {
         const checkoutSession = await CheckoutService.checkout(aliasCart, currency, orderObject);
-        res.send(JSON.stringify({ checkoutSessionId: checkoutSession.id }));
+        res.status(201).send(JSON.stringify({ checkoutSessionId: checkoutSession.id }));
       } catch (err) {
         next(err);
       }

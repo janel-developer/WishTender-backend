@@ -1,0 +1,162 @@
+{
+  "/api/orders/603a8d02bf6c85032169fe7c": {
+    "get": {
+      "responseBody": [
+        {
+          "_id": "603a9b8bbf6c85032169fe80",
+          "gifts": [
+            {
+              "item": {
+                "_id": "603a8e00bf6c85032169fe7e",
+                "itemName": "Gucci Ken Scott Print Hooded Jacket - Farfetch",
+                "price": 210000,
+                "url": "https://www.farfetch.com/shopping/women/gucci-ken-scott-print-hooded-jacket-item-16331626.aspx?storeid=10644",
+                "currency": "USD",
+                "wishlist": "603a8d02bf6c85032169fe7d",
+                "itemImage": "/data/images/itemImages/ca1c1ba8-44df-4b0a-8b65-486e2a346f0f.png"
+              },
+              "qty": 1,
+              "price": 210000
+            }
+          ],
+          "alias": {
+            "_id": "603a8d02bf6c85032169fe7c",
+            "handle": "dadasheshe1",
+            "aliasName": "KULLi",
+            "currency": "USD",
+            "handle_lowercased": "dadasheshe1"
+          },
+          "tender": {
+            "amount": 210000,
+            "currency": "USD",
+            "converted": null
+          },
+          "noteToWisher": {
+            "message": "Hey, you're a huge inspiration for me. This gift is to show my gratitude.",
+            "read": "2020-02-28T14:42:11.394Z"
+          },
+          "fromLine": "Fred",
+          "thankYouNote": {
+            "message": "Thank you Fred for these awesome gifts!",
+            "dateSent": "2020-02-28T14:50:11.394Z"
+          },
+          "paidOn": "2020-02-26T14:42:11.394Z"
+        }
+      ]
+    }
+  },
+
+  "/api/checkout": {
+    "post": {
+      "requestBody": {
+        "alias": "603a8d02bf6c85032169fe7c",
+        "order": {
+          "buyerInfo": { "email": "dashiellbarkhuss@gmail.com", "fromLine": "Dash" },
+          "alias": "603a8d02bf6c85032169fe7c",
+          "noteToWisher": "Thank you you for being the best author if short stories."
+        }
+      },
+      "responses": {
+        "success": [
+          {
+            "code": 201,
+            "body": {
+              "checkoutSessionId": "cs_test_b1hTQt2va3qBAQw27nbQnUZZSvadR9QhXXrYyb7k0Gdfd9fD8idsBeV8ob"
+            }
+          }
+        ],
+        "errors": [
+          {
+            "code": 400,
+            "body": {
+              "message": "Form validation errors",
+              "errors": [
+                { "msg": "No order information included.", "param": "order", "location": "body" }
+              ]
+            }
+          },
+          {
+            "code": 400,
+            "body": {
+              "message": "Form validation errors",
+              "errors": [
+                {
+                  "value": "This message is short but pretend it's long.",
+                  "msg": "Note must be less than 17360 characters. You're note is 2475 characters too long. Or add items to your gift to access more characters.",
+                  "param": "order.noteToWisher",
+                  "location": "body"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "sessionInfo": {
+      "req.session.cart.aliasCarts[req.body.alias]": {
+        "items": {
+          "60564e5c457d6517e54db74f": {
+            "item": {
+              "_id": "60564e5c457d6517e54db74f",
+              "itemName": "Alexander McQueen Hybrid Panelled Jeans - Farfetch",
+              "price": 329000,
+              "url": "https://www.farfetch.com/shopping/women/alexander-mcqueen-hybrid-panelled-jeans-item-16091948.aspx?storeid=9359",
+              "currency": "USD",
+              "wishlist": "603a8d02bf6c85032169fe7d",
+              "itemImage": "/data/images/itemImages/e9a77ae4-8739-41aa-a337-5a0315788ff2.png",
+              "alias": {
+                "wishlists": ["603a8d02bf6c85032169fe7d"],
+                "_id": "603a8d02bf6c85032169fe7c",
+                "handle": "dadasheshe1",
+                "aliasName": "KULLi",
+                "currency": "USD",
+                "handle_lowercased": "dadasheshe1",
+                "__v": 1,
+                "profileImage": "/data/images/profileImages/e22c1277-38d3-4189-a434-dc22be5f86d0.png"
+              },
+              "__v": 0
+            },
+            "qty": 1,
+            "price": 329000
+          },
+          "603a8e00bf6c85032169fe7e": {
+            "item": {
+              "_id": "603a8e00bf6c85032169fe7e",
+              "itemName": "Gucci Ken Scott Print Hooded Jacket - Farfetch",
+              "price": 210000,
+              "url": "https://www.farfetch.com/shopping/women/gucci-ken-scott-print-hooded-jacket-item-16331626.aspx?storeid=10644",
+              "currency": "USD",
+              "wishlist": "603a8d02bf6c85032169fe7d",
+              "itemImage": "/data/images/itemImages/ca1c1ba8-44df-4b0a-8b65-486e2a346f0f.png",
+              "alias": {
+                "wishlists": ["603a8d02bf6c85032169fe7d"],
+                "_id": "603a8d02bf6c85032169fe7c",
+                "handle": "dadasheshe1",
+                "aliasName": "KULLi",
+                "currency": "USD",
+                "handle_lowercased": "dadasheshe1",
+                "__v": 1,
+                "profileImage": "/data/images/profileImages/e22c1277-38d3-4189-a434-dc22be5f86d0.png"
+              },
+              "__v": 0
+            },
+            "qty": 2,
+            "price": 420000
+          }
+        },
+        "totalQty": 3,
+        "totalPrice": 749000,
+        "alias": {
+          "wishlists": ["603a8d02bf6c85032169fe7d"],
+          "_id": "603a8d02bf6c85032169fe7c",
+          "handle": "dadasheshe1",
+          "aliasName": "KULLi",
+          "currency": "USD",
+          "handle_lowercased": "dadasheshe1",
+          "__v": 1,
+          "profileImage": "/data/images/profileImages/e22c1277-38d3-4189-a434-dc22be5f86d0.png"
+        }
+      }
+    }
+  }
+}

@@ -32,4 +32,9 @@ const currencyInfo = (currency, locale = 'en') => {
   return info;
 };
 
-module.exports = { currencyInfo };
+const unitToStandard = (unitValue, currency) => {
+  const price = unitValue / 10 ** currencyInfo(currency).decimalPlaces;
+  return price;
+};
+
+module.exports = { currencyInfo, unitToStandard };

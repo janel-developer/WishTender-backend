@@ -65,7 +65,7 @@ class StripeService {
   }
 
   /**
-   * Create LineItems
+   * Rate * fromCurrencyAmount(in smallest unit) * decimal Multiplier = toCurrencyAmount(in smallest unit)
    * @param {String} fromCurrency
    * @param {String} toCurrency
    */
