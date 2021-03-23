@@ -51,7 +51,10 @@ const updateAliasCartPrices = async (aliasCart) => {
           `Wishlist Item not found when updating cart prices: ${itemId}`
         );
       }
-      if (+aliasCartCopy.items[itemId].item.price !== +itemInfo.price) {
+      if (!itemInfo) {
+        delete aliasCartCopy.items[itemId];
+        modified += 1;
+      } else if (+aliasCartCopy.items[itemId].item.price !== +itemInfo.price) {
         aliasCartCopy.items[itemId].item.price = itemInfo.price;
         aliasCartCopy.items[itemId].price = itemInfo.price * aliasCartCopy.items[itemId].qty;
         modified += 1;

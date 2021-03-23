@@ -52,7 +52,6 @@
         "alias": "603a8d02bf6c85032169fe7c",
         "order": {
           "buyerInfo": { "email": "dashiellbarkhuss@gmail.com", "fromLine": "Dash" },
-          "alias": "603a8d02bf6c85032169fe7c",
           "noteToWisher": "Thank you you for being the best author if short stories."
         }
       },
@@ -66,6 +65,7 @@
           }
         ],
         "errors": [
+          { "code": 404, "body": { "message": "Alias doesn't exist" } },
           {
             "code": 400,
             "body": {
@@ -87,6 +87,16 @@
                   "location": "body"
                 }
               ]
+            }
+          },
+          {
+            "code": 400,
+            "body": { "message": "Alias id not valid" }
+          },
+          {
+            "code": 409,
+            "body": {
+              "message": "Some prices in your cart have been updated by the wishlist owner. Refresh cart to check updated prices before continuing"
             }
           }
         ]

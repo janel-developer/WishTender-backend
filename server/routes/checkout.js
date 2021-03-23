@@ -5,6 +5,7 @@ const stripe = require('stripe')(
     : process.env.STRIPE_SECRET_TEST_KEY
 );
 const express = require('express');
+const { ObjectId } = require('mongoose').Types;
 const logger = require('../lib/logger');
 const StripeService = require('../services/StripeService');
 const CartService = require('../services/CartService');
@@ -184,8 +185,20 @@ module.exports = () => {
     '/',
     // validate that stripe account confirmed
 
+    async (req, res, next) => {
+      const aliasId = req.body.alias;
+      if (!ObjectId.isValid(aliasId))
+        return res.status(400).send({ message: `Alias id not valid` });
+
+      const alias = await AliasModel.findById(aliasId);
+
+      if (!alias) return res.status(404).send({ message: `Alias doesn't exist` });
+      return next();
+    },
     body('alias', `No alias id included.`).exists(),
-    body('order', `No order information included.`).exists(),
+    body('order', `Missing order info`).exists(),
+    body('order.buyerInfo.fromLine', `Must be less than 25 characters.`).isLength({ max: 35 }),
+    body('order.buyerInfo.email', `Invalid email.`).isEmail(),
     body('order.noteToWisher', `Note too long.`)
       .optional()
       .custom(async (note, { req, location, path }) => {
@@ -213,6 +226,7 @@ module.exports = () => {
           );
         return true;
       }),
+
     (req, res, next) => {
       const errors = validationResult(req).array();
       if (errors.length) {
@@ -221,23 +235,24 @@ module.exports = () => {
       return next();
     },
     async (req, res, next) => {
-      logger.log('silly', `starting checkout flow...`);
       // check price updates
+      logger.log('silly', `checking prices are still current`);
+
       const aliasId = req.body.alias;
       const aliasCart = req.session.cart.aliasCarts[aliasId];
       const result = await CartService.updateAliasCartPrices(aliasCart);
       if (result.modified) {
         req.session.cart.aliasCarts[aliasId] = result.aliasCart;
-
-        return next(
-          new ApplicationError(
-            {},
-            'Some prices in your cart have been updated by the wishlist owner. Please check prices before continuing'
-          )
-        );
+        return res.status(409).send({
+          message:
+            'Some items in your cart have been updated by the wishlist owner or are no longer available. Refresh cart to check updated item prices before continuing.',
+        });
       }
+
+      logger.log('silly', `starting checkout flow...`);
       const currency = req.user ? req.user.currency : null || req.cookies.currency;
       const orderObject = req.body.order;
+      orderObject.alias = req.body.alias;
       try {
         const checkoutSession = await CheckoutService.checkout(aliasCart, currency, orderObject);
         res.status(201).send(JSON.stringify({ checkoutSessionId: checkoutSession.id }));
