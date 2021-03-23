@@ -22,8 +22,10 @@ const addToCart = async (itemId, currentCart) => {
       })
       .exec();
   } catch (err) {
-    throw new ApplicationError({ itemId }, `Wishlist Item not found: ${itemId}`);
+    throw new ApplicationError({ itemId, status: 500 }, `Error getting WishlistItem: ${err}`);
   }
+  if (!item) throw new ApplicationError({ status: 404 }, `Item doesn't exist`);
+
   cart.add(item);
   return cart;
 };
