@@ -1,6 +1,7 @@
 {
   "/api/orders/603a8d02bf6c85032169fe7c": {
     "GET": {
+      "request": {},
       "responses": {
         "success": [
           {
@@ -56,7 +57,17 @@
 
   "/api/cart/add-to-cart/": {
     "PATCH": {
-      "requestBody": { "itemId": "60564e94457d6517e54db750" },
+      "request": {
+        "cookies": {
+          "session": {
+            "required": false,
+            "example": {
+              "connect.sid": "s%3AmIxDSVrYYXLyUq_io625Hd3b03_fqaem.e8lUzzBOeoyOUvki01xi3e9bJfw7R0vizODYLK9KyMg"
+            }
+          }
+        },
+        "body": { "itemId": "60564e94457d6517e54db750" }
+      },
       "responses": {
         "success": [
           {
@@ -157,11 +168,25 @@
   },
   "/api/checkout": {
     "POST": {
-      "requestBody": {
-        "alias": "603a8d02bf6c85032169fe7c",
-        "order": {
-          "buyerInfo": { "email": "dashiellbarkhuss@gmail.com", "fromLine": "Dash" },
-          "noteToWisher": "Thank you you for being the best author if short stories."
+      "request": {
+        "cookies": {
+          "currency": {
+            "required": "yes, if no req.session.user.currency",
+            "example": { "currency": "USD" }
+          },
+          "session": {
+            "required": true,
+            "example": {
+              "connect.sid": "s%3AmIxDSVrYYXLyUq_io625Hd3b03_fqaem.e8lUzzBOeoyOUvki01xi3e9bJfw7R0vizODYLK9KyMg"
+            }
+          }
+        },
+        "body": {
+          "alias": "603a8d02bf6c85032169fe7c",
+          "order": {
+            "buyerInfo": { "email": "dashiellbarkhuss@gmail.com", "fromLine": "Dash" },
+            "noteToWisher": "Thank you you for being the best author if short stories."
+          }
         }
       },
       "responses": {
@@ -178,7 +203,6 @@
           {
             "code": 400,
             "body": {
-              "message": "Form validation errors",
               "errors": [
                 { "msg": "No order information included.", "param": "order", "location": "body" }
               ]
@@ -187,7 +211,6 @@
           {
             "code": 400,
             "body": {
-              "message": "Form validation errors",
               "errors": [
                 {
                   "value": "This message is short but pretend it's long.",
@@ -200,7 +223,7 @@
           },
           {
             "code": 400,
-            "body": { "message": "Alias id not valid" }
+            "body": { "message": "Alias id not valid." }
           },
           {
             "code": 409,

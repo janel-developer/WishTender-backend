@@ -48,9 +48,17 @@ const checkout = async (aliasCart, currency, orderObject) => {
   let decimalMultiplierUsToPres = 1;
   const aliasCurrency = aliasCart.alias.currency;
   if (aliasCurrency !== currency) {
-    const exchangeRates = await ratesApi.getAllExchangeRates(currency);
+    // check if api supports conversion between these curencies - is this necessary?
+    let exchangeRates;
+    try {
+      exchangeRates = await ratesApi.getAllExchangeRates(currency);
+    } catch (error) {
+      throw new Error(`${currency} not supported`);
+    }
     usToPres = 1 / exchangeRates.USD;
     destToPres = 1 / exchangeRates[aliasCurrency];
+    // if (isNaN(destToPres)) throw new Error(`${aliasCurrency} not supported for `);
+
     decimalMultiplierUsToPres = StripeService.decimalMultiplier('USD', currency);
     const decimalMultiplierSettleToPres = StripeService.decimalMultiplier(aliasCurrency, currency);
     cart = CartService.convert(aliasCart, destToPres, currency, decimalMultiplierSettleToPres);

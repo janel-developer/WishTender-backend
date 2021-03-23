@@ -20,7 +20,7 @@ const OrderService = require('../services/OrderService');
 const OrderModel = require('../models/Order.Model');
 const AliasModel = require('../models/Alias.Model');
 const { validate } = require('email-validator');
-const { body, check, validationResult } = require('express-validator');
+const { body, cookie, validationResult } = require('express-validator');
 
 const ExchangeRatesApiInterface = require('../lib/ExchangeRatesApiInterface');
 const ratesApi = new ExchangeRatesApiInterface();
@@ -183,54 +183,71 @@ module.exports = () => {
   });
   checkoutRoutes.post(
     '/',
-    // validate that stripe account confirmed
+    //to do===> validate that stripe account confirmed/active
 
     async (req, res, next) => {
       const aliasId = req.body.alias;
       if (!ObjectId.isValid(aliasId))
-        return res.status(400).send({ message: `Alias id not valid` });
+        return res.status(400).send({ message: `Alias id not valid.` });
 
       const alias = await AliasModel.findById(aliasId);
 
       if (!alias) return res.status(404).send({ message: `Alias doesn't exist` });
       return next();
     },
+    cookie('currency', 'No currency set').custom(
+      (currency, { req, location, path }) => (req.user && req.user.currency) || currency
+    ),
+    cookie('currency', 'Cookie currency must be upper case and 3 letters or you must be logged in.')
+      .isUppercase()
+      .isLength({ min: 3, max: 3 }),
     body('alias', `No alias id included.`).exists(),
     body('order', `Missing order info`).exists(),
     body('order.buyerInfo.fromLine', `Must be less than 25 characters.`).isLength({ max: 35 }),
     body('order.buyerInfo.email', `Invalid email.`).isEmail(),
-    body('order.noteToWisher', `Note too long.`)
-      .optional()
-      .custom(async (note, { req, location, path }) => {
-        const aliasCart = req.session.cart.aliasCarts[req.body.alias];
-        const { currency } = aliasCart.alias;
-        const { totalPrice } = aliasCart;
-        // get US price in dollar units
-        let itemToUSD;
-        if (currency === 'USD') {
-          itemToUSD = totalPrice;
-        } else {
-          // get conversion
-          const rate = await ratesApi.getExchangeRate(currency, 'USD');
-          const decimalMultiplier = StripeService.decimalMultiplier(currency, 'USD');
-          // we have to convert the price to the correct units, test with other units that this whole thing works
-          itemToUSD = Math.round(rate * totalPrice * decimalMultiplier);
-        }
-        const usdDollars = unitToStandard(itemToUSD, 'USD');
-        const noteLengthOK = note.length <= usdDollars;
-        if (!noteLengthOK)
-          throw new Error(
-            `Note must be less than ${usdDollars} characters. You're note is ${
-              note.length - usdDollars
-            } characters too long. Or add items to your gift to access more characters.`
-          );
-        return true;
-      }),
+    async (req, res, next) => {
+      // this validation was called imperatively to get access to next()
+      await body('order.noteToWisher', `Note too long.`)
+        .optional()
+        .custom(async (note, { req, location, path }) => {
+          const aliasCart = req.session.cart.aliasCarts[req.body.alias];
+          const { currency } = aliasCart.alias;
+          const { totalPrice } = aliasCart;
+          // get US price in dollar units
+          let itemToUSD;
+          if (currency === 'USD') {
+            itemToUSD = totalPrice;
+          } else {
+            let rate;
+            // get conversion
+            try {
+              // api.exchangeratesapi.io supports all the currencies of cross-borderpayouts as of 3/23/21. If this fails then we need to check if stripe or the rates api has changed
+              rate = await ratesApi.getExchangeRate(currency, 'USD');
+            } catch (error) {
+              return next(error);
+            }
+            const decimalMultiplier = StripeService.decimalMultiplier(currency, 'USD');
+            // we have to convert the price to the correct units, test with other units that this whole thing works
+            itemToUSD = Math.round(rate * totalPrice * decimalMultiplier);
+          }
+          const usdDollars = unitToStandard(itemToUSD, 'USD');
+          const noteLengthOK = note.length <= usdDollars;
+          if (!noteLengthOK)
+            throw new Error(
+              `Note must be less than ${usdDollars} characters. You're note is ${
+                note.length - usdDollars
+              } characters too long. Or add items to your gift to access more characters.`
+            );
+          return true;
+        })
+        .run(req);
+      next();
+    },
 
     (req, res, next) => {
       const errors = validationResult(req).array();
       if (errors.length) {
-        return res.status(400).send({ message: 'Form validation errors', errors });
+        return res.status(400).send({ errors });
       }
       return next();
     },
