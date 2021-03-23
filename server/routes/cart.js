@@ -22,13 +22,13 @@ module.exports = () => {
       const currentCart = req.session.cart || null;
       try {
         const cart = await addToCart(itemId, currentCart);
+        req.session.cart = cart;
+        logger.log('silly', `Cart in session updated: ${JSON.stringify(req.session.cart)}`);
+        res.status(201).send(req.session.cart);
       } catch (error) {
         if (error.info.status === 500) return next(error);
         return res.status(error.info.status).send({ message: error.message });
       }
-      req.session.cart = cart;
-      logger.log('silly', `Cart in session updated: ${JSON.stringify(req.session.cart)}`);
-      res.status(201).send(req.session.cart);
     }
   );
   cartRoutes.patch('/remove-from-cart', async (req, res, next) => {
