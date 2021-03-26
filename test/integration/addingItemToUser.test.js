@@ -1,121 +1,145 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const www = require('../../bin/www');
-
+let server;
 const helper = require('../helper');
 const { validAlias } = require('../helper');
 
 chai.use(chaiHttp);
-const agent = chai.request.agent(www);
-
+let agent;
 const should = chai.should();
 const { expect } = chai;
 
 describe('add item to user', () => {
-  before(async () => helper.before());
-  after(async () => helper.after());
+  before(async function () {
+    this.timeout(300000000);
+    server = await require('../../bin/www')();
+    agent = chai.request.agent(server.app);
+
+    helper.before();
+  });
+  after(async () => {
+    server.server.close();
+    helper.after();
+  });
   let user;
   let alias;
   let alias2;
   let user2;
   let wishlist;
-  let wishlist2;
+  let wishlistId2;
   let wishlistItem;
   let wishlistItem2;
 
-  context('/users/registration', () => {
-    it('creating user', async () => {
-      const response = await agent.post('/users/registration').send(helper.validUser);
+  context('/api/users/registration', () => {
+    it('creating user', async function () {
+      this.timeout(10000);
+
+      const response = await agent.post('/api/users/registration').send(helper.validUser);
       user = response.body;
       user.should.be.an('Object');
-      user.username.should.equal(helper.validUser.username);
+      user.email.should.equal(helper.validUser.email);
       expect(user.password).to.be.an('undefined');
       user.confirmed.should.be.equal(false);
     });
 
-    it('create other user to test against', async () => {
+    it('create other user to test against', async function () {
+      this.timeout(10000);
+
+      // user2
       const user2Info = { email: 'p@z.com', username: 'user2', password: 'passwordzzz' };
       user2Info.confirmed = true;
       await user2Info;
-      const response = await chai.request(www).post('/users/registration').send(user2Info);
-      await agent.post('/users/login').send({ email: 'p@z.com', password: 'passwordzzz' });
+      const response = await chai
+        .request(server.app)
+        .post('/api/users/registration')
+        .send(user2Info);
+      const y = await agent
+        .post('/api/users/login')
+        .send({ email: 'p@z.com', password: 'passwordzzz' });
       user2 = response.body;
 
+      // add alias to user2
       const newAlias = validAlias;
       newAlias.user = user2._id;
-      const aliasResp = await agent.post(`/aliases/`).send(newAlias);
+      newAlias.country = 'US';
+      const aliasResp = await agent.post(`/api/aliases/`).send(newAlias);
       alias2 = aliasResp.body;
-      const newWishlist = helper.validWishlist;
-      newWishlist.user = user2._id;
-      newWishlist.alias = alias2._id;
-      const wishlistResp = await agent.post(`/wishlists/`).send(newWishlist);
-      wishlist2 = wishlistResp.body;
-      const newItem = helper.validWishlistItem;
-      newItem.wishlist = wishlist2._id;
-      newItem.user = user2._id;
-      wishlistItem2 = await agent.post(`/wishlistItems/`).send(newItem);
 
-      wishlist2 = wishlistResp.body;
-      wishlist2.alias.toString().should.equal(alias2._id);
+      // add item to user2
+      wishlistId2 = alias2.wishlists[0];
+      const newItem = helper.validWishlistItem;
+      newItem.wishlist = wishlistId2;
+      newItem.user = user2._id;
+      wishlistItem2 = await agent.post(`/api/wishlistItems/`).send(newItem);
+      wishlistItem2 = wishlistItem2.body;
+
       user2.should.be.an('Object');
-      user2.should.be.an('Object');
-      user2.username.should.equal(user2.username);
+      user2.email.should.equal(user2.email);
       expect(user2.password).to.be.an('undefined');
     });
   });
-  context('/users/login', () => {
+  context('/api/users/login', () => {
     it('shouldnt login user before confirming', async () => {
       const response = await agent
-        .post('/users/login')
+        .post('/api/users/login')
         .send({ email: helper.validUser.email, password: helper.validUser.password });
-      const responseText = response.text;
-      responseText.should.equal(
-        'You were redirected because your login failed: User account not confirmed.'
-      );
+      const responsebody = response.body;
+      responsebody.message[0].should.equal('User account not confirmed.');
     });
-    it('should confirm a user', async () => {
+    it('should redirect user after clicking confirmation link', async () => {
       const token = await helper.TokenModel.findOne({ user: user._id });
-      await agent.get(`/confirmation/${user.email}/${token.token}`);
+      const res = await agent
+        .get(`/api/confirmation/${user.email}/${token.token}`)
+        .redirects(0)
+        .send();
+
+      res.status.should.be.equal(301);
+    });
+    it('should confirm user', async () => {
+      const token = await helper.TokenModel.findOne({ user: user._id });
+      const res = await agent.patch(`/api/confirmation/confirm`).send({
+        email: user.email,
+        token: token.token,
+      });
+
+      res.status.should.be.equal(200);
       const mainUser = await helper.UserModel.findById(user._id);
       mainUser.confirmed.should.be.equal(true);
     });
 
     it('should login user after confirmed changed to true', async () => {
+      console.log(user);
       const response = await agent
-        .post('/users/login')
+        .post('/api/users/login')
         .send({ email: helper.validUser.email, password: helper.validUser.password });
       const responseText = response.text;
-      responseText.should.equal('Welcome ');
+      responseText.should.equal('{"profile":null}');
     });
   });
-  context('/alias/ post', () => {
+  context('/api/alias/ post', () => {
     it('add an alias to user', async () => {
       const newAlias = validAlias;
       newAlias.user = user._id;
       newAlias.handle = 'somename';
-      const response = await agent.post(`/aliases/`).send(newAlias);
+      const response = await agent.post(`/api/aliases/`).send(newAlias);
       alias = response.body;
 
       alias.handle.should.equal(newAlias.handle);
     });
-    it('should not edit an alias of another user', async () => {
-      const newAlias = validAlias;
-      newAlias.user = user2._id;
-      const response = await agent.post(`/aliases/`).send(newAlias);
-      response.status.should.equal(500);
-    });
   });
-  context('/alias/:id put', () => {
+  context('/api/alias/:id patch', () => {
     it('update alias', async () => {
-      const response = await agent.put(`/aliases/${alias._id}`).send({ aliasName: 'dashieboobs' });
-      const responseName = response.body.aliasName;
-      responseName.should.equal('dashieboobs');
+      wishlistId2;
+      const response = await agent
+        .patch(`/api/aliases/${alias._id}`)
+        .send({ aliasName: 'dashieboobs' });
+      response.status.should.be.equal(200);
     });
     it(' should not update an alias owned by someone else', async () => {
       const response = await agent
-        .put(`/aliases/${alias2._id}`)
+        .patch(`/api/aliases/${alias2._id}`)
         .send({ username: 'dashieBoobies' });
-      response.status.should.equal(500); // should actually be 401 not authorized
+      response.status.should.equal(403);
     });
   });
 
@@ -124,7 +148,7 @@ describe('add item to user', () => {
       const body = helper.validWishlist;
       body.alias = alias._id;
       body.user = user._id;
-      const response = await agent.post(`/wishlists/`).send(body);
+      const response = await agent.post(`/api/wishlists/`).send(body);
       wishlist = response.body;
       response.body.alias.toString().should.equal(alias._id);
     });
@@ -132,22 +156,22 @@ describe('add item to user', () => {
       const body = helper.validWishlist;
       body.alias = alias2._id;
       body.user = user2._id;
-      const response = await agent.post(`/wishlists/`).send(body);
-      response.status.should.equal(500);
+      const response = await agent.post(`/api/wishlists/`).send(body);
+      response.status.should.equal(403);
     });
   });
-  context('/wishlists/ put', () => {
+  context('/wishlists/ patch', () => {
     it('should update a wishlist', async () => {
       const body = { wishlistName: 'newname' };
-      const response = await agent.put(`/wishlists/${wishlist._id}`).send(body);
-      response.body.wishlistName.toString().should.equal('newname');
+      const response = await agent.patch(`/api/wishlists/${wishlist._id}`).send(body);
+      response.status.should.equal(200);
     });
     it('shouldnt update a wishlist of a different user', async () => {
       const body = helper.validWishlist;
       body.alias = alias2._id;
       body.user = user2._id;
-      const response = await agent.put(`/wishlists/${wishlist2._id}`).send(body);
-      response.status.should.equal(500);
+      const response = await agent.put(`/api/wishlists/${wishlistId2}`).send(body);
+      response.status.should.equal(403);
     });
   });
   context('/wishlistItems/ post', () => {
@@ -155,58 +179,59 @@ describe('add item to user', () => {
       const body = helper.validWishlistItem;
       body.wishlist = wishlist._id;
       body.user = user._id;
-      const response = await agent.post(`/wishlistItems/`).send(body);
+      const response = await agent.post(`/api/wishlistItems/`).send(body);
       wishlistItem = response.body;
       response.body.itemName.should.equal(helper.validWishlistItem.itemName);
     });
-    it('shouldnt add a wishlistItem to of a different users wishlist', async () => {
-      const body = helper.validWishlist;
-      body.alias = alias2._id;
+    it('shouldnt add a wishlistItem to a different users wishlist', async () => {
+      const body = helper.validWishlistItem;
+      body.wishlist = wishlistId2;
       body.user = user2._id;
-      const response = await agent.post(`/wishlists/`).send(body);
-      response.status.should.equal(500);
+      const response = await agent.post(`/api/wishlistItems/`).send(body);
+      response.status.should.equal(403);
     });
   });
-  context('/wishlistItems/ put', () => {
+  context('/wishlistItems/ patch', () => {
     it('should update a wishlistItem', async () => {
       const body = { itemName: 'newname' };
-      const response = await agent.put(`/wishlistItems/${wishlistItem._id}`).send(body);
+      const response = await agent.put(`/api/wishlistItems/${wishlistItem._id}`).send(body);
       response.body.itemName.toString().should.equal('newname');
     });
     it('shouldnt update a wishlist of a different user', async () => {
       const body = { itemName: 'newname' };
-      const response = await agent.put(`/wishlistItems/${wishlistItem2._id}`).send(body);
-      response.status.should.equal(500);
+      const response = await agent.put(`/api/wishlistItems/${wishlistItem2._id}`).send(body);
+      response.status.should.equal(403);
     });
   });
   context('/wishlistItems/:id delete', () => {
     it('should delete an wishlist item', async () => {
-      const response = await agent.delete(`/wishlistItems/${wishlistItem._id}`);
-      response.body._id.toString().should.equal(wishlistItem._id);
+      const response = await agent.delete(`/api/wishlistItems/${wishlistItem._id}`);
+      response.status.should.equal(204);
     });
     it('shouldnt delete a different users wishlist item', async () => {
-      const response = await agent.delete(`/wishlistItems/${wishlist2._id}`);
-      response.status.should.equal(500);
+      const response = await agent.delete(`/api/wishlistItems/${wishlistItem2._id}`);
+      response.status.should.equal(403);
     });
   });
   context('/wishlists/:id delete', () => {
     it('should delete a wishlist', async () => {
-      const response = await agent.delete(`/wishlists/${wishlist._id}`);
+      const response = await agent.delete(`/api/wishlists/${wishlist._id}`);
       response.body._id.toString().should.equal(wishlist._id);
     });
     it('shouldnt delete a different users wishlist', async () => {
-      const response = await agent.delete(`/wishlists/${wishlist2._id}`);
-      response.status.should.equal(500);
+      const response = await agent.delete(`/api/wishlists/${wishlistId2}`);
+      console.log(user);
+      response.status.should.equal(403);
     });
   });
   context('/aliases/:id delete', () => {
     it('should delete an alias', async () => {
-      const response = await agent.delete(`/aliases/${alias._id}`);
+      const response = await agent.delete(`/api/aliases/${alias._id}`);
       response.body._id.toString().should.equal(alias._id);
     });
     it('shouldnt delete a different users alias', async () => {
-      const response = await agent.delete(`/aliases/${alias2._id}`);
-      response.status.should.equal(500);
+      const response = await agent.delete(`/api/aliases/${alias2._id}`);
+      response.status.should.equal(403);
     });
   });
 });

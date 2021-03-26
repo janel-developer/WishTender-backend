@@ -26,6 +26,8 @@ class StripeService {
     this.stripeAccountInfoService = new StripeAccountInfoService(StripeAccountInfoModel);
     this.StripeAccountInfoService = StripeAccountInfoService;
     this.AliasModel = AliasModel;
+
+    // https://stripe.com/docs/connect/cross-border-payouts
     this.supportedPayoutCountries = [
       'AU',
       'AT',
@@ -65,7 +67,7 @@ class StripeService {
   }
 
   /**
-   * Create LineItems
+   * Rate * fromCurrencyAmount(in smallest unit) * decimal Multiplier = toCurrencyAmount(in smallest unit)
    * @param {String} fromCurrency
    * @param {String} toCurrency
    */

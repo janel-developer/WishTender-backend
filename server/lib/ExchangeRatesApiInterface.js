@@ -7,6 +7,43 @@ class ExchangeRateApiInterface {
    */
   constructor() {
     this.baseURI = 'https://api.exchangeratesapi.io';
+    this.supportedCurrencies = [
+      // is this necessary? it will not be in sync with actual api and you can probably figure it out from an api call
+      // https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html x=[]; for (i = 0; i < 90; i++) {x.push(document.querySelector("#main-wrapper > main > div.jumbo-box > div.lower > div > div > table > tbody > tr:nth-child("+(i+1)+")").children[0].innerText)}
+      'EUR',
+      'USD',
+      'JPY',
+      'BGN',
+      'CZK',
+      'DKK',
+      'GBP',
+      'HUF',
+      'PLN',
+      'RON',
+      'SEK',
+      'CHF',
+      'ISK',
+      'NOK',
+      'HRK',
+      'RUB',
+      'TRY',
+      'AUD',
+      'BRL',
+      'CAD',
+      'CNY',
+      'HKD',
+      'IDR',
+      'ILS',
+      'INR',
+      'KRW',
+      'MXN',
+      'MYR',
+      'NZD',
+      'PHP',
+      'SGD',
+      'THB',
+      'ZAR',
+    ];
   }
 
   /**
@@ -35,7 +72,7 @@ class ExchangeRateApiInterface {
       .get(`${this.baseURI}/latest?base=${baseCurrency}`)
       .then((x) => x.data.rates)
       .catch((response) => {
-        throw new Error(`Error: ${response.response.data.error}`);
+        throw new Error(`${response.response.data.error}`);
       });
     return exchangeRate;
   }

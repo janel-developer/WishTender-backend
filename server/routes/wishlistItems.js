@@ -81,16 +81,21 @@ async function throwIfNotAuthorizedResource(req, res, next) {
     return next(new ApplicationError({}, `Not Authorized.`));
   }
   if (req.method === 'POST') {
-    if (req.user.wishlists.includes(req.params.id)) {
-      return next(
-        new ApplicationError(
-          { currentUser: req.user._id, owner: wishlist.user },
-          `Not Authorized. Cannot add wishlistItem to wishlist that doesn't belong to logged in user. User:${req.user._id}. Owner: ${wishlist.user}`
-        )
-      );
+    // need get wish list to get user id or get alis to get wishlist id
+    let wishlist;
+    try {
+      wishlist = await wishlistService.getWishlist(req.body.wishlist);
+    } catch (err) {
+      next(err);
+    }
+
+    if (wishlist.user.toString() !== req.user._id.toString()) {
+      return res.status(403).send({
+        message: `Cannot add wishlistItem to wishlist that doesn't belong to logged in user.`,
+      });
     }
   }
-  if (req.method === 'PUT' || req.method === 'DELETE') {
+  if (req.method === 'PUT' || req.method === 'PATCH' || req.method === 'DELETE') {
     let wishlistItem;
     try {
       wishlistItem = await wishlistItemService.getWishlistItem(req.params.id);
@@ -101,12 +106,9 @@ async function throwIfNotAuthorizedResource(req, res, next) {
       return next(new ApplicationError({}, `No wishlist item found. id: ${req.params.id}`));
     // should authorize that user of wishlistItem is req.user
     if (wishlistItem.user.toString() !== req.user._id.toString()) {
-      return next(
-        new ApplicationError(
-          { currentUser: req.user._id, owner: wishlistItem.user },
-          `Not Authorized. WishlistItem doesn't belong to logged in user. User:${req.user._id}. Owner: ${wishlistItem.user}`
-        )
-      );
+      return res.status(403).send({
+        message: `WishlistItem doesn't belong to logged in user.`,
+      });
     }
   }
 
@@ -126,8 +128,8 @@ module.exports = () => {
         const itemInfo = { ...req.body };
         if (imageFile) itemInfo.itemImage = `/data/images/itemImages/${imageFile}`;
         delete itemInfo.imageCrop;
-        await wishlistItemService.addWishlistItem(itemInfo);
-        //if image uploaded succefully, delete old image
+        const item = await wishlistItemService.addWishlistItem(itemInfo);
+        return res.status(201).send(item);
       } catch (err) {
         if (req.file && req.file.storedFilename) {
           await imageService.delete(req.file.storedFilename);
@@ -137,7 +139,6 @@ module.exports = () => {
           new ApplicationError({ err, body: req.body }, `wishlist item could not be added: ${err}`)
         );
       }
-      return res.send(200);
     }
   );
 

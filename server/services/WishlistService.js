@@ -38,6 +38,15 @@ class WishlistService {
         `Not able to add wishlist. Alias not found. ${err.message}`
       );
     }
+    let user;
+    try {
+      user = await UserModel.findById(alias.user);
+    } catch (err) {
+      throw new ApplicationError(
+        { aliasId, wishlistValues },
+        `Not able to add wishlist. User not found. ${err.message}`
+      );
+    }
     try {
       newWishlist = await this.WishlistModel.create(wishlist);
     } catch (err) {
@@ -48,7 +57,9 @@ class WishlistService {
     }
 
     alias.wishlists.push({ _id: newWishlist._id });
+    user.wishlists.push({ _id: newWishlist._id });
     await alias.save();
+    await user.save();
 
     return newWishlist;
   }

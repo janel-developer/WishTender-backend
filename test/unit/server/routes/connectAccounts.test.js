@@ -20,25 +20,32 @@ let user = {
   save() {},
 };
 let accountInfo;
-const setUser = sinon.stub(auth, 'session').callsFake((req, res, next) => {
-  req.user = user;
-  next();
-});
-
 let account;
 
-const www = require('../../../../bin/www');
-const agent = chai.request.agent(www);
+let www;
+let agent;
 
 describe('connect account routes', async function () {
   let db;
   let connection;
   before(async () => {
+    const setUser = sinon.stub(auth, 'session').callsFake((req, res, next) => {
+      req.user = user;
+      next();
+    });
+
+    let account;
+
+    www = require('../../../../bin/www');
+    agent = chai.request.agent(www);
     connection = await MongoClient.connect('mongodb://localhost:27017/test', {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
     db = await connection.db('test');
+  });
+  after(() => {
+    auth.session.restore();
   });
   const alias = { save: () => {} };
 

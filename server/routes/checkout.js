@@ -5,11 +5,13 @@ const stripe = require('stripe')(
     : process.env.STRIPE_SECRET_TEST_KEY
 );
 const express = require('express');
+const { ObjectId } = require('mongoose').Types;
 const logger = require('../lib/logger');
 const StripeService = require('../services/StripeService');
 const CartService = require('../services/CartService');
 const CheckoutService = require('../services/CheckoutService');
 const { ApplicationError } = require('../lib/Error');
+const { currencyInfo, unitToStandard } = require('../lib/currencyFormatHelpers');
 
 const checkoutRoutes = express.Router();
 
@@ -18,7 +20,7 @@ const OrderService = require('../services/OrderService');
 const OrderModel = require('../models/Order.Model');
 const AliasModel = require('../models/Alias.Model');
 const { validate } = require('email-validator');
-const { body, check, validationResult } = require('express-validator');
+const { body, cookie, validationResult } = require('express-validator');
 
 const ExchangeRatesApiInterface = require('../lib/ExchangeRatesApiInterface');
 const ratesApi = new ExchangeRatesApiInterface();
@@ -181,56 +183,96 @@ module.exports = () => {
   });
   checkoutRoutes.post(
     '/',
-    // validate that stripe account confirmed
+    //to do===> validate that stripe account confirmed/active
 
-    // body('Order', `Order doesn't exist`).exists(),
-    // body('order.noteToWisher', `Note too long.`)
-    //   .optional()
-    //   .custom(async (note, { req, location, path }) => {
-    //     const aliasCart = req.session.cart.aliasCarts[req.body.alias];
-    //     const { currency } = aliasCart.alias;
-    //     const { totalPrice } = aliasCart;
-    //     // get US price in dollar units
-    //     let itemToUSD;
-    //     if (currency === 'USD') {
-    //       itemToUSD = totalPrice;
-    //     } else {
-    //       // get conversion
-    //       const rate = await ratesApi.getExchangeRate(currency, 'USD');
-
-    //       // we have to convert the price to the correct units, test with other units that this whole thing works
-    //       itemToUSD = rate * totalPrice;
-    //     }
-    //     return note.length <= itemToUSD;
-    //   }),
-    // (req, res, next) => {
-    //   const errors = validationResult(req).array();
-    //   if (errors.length) {
-    //     return next(new ApplicationError({}, JSON.stringify(errors)));
-    //   }
-    //   return next();
-    // },
     async (req, res, next) => {
-      logger.log('silly', `starting checkout flow...`);
+      const aliasId = req.body.alias;
+      if (!ObjectId.isValid(aliasId))
+        return res.status(400).send({ message: `Alias id not valid.` });
+
+      const alias = await AliasModel.findById(aliasId);
+
+      if (!alias) return res.status(404).send({ message: `Alias doesn't exist` });
+      return next();
+    },
+    cookie('currency', 'No currency set').custom(
+      (currency, { req, location, path }) => (req.user && req.user.currency) || currency
+    ),
+    cookie('currency', 'Cookie currency must be upper case and 3 letters or you must be logged in.')
+      .isUppercase()
+      .isLength({ min: 3, max: 3 }),
+    body('alias', `No alias id included.`).exists(),
+    body('order', `Missing order info`).exists(),
+    body('order.buyerInfo.fromLine', `Must be less than 25 characters.`).isLength({ max: 35 }),
+    body('order.buyerInfo.email', `Invalid email.`).isEmail(),
+    async (req, res, next) => {
+      // this validation was called imperatively to get access to next()
+      await body('order.noteToWisher', `Note too long.`)
+        .optional()
+        .custom(async (note, { req, location, path }) => {
+          const aliasCart = req.session.cart.aliasCarts[req.body.alias];
+          const { currency } = aliasCart.alias;
+          const { totalPrice } = aliasCart;
+          // get US price in dollar units
+          let itemToUSD;
+          if (currency === 'USD') {
+            itemToUSD = totalPrice;
+          } else {
+            let rate;
+            // get conversion
+            try {
+              // api.exchangeratesapi.io supports all the currencies of cross-borderpayouts as of 3/23/21. If this fails then we need to check if stripe or the rates api has changed
+              rate = await ratesApi.getExchangeRate(currency, 'USD');
+            } catch (error) {
+              return next(error);
+            }
+            const decimalMultiplier = StripeService.decimalMultiplier(currency, 'USD');
+            // we have to convert the price to the correct units, test with other units that this whole thing works
+            itemToUSD = Math.round(rate * totalPrice * decimalMultiplier);
+          }
+          const usdDollars = unitToStandard(itemToUSD, 'USD');
+          const noteLengthOK = note.length <= usdDollars;
+          if (!noteLengthOK)
+            throw new Error(
+              `Note must be less than ${usdDollars} characters. You're note is ${
+                note.length - usdDollars
+              } characters too long. Or add items to your gift to access more characters.`
+            );
+          return true;
+        })
+        .run(req);
+      next();
+    },
+
+    (req, res, next) => {
+      const errors = validationResult(req).array();
+      if (errors.length) {
+        return res.status(400).send({ errors });
+      }
+      return next();
+    },
+    async (req, res, next) => {
       // check price updates
+      logger.log('silly', `checking prices are still current`);
+
       const aliasId = req.body.alias;
       const aliasCart = req.session.cart.aliasCarts[aliasId];
       const result = await CartService.updateAliasCartPrices(aliasCart);
       if (result.modified) {
         req.session.cart.aliasCarts[aliasId] = result.aliasCart;
-
-        return next(
-          new ApplicationError(
-            {},
-            'Some prices in your cart have been updated by the wishlist owner. Please check prices before continuing'
-          )
-        );
+        return res.status(409).send({
+          message:
+            'Some items in your cart have been updated by the wishlist owner or are no longer available. Refresh cart to check updated item prices before continuing.',
+        });
       }
+
+      logger.log('silly', `starting checkout flow...`);
       const currency = req.user ? req.user.currency : null || req.cookies.currency;
       const orderObject = req.body.order;
+      orderObject.alias = req.body.alias;
       try {
         const checkoutSession = await CheckoutService.checkout(aliasCart, currency, orderObject);
-        res.send(JSON.stringify({ checkoutSessionId: checkoutSession.id }));
+        res.status(201).send(JSON.stringify({ checkoutSessionId: checkoutSession.id }));
       } catch (err) {
         next(err);
       }

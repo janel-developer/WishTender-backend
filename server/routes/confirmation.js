@@ -67,7 +67,7 @@ module.exports = () => {
    *
    * confirms email on user account
    *
-   * res 201
+   * res 200
    */
   confirmationRoutes.patch('/confirm', (req, res, next) => {
     try {
@@ -93,7 +93,7 @@ module.exports = () => {
             user.save();
           }
 
-          return res.status(201).send();
+          return res.status(200).send();
         });
       });
     } catch (error) {
