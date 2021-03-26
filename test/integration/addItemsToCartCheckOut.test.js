@@ -3,12 +3,12 @@ const MongoClient = require('mongodb');
 const chaiHttp = require('chai-http');
 const sinon = require('sinon');
 const helper = require('../helper');
-const www = require('../../bin/www');
+let www;
 const WishlistItem = require('../../server/models/WishlistItem.Model');
 const mongoose = require('mongoose');
 
 chai.use(chaiHttp);
-const agent = chai.request.agent(www);
+let agent;
 
 const should = chai.should();
 
@@ -17,6 +17,8 @@ describe('add items to cart checkout', () => {
   let sessionId;
   let connection;
   before(async () => {
+    www = await require('../../bin/www')();
+    agent = chai.request.agent(www.app);
     connection = await MongoClient.connect('mongodb://localhost:27017/test', {
       useNewUrlParser: true,
       useUnifiedTopology: true,
@@ -24,6 +26,7 @@ describe('add items to cart checkout', () => {
     db = await connection.db('test');
   });
   after(async () => {
+    www.server.close();
     if (Object.getPrototypeOf(WishlistItem).findOne.restore)
       Object.getPrototypeOf(WishlistItem).findOne.restore();
   });

@@ -125,13 +125,14 @@ describe('connect account create', () => {
       next();
     });
 
-    www = require('../../bin/www');
-    agent = chai.request.agent(www);
+    www = await require('../../bin/www')();
+    agent = chai.request.agent(www.app);
     let accountInfo = { capabilities: { transfers: 'active' } };
     sinon.stub(StripeService.prototype, 'retrieveAccount').returns(accountInfo);
   });
 
   after(async () => {
+    www.server.close();
     auth.session.restore();
     helper.after();
 

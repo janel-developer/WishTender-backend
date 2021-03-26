@@ -1,19 +1,26 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const www = require('../../bin/www');
-
+let server;
 const helper = require('../helper');
 const { validAlias } = require('../helper');
 
 chai.use(chaiHttp);
-const agent = chai.request.agent(www);
-
+let agent;
 const should = chai.should();
 const { expect } = chai;
 
 describe('add item to user', () => {
-  before(async () => helper.before());
-  after(async () => helper.after());
+  before(async function () {
+    this.timeout(300000000);
+    server = await require('../../bin/www')();
+    agent = chai.request.agent(server.app);
+
+    helper.before();
+  });
+  after(async () => {
+    server.server.close();
+    helper.after();
+  });
   let user;
   let alias;
   let alias2;
@@ -24,7 +31,9 @@ describe('add item to user', () => {
   let wishlistItem2;
 
   context('/api/users/registration', () => {
-    it('creating user', async () => {
+    it('creating user', async function () {
+      this.timeout(10000);
+
       const response = await agent.post('/api/users/registration').send(helper.validUser);
       user = response.body;
       user.should.be.an('Object');
@@ -40,8 +49,13 @@ describe('add item to user', () => {
       const user2Info = { email: 'p@z.com', username: 'user2', password: 'passwordzzz' };
       user2Info.confirmed = true;
       await user2Info;
-      const response = await chai.request(www).post('/api/users/registration').send(user2Info);
-      await agent.post('/api/users/login').send({ email: 'p@z.com', password: 'passwordzzz' });
+      const response = await chai
+        .request(server.app)
+        .post('/api/users/registration')
+        .send(user2Info);
+      const y = await agent
+        .post('/api/users/login')
+        .send({ email: 'p@z.com', password: 'passwordzzz' });
       user2 = response.body;
 
       // add alias to user2
