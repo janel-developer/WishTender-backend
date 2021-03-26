@@ -107,7 +107,6 @@ userSchema.methods.comparePassword = async function comparePassword(candidate) {
 
 /**
  * @class orderSchema
- * @param {String} username required
  * @param {String} fName
  * @param {String} email required
  * @param {String} password required

@@ -1,6 +1,6 @@
-## exchangeratesapi.io
+# Supported Currencies
 
-### Supported Currencies
+## exchangeratesapi Supported Currencies
 
 ```javascript
 // as of 3/23/21
@@ -107,6 +107,8 @@ stripePayoutDefaultCurrencies = [
 ## Stripe Payout Currencies Supported by exchangeratesapi.io
 
 As of today, 3/23/21, all the default currencies of the stripe payout countries are supported by exchangeratesapi.io.
+
+WishTender must be able to convert gift prices to USD in order to calculate gift card note length. So WishTender can only support cross border connect accounts which our exchange rate API supports.
 
 ```javascript
 currenciesSupportedByBoth = [

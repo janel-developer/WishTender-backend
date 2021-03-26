@@ -1,4 +1,14 @@
 {
+  "Set-Cookie-Headers": [
+    {
+      "if no connect.sid cookie": "Set-Cookie →connect.sid=s%3AgQ9nysgdAJmCm1aaz6Q0p9EFEJZr18Hg.vD%2FIqW8KMiO2yLBBEzSC61bN7qbl1gHBBMr4aPTAoBE; Path=/; HttpOnly"
+    },
+    {
+      "if no locale cookie, and language header is set": "Set-Cookie →locale=%7B%22locale%22%3A%22en%22%2C%22countryCode%22%3Anull%2C%22languageCode%22%3A%22en%22%7D; Max-Age=1616597; Path=/; Expires=Mon, 12 Apr 2021 07:55:21 GMT",
+      "for": "helps front end to predict a currency",
+      "notes": "should this NOT send if there's a currency cookie present? is there anny other use for a locale? I think it maybe also helps format currency, so maybe yea. Which means the user might have to select locale too not just currency?"
+    }
+  ],
   "/api/orders/603a8d02bf6c85032169fe7c": {
     "GET": {
       "request": {},

@@ -113,7 +113,7 @@ module.exports = () => {
         const values = { ...req.body };
         delete values.user;
         values.currency = currency.toUpperCase();
-        const alias = await aliasService.addAlias(req.user._id, values);
+        let alias = await aliasService.addAlias(req.user._id, values);
         logger.log('silly', `alias created`);
 
         await wishlistService.addWishlist(alias._id, {
@@ -121,7 +121,8 @@ module.exports = () => {
           wishlistName: `${alias.aliasName}'s Wishlist`,
         });
         logger.log('silly', `wishlist created`);
-        return res.status(200).json(alias);
+        alias = await aliasService.getAliasById(alias._id);
+        return res.status(201).send(alias);
       } catch (err) {
         return next(err);
       }

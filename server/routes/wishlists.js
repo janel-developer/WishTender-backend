@@ -35,29 +35,17 @@ async function throwIfNotAuthorizedResource(req, res, next) {
   if (req.method === 'POST') {
     // should authorize that owner of alias is req.user
     if (!req.user.aliases.includes(req.body.alias)) {
-      return next(
-        new ApplicationError(
-          { currentUser: req.user._id, owner: alias.user },
-          `Not Authorized. Cannot add wishlist to alias that doesn't belong to logged in user. User:${req.user._id}. Owner: ${alias.user}`
-        )
-      );
+      return res.send(403).send({
+        message: `Not Authorized. Cannot add wishlist to alias that doesn't belong to logged in user.`,
+      });
     }
   }
   if (req.method === 'PUT' || req.method === 'PATCH' || req.method === 'DELETE') {
-    let wishlist;
-    try {
-      wishlist = await wishlistService.getWishlist(req.params.id);
-    } catch (err) {
-      next(err);
-    }
     // should authorize that user of wishlist is req.user
-    if (wishlist.user.toString() !== req.user._id.toString()) {
-      return next(
-        new ApplicationError(
-          { currentUser: req.user._id, owner: wishlist.user },
-          `Not Authorized. Wishlist doesn't belong to logged in user. User:${req.user._id}. Owner: ${wishlist.user}`
-        )
-      );
+    if (!req.user.wishlists.includes(req.params.id)) {
+      return res.send(403).send({
+        message: `Not Authorized. Wishlist doesn't belong to logged in user. `,
+      });
     }
   }
   return next();
@@ -77,7 +65,7 @@ module.exports = () => {
       return next(err);
     }
     logger.log('silly', `wishlist created`);
-    return res.json(wishlist);
+    return res.status(201).json(wishlist);
   });
 
   wishlistRoutes.get('/:id', async (req, res, next) => {

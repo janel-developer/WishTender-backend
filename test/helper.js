@@ -143,7 +143,7 @@ module.exports.connect = async () => {
     await db.connect(config.database.dsn);
   }
 };
-module.exports.deleteMany = async () => {
+const deleteMany = async () => {
   await WishlistModel.deleteMany({});
   await WishlistItemModel.deleteMany({});
   await UserModel.deleteMany({});
@@ -151,6 +151,7 @@ module.exports.deleteMany = async () => {
   await TokenModel.deleteMany({});
   await StripeAccountInfoModel.deleteMany({});
 };
+module.exports.deleteMany = deleteMany;
 
 /* eslint-disable global-require */
 module.exports.before = async () => {
@@ -158,7 +159,7 @@ module.exports.before = async () => {
     await module.exports.connect(config.database.dsn);
   }
   if (UserModel) {
-    await module.deleteMany;
+    await deleteMany();
   }
   return true;
 };
@@ -175,7 +176,6 @@ module.exports.after = async () => {
 };
 
 module.exports.validUser = {
-  username: 'Frank',
   email: 'frank@acme.org',
   password: 'verysecret',
 };
@@ -247,6 +247,12 @@ module.exports.sessionIdFromRes = (res) => {
   const setCookieHeader = res.header['set-cookie'][0];
   const regex = /(?<=connect.sid=s%3A)(.*)(?=\.)/g;
   const sessionId = setCookieHeader.match(regex)[0];
+  return sessionId;
+};
+module.exports.sessionIdFromResReq = (res) => {
+  const cookieHeader = res.req._headers.cookie;
+  const regex = /(?<=connect.sid=s%3A)(.*)(?=\.)/g;
+  const sessionId = cookieHeader.match(regex)[0];
   return sessionId;
 };
 

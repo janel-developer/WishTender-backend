@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const helper = require('../helper');
 const www = require('../../bin/www');
 const WishlistItem = require('../../server/models/WishlistItem.Model');
-
+console.log('old tests');
 chai.use(chaiHttp);
 const agent = chai.request.agent(www);
 

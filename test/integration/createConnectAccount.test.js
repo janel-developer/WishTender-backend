@@ -24,7 +24,7 @@ const should = chai.should();
 
 chai.use(chaiHttp);
 
-describe('connect account routes', () => {
+describe('connect account create', () => {
   let connection;
   let loggedInUser;
   let user1;
@@ -36,6 +36,7 @@ describe('connect account routes', () => {
   let wishlistItem1;
   const seedTestDatabase = async () => {
     user1 = await helper.createTestUser();
+
     const userValues = helper.validUser;
     userValues.email = 'p@fee.com';
     userValues.username = 'peeper';
@@ -123,6 +124,7 @@ describe('connect account routes', () => {
       req.user = loggedInUser;
       next();
     });
+
     www = require('../../bin/www');
     agent = chai.request.agent(www);
     let accountInfo = { capabilities: { transfers: 'active' } };
@@ -130,6 +132,7 @@ describe('connect account routes', () => {
   });
 
   after(async () => {
+    auth.session.restore();
     helper.after();
 
     const deleteAccount = async (user, accountId) => {
@@ -148,6 +151,7 @@ describe('connect account routes', () => {
   context('create account', function () {
     it('should not send account link because wrong currency', async function () {
       loggedInUser = user1;
+      auth;
       this.timeout(5000000);
       const response = await agent
         .post('/api/connectAccount/createConnect')

@@ -29,6 +29,7 @@ const wishlistSchema = new mongoose.Schema(
     wishlistMessage: {
       type: String,
     },
+
     coverImage: {
       type: String,
     },
