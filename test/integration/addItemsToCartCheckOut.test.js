@@ -52,7 +52,7 @@ describe('cart add and remove items', () => {
         .set('Accept-Language', 'en');
 
       res.status.should.be.equal(400);
-      res.body.message.should.be.equal('No cart.');
+      res.body.message.should.be.equal('No Cart.');
     });
   });
   context('reduce item', () => {
@@ -65,7 +65,16 @@ describe('cart add and remove items', () => {
         .set('Accept-Language', 'en');
 
       res.status.should.be.equal(400);
-      res.body.message.should.be.equal('No cart.');
+      res.body.message.should.be.equal('No Cart.');
+    });
+  });
+  context('get cart', () => {
+    it('should return no body', async () => {
+      const res = await agent.get('/api/cart/');
+
+      res.status.should.be.equal(200);
+      // eslint-disable-next-line no-unused-expressions
+      expect(res.body.aliasCarts).to.not.exist;
     });
   });
 
@@ -246,6 +255,15 @@ describe('cart add and remove items', () => {
 
       // eslint-disable-next-line no-unused-expressions
       res.body.errors[0].msg.should.be.equal('No item id included.');
+    });
+  });
+  context('get cart', () => {
+    it('should return cart', async () => {
+      const res = await agent.get('/api/cart/');
+
+      res.status.should.be.equal(200);
+      // eslint-disable-next-line no-unused-expressions
+      expect(res.body.aliasCarts).to.exist;
     });
   });
 });

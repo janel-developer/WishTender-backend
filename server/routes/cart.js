@@ -71,7 +71,7 @@ module.exports = () => {
   cartRoutes.patch(
     '/reduce',
     (req, res, next) => {
-      if (!req.session.cart) return res.status(400).send({ message: `Nothing In Cart.` });
+      if (!req.session.cart) return res.status(400).send({ message: `No Cart.` });
       return next();
     },
     body('itemId', `No item id included.`).exists(),
