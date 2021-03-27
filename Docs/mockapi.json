@@ -154,9 +154,237 @@
         ],
         "errors": [
           {
-            "code": 404,
+            "code": 400,
             "body": {
-              "message": "Item doesn't exist"
+              "message": "Item doesn't exist."
+            }
+          },
+          {
+            "code": 400,
+            "body": {
+              "message": "Form validation errors",
+              "errors": [
+                {
+                  "msg": "No item id included.",
+                  "param": "itemId",
+                  "location": "body"
+                }
+              ]
+            }
+          },
+          {
+            "code": 400,
+            "body": {
+              "message": "Item id not valid."
+            }
+          }
+        ]
+      }
+    }
+  },
+  "/api/cart/remove-from-cart/": {
+    "PATCH": {
+      "request": {
+        "cookies": {
+          "session": {
+            "required": true,
+            "example": {
+              "connect.sid": "s%3AmIxDSVrYYXLyUq_io625Hd3b03_fqaem.e8lUzzBOeoyOUvki01xi3e9bJfw7R0vizODYLK9KyMg"
+            }
+          }
+        },
+        "body": { "itemId": "60564e94457d6517e54db750" }
+      },
+      "responses": {
+        "success": [
+          {
+            "status": 200,
+            "body": {
+              "aliasCarts": {
+                "603a8d02bf6c85032169fe7c": {
+                  "items": {
+                    "603a8e00bf6c85032169fe7e": {
+                      "item": {
+                        "_id": "603a8e00bf6c85032169fe7e",
+                        "itemName": "Gucci Ken Scott Print Hooded Jacket - Farfetch",
+                        "price": 210000,
+                        "url": "https://www.farfetch.com/shopping/women/gucci-ken-scott-print-hooded-jacket-item-16331626.aspx?storeid=10644",
+                        "currency": "USD",
+                        "wishlist": "603a8d02bf6c85032169fe7d",
+                        "itemImage": "/data/images/itemImages/ca1c1ba8-44df-4b0a-8b65-486e2a346f0f.png",
+                        "alias": {
+                          "wishlists": ["603a8d02bf6c85032169fe7d"],
+                          "_id": "603a8d02bf6c85032169fe7c",
+                          "handle": "dadasheshe1",
+                          "aliasName": "KULLi",
+                          "currency": "USD",
+                          "handle_lowercased": "dadasheshe1",
+                          "__v": 1,
+                          "profileImage": "/data/images/profileImages/e22c1277-38d3-4189-a434-dc22be5f86d0.png"
+                        },
+                        "__v": 0
+                      },
+                      "qty": 2,
+                      "price": 420000
+                    },
+                    "60564e94457d6517e54db750": {
+                      "item": {
+                        "_id": "60564e94457d6517e54db750",
+                        "itemName": "Alexander McQueen Hybrid Panelled Jeans - Farfetch",
+                        "price": 700000,
+                        "url": "https://www.farfetch.com/shopping/women/alexander-mcqueen-hybrid-panelled-jeans-item-16091948.aspx?storeid=9359",
+                        "currency": "USD",
+                        "wishlist": "603a8d02bf6c85032169fe7d",
+                        "itemImage": "/data/images/itemImages/4ca45b60-a16e-45a7-98c2-57be39ef450c.png",
+                        "alias": {
+                          "wishlists": ["603a8d02bf6c85032169fe7d"],
+                          "_id": "603a8d02bf6c85032169fe7c",
+                          "handle": "dadasheshe1",
+                          "aliasName": "KULLi",
+                          "currency": "USD",
+                          "handle_lowercased": "dadasheshe1",
+                          "__v": 1,
+                          "profileImage": "/data/images/profileImages/e22c1277-38d3-4189-a434-dc22be5f86d0.png"
+                        },
+                        "__v": 0
+                      },
+                      "qty": 1,
+                      "price": 700000
+                    }
+                  },
+                  "totalQty": 7,
+                  "totalPrice": 1120000,
+                  "alias": {
+                    "wishlists": ["603a8d02bf6c85032169fe7d"],
+                    "_id": "603a8d02bf6c85032169fe7c",
+                    "handle": "dadasheshe1",
+                    "aliasName": "KULLi",
+                    "currency": "USD",
+                    "handle_lowercased": "dadasheshe1",
+                    "__v": 1,
+                    "profileImage": "/data/images/profileImages/e22c1277-38d3-4189-a434-dc22be5f86d0.png"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "errors": [
+          {
+            "code": 400,
+            "body": {
+              "message": "No Cart."
+            }
+          },
+          {
+            "code": 400,
+            "body": {
+              "message": "Form validation errors",
+              "errors": [
+                {
+                  "msg": "No item id included.",
+                  "param": "itemId",
+                  "location": "body"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "/api/cart/reduce/": {
+    "PATCH": {
+      "request": {
+        "cookies": {
+          "session": {
+            "required": true,
+            "example": {
+              "connect.sid": "s%3AmIxDSVrYYXLyUq_io625Hd3b03_fqaem.e8lUzzBOeoyOUvki01xi3e9bJfw7R0vizODYLK9KyMg"
+            }
+          }
+        },
+        "body": { "itemId": "60564e94457d6517e54db750" }
+      },
+      "responses": {
+        "success": [
+          {
+            "status": 200,
+            "body": {
+              "aliasCarts": {
+                "603a8d02bf6c85032169fe7c": {
+                  "items": {
+                    "603a8e00bf6c85032169fe7e": {
+                      "item": {
+                        "_id": "603a8e00bf6c85032169fe7e",
+                        "itemName": "Gucci Ken Scott Print Hooded Jacket - Farfetch",
+                        "price": 210000,
+                        "url": "https://www.farfetch.com/shopping/women/gucci-ken-scott-print-hooded-jacket-item-16331626.aspx?storeid=10644",
+                        "currency": "USD",
+                        "wishlist": "603a8d02bf6c85032169fe7d",
+                        "itemImage": "/data/images/itemImages/ca1c1ba8-44df-4b0a-8b65-486e2a346f0f.png",
+                        "alias": {
+                          "wishlists": ["603a8d02bf6c85032169fe7d"],
+                          "_id": "603a8d02bf6c85032169fe7c",
+                          "handle": "dadasheshe1",
+                          "aliasName": "KULLi",
+                          "currency": "USD",
+                          "handle_lowercased": "dadasheshe1",
+                          "__v": 1,
+                          "profileImage": "/data/images/profileImages/e22c1277-38d3-4189-a434-dc22be5f86d0.png"
+                        },
+                        "__v": 0
+                      },
+                      "qty": 2,
+                      "price": 420000
+                    },
+                    "60564e94457d6517e54db750": {
+                      "item": {
+                        "_id": "60564e94457d6517e54db750",
+                        "itemName": "Alexander McQueen Hybrid Panelled Jeans - Farfetch",
+                        "price": 700000,
+                        "url": "https://www.farfetch.com/shopping/women/alexander-mcqueen-hybrid-panelled-jeans-item-16091948.aspx?storeid=9359",
+                        "currency": "USD",
+                        "wishlist": "603a8d02bf6c85032169fe7d",
+                        "itemImage": "/data/images/itemImages/4ca45b60-a16e-45a7-98c2-57be39ef450c.png",
+                        "alias": {
+                          "wishlists": ["603a8d02bf6c85032169fe7d"],
+                          "_id": "603a8d02bf6c85032169fe7c",
+                          "handle": "dadasheshe1",
+                          "aliasName": "KULLi",
+                          "currency": "USD",
+                          "handle_lowercased": "dadasheshe1",
+                          "__v": 1,
+                          "profileImage": "/data/images/profileImages/e22c1277-38d3-4189-a434-dc22be5f86d0.png"
+                        },
+                        "__v": 0
+                      },
+                      "qty": 1,
+                      "price": 700000
+                    }
+                  },
+                  "totalQty": 7,
+                  "totalPrice": 1120000,
+                  "alias": {
+                    "wishlists": ["603a8d02bf6c85032169fe7d"],
+                    "_id": "603a8d02bf6c85032169fe7c",
+                    "handle": "dadasheshe1",
+                    "aliasName": "KULLi",
+                    "currency": "USD",
+                    "handle_lowercased": "dadasheshe1",
+                    "__v": 1,
+                    "profileImage": "/data/images/profileImages/e22c1277-38d3-4189-a434-dc22be5f86d0.png"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "errors": [
+          {
+            "code": 400,
+            "body": {
+              "message": "No Cart."
             }
           },
           {
@@ -209,7 +437,7 @@
           }
         ],
         "errors": [
-          { "code": 404, "body": { "message": "Alias doesn't exist" } },
+          { "code": 400, "body": { "message": "Alias doesn't exist" } },
           {
             "code": 400,
             "body": {

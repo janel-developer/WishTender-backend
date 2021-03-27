@@ -192,7 +192,7 @@ module.exports = () => {
 
       const alias = await AliasModel.findById(aliasId);
 
-      if (!alias) return res.status(404).send({ message: `Alias doesn't exist` });
+      if (!alias) return res.status(400).send({ message: `Alias doesn't exist` });
       return next();
     },
     cookie('currency', 'No currency set').custom(

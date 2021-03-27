@@ -86,14 +86,17 @@ module.exports.reduceByOne = (currentCart, itemId, aliasId) => {
   logger.log('silly', `reducing 1 from cart`);
   const cart = new Cart(currentCart);
   cart.reduceByOne(itemId, aliasId);
+  cart.clearEmptyCarts();
   return cart;
 };
 module.exports.removeItem = (currentCart, itemId, aliasId) => {
   logger.log('silly', `removing item from cart`);
   const cart = new Cart(currentCart);
   cart.removeItem(itemId, aliasId);
+  cart.clearEmptyCarts();
   return cart;
 };
+
 /**
  * update alias cart prices
  * @param {Object} aliasCart
