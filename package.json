@@ -6,7 +6,8 @@
   "scripts": {
     "once": "node bin/www",
     "start": "nodemon bin/www",
-    "test": "NODE_ENV=test mocha --recursive"
+    "test": "NODE_ENV=test mocha 'test/integration' --recursive",
+    "alltests": "NODE_ENV=test mocha --recursive --exclude 'test/manual/**'"
   },
   "keywords": [],
   "author": "",

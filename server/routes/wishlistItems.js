@@ -119,6 +119,15 @@ module.exports = () => {
   wishlistItemRoutes.post(
     '/',
     throwIfNotAuthorizedResource,
+    middlewares.onlyAllowInBodySanitizer([
+      'itemName',
+      'imageCrop',
+      'price',
+      'currency',
+      'url',
+      'wishlist',
+    ]),
+    // to do validate currency
     middlewares.cropImage({ h: 300, w: 300 }),
     middlewares.handleImage(imageService, { h: 300, w: 300 }),
     async (req, res, next) => {
@@ -144,6 +153,15 @@ module.exports = () => {
 
   wishlistItemRoutes.patch(
     '/:id',
+    middlewares.onlyAllowInBodySanitizer([
+      'itemName',
+      'imageCrop',
+      'price',
+      'currency',
+      'url',
+      'image',
+    ]),
+    // to do : validate currency
     throwIfNotAuthorizedResource,
     middlewares.upload.single('image'),
     (req, res, next) => {
@@ -183,37 +201,6 @@ module.exports = () => {
       return res.sendStatus(200);
     }
   );
-  // wishlistItemRoutes.post('/', throwIfNotAuthorizedResource, async (req, res, next) => {
-  //   logger.log('silly', `creating wishlistItem`);
-
-  //   let wishlistItem;
-  //   const values = { ...req.body };
-  //   delete values.wishlist;
-
-  //   try {
-  //     wishlistItem = await wishlistItemService.addWishlistItem(req.body.wishlist, values);
-  //   } catch (err) {
-  //     return next(err);
-  //   }
-  //   logger.log('silly', `wishlistItem created`);
-  //   return res.json(wishlistItem);
-  // });
-
-  wishlistItemRoutes.put('/:id', throwIfNotAuthorizedResource, async (req, res, next) => {
-    logger.log('silly', `updating wishlistItem by id`);
-    const { id } = req.params;
-
-    const updates = req.body;
-    if (updates.user || updates._id)
-      return next(new ApplicationError({}, `No user or id updates allowed from this route.`));
-    let wishlistItem;
-    try {
-      wishlistItem = await wishlistItemService.updateWishlistItem(id, updates);
-    } catch (err) {
-      return next(err);
-    }
-    return res.json(wishlistItem);
-  });
 
   wishlistItemRoutes.delete('/:id', throwIfNotAuthorizedResource, async (req, res, next) => {
     logger.log('silly', `deleting wishlist item by id`);

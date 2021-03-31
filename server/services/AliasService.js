@@ -124,7 +124,7 @@ class AliasService {
         alias[field] = val;
       });
       await alias.save();
-      if (Object.keys(updates).includes('profileImage')) {
+      if (Object.keys(updates).includes('profileImage') && oldImageFile) {
         deleteImage(oldImageFile);
       }
       return;

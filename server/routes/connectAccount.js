@@ -33,27 +33,35 @@ const authUserLoggedIn = async (req, res, next) => {
   if (req.user) {
     return next();
   }
-  return res.status(401).send('No user logged in');
+  return res.status(401).send({ message: 'No user logged in' });
+};
+const authUserConfirmed = async (req, res, next) => {
+  if (req.user.confirmed) {
+    return next();
+  }
+  return res.status(403).send({ message: 'User email not confirmed.' });
 };
 
 const authCountrySupported = async (req, res, next) => {
-  if (req.body.country) {
-    if (stripeService.supportedPayoutCountries.includes(req.body.country)) {
-      return next();
-    }
-  } else if (stripeService.supportedPayoutCountries.includes(req.user.country)) {
+  if (stripeService.supportedPayoutCountries.includes(req.user.country)) {
     return next();
   }
-  return res.status(400).send(`Country not supported: ${req.body.country || req.user.country}`);
+  return res.status(400).send({ message: `Country not supported: ${req.user.country}` });
+};
+const authCountrySet = async (req, res, next) => {
+  if (req.user.country) {
+    return next();
+  }
+  return res.status(400).send({ message: `User country must be set.` });
 };
 
 const authStripeAccountInfoExists = async (req, res, next) => {
   if (req.user.stripeAccountInfo) {
     return next();
   }
-  return res
-    .status(409)
-    .send('No stripe account object associated with the user. Use POST /createConnect');
+  return res.status(409).send({
+    message: 'No stripe account object associated with the user. Use POST /createConnect',
+  });
 };
 
 const authStripeAccountTransfersActive = async (req, res, next) => {
@@ -92,8 +100,11 @@ module.exports = () => {
   connectRoutes.post(
     '/createConnect',
     authUserLoggedIn,
+    authUserConfirmed,
+    authCountrySet,
     async (req, res, next) => {
       if (!req.user.stripeAccountInfo) {
+        // go to the next function to set up stripeaccountinfo
         return next();
       }
       // check if activated and get onboardlink
@@ -108,9 +119,9 @@ module.exports = () => {
       }
 
       if (req.stripeAccount.capabilities.transfers === 'active') {
-        return res.status(409).send('Your stripe account has already been set up.');
+        return res.status(409).send({ message: 'This account has already been activated.' });
       }
-      const country = req.body.country || req.user.county;
+      const country = req.user.county;
       if (country === req.stripeAccountInfo.country) {
         const onboardLink = await stripeService.createAccountLink(
           req.stripeAccountInfo.stripeAccountId
@@ -126,7 +137,7 @@ module.exports = () => {
     },
     authCountrySupported,
     async (req, res, next) => {
-      const country = req.body.country || req.user.country;
+      const { country } = req.user;
       let account;
       try {
         account = await stripeService.createExpressAccount(country, req.user.email);
@@ -211,7 +222,7 @@ module.exports = () => {
       try {
         req.stripeAccountInfo.activated = true;
         await req.stripeAccountInfo.save();
-        return res.status(201).send();
+        return res.status(200).send();
       } catch (err) {
         return next(new ApplicationError({}, `Couldn't activate Stripe Account Info: ${err}`));
       }
@@ -339,7 +350,7 @@ module.exports = () => {
         const onboardLink = await stripeService.createAccountLink(
           req.stripeService.stripeAccountId
         );
-        res.redirect(301, onboardLink);
+        res.redirect(302, onboardLink);
       } catch (err) {
         next(new ApplicationError({}, `Could not create onboarding link: ${err}.`));
       }

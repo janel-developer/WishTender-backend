@@ -4,6 +4,8 @@ const UserModel = require('../models/User.Model');
 const UserService = require('../services/UserService');
 const AliasModel = require('../models/Alias.Model');
 const AliasService = require('../services/AliasService');
+const { body, validationResult, sanitize } = require('express-validator');
+const { onlyAllowInBodySanitizer } = require('./middlewares');
 
 const aliasService = new AliasService(AliasModel);
 const logger = require('../lib/logger');
@@ -75,7 +77,10 @@ module.exports = () => {
 
   userRoutes.post(
     '/registration',
+    onlyAllowInBodySanitizer(['password', 'email']),
 
+    body('email', `No email id included.`).exists(),
+    body('password', `No password id included.`).exists(),
     async (req, res, next) => {
       logger.log('silly', `registering user`);
       let user;
@@ -90,7 +95,7 @@ module.exports = () => {
           return next(err);
         }
         logger.log('silly', `user logged in`);
-        return res.status(200).send(user);
+        return res.status(201).send(user);
       });
     }
   );

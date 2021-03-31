@@ -4,6 +4,7 @@ const stripe = require('stripe')(
     ? process.env.STRIPE_SECRET_KEY
     : process.env.STRIPE_SECRET_TEST_KEY
 );
+const { body, cookie, validationResult } = require('express-validator');
 const express = require('express');
 const { ObjectId } = require('mongoose').Types;
 const logger = require('../lib/logger');
@@ -20,7 +21,6 @@ const OrderService = require('../services/OrderService');
 const OrderModel = require('../models/Order.Model');
 const AliasModel = require('../models/Alias.Model');
 const { validate } = require('email-validator');
-const { body, cookie, validationResult } = require('express-validator');
 
 const ExchangeRatesApiInterface = require('../lib/ExchangeRatesApiInterface');
 const ratesApi = new ExchangeRatesApiInterface();
@@ -183,7 +183,7 @@ module.exports = () => {
   });
   checkoutRoutes.post(
     '/',
-    //to do===> validate that stripe account confirmed/active
+    //to do===> validate that stripe account confirmed/active do we need to?
 
     async (req, res, next) => {
       const aliasId = req.body.alias;
@@ -192,7 +192,7 @@ module.exports = () => {
 
       const alias = await AliasModel.findById(aliasId);
 
-      if (!alias) return res.status(404).send({ message: `Alias doesn't exist` });
+      if (!alias) return res.status(400).send({ message: `Alias doesn't exist` });
       return next();
     },
     cookie('currency', 'No currency set').custom(

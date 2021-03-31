@@ -35,11 +35,14 @@ describe('connect account create', () => {
   let wishlist2;
   let wishlistItem1;
   const seedTestDatabase = async () => {
-    user1 = await helper.createTestUser();
+    user1 = helper.validUser;
+    user1.country = 'GB';
+    user1 = await helper.createTestUser(user1);
 
     const userValues = helper.validUser;
     userValues.email = 'p@fee.com';
     userValues.username = 'peeper';
+    userValues.country = 'GB';
     user2 = await helper.createTestUser(userValues);
 
     // create aliases
@@ -125,7 +128,7 @@ describe('connect account create', () => {
       next();
     });
 
-    www = await require('../../bin/www')();
+    www = await require('../../bin/wwwfortesting')();
     agent = chai.request.agent(www.app);
     let accountInfo = { capabilities: { transfers: 'active' } };
     sinon.stub(StripeService.prototype, 'retrieveAccount').returns(accountInfo);
@@ -154,17 +157,13 @@ describe('connect account create', () => {
       loggedInUser = user1;
       auth;
       this.timeout(5000000);
-      const response = await agent
-        .post('/api/connectAccount/createConnect')
-        .send({ country: 'GB' });
+      const response = await agent.post('/api/connectAccount/createConnect');
       expect(response.body.error).to.be.equal('Currency Conflict');
     });
     it('shout create account', async function () {
       this.timeout(5000000);
       loggedInUser = user2;
-      const response = await agent
-        .post('/api/connectAccount/createConnect')
-        .send({ country: 'GB' });
+      const response = await agent.post('/api/connectAccount/createConnect');
       expect(response.body).to.have.property('onboardLink');
     });
   });

@@ -44,9 +44,18 @@ function Cart(oldCart) {
   /**
    * reduce item by one in cart
    * @param {String} itemId
+   */
+  this.reduceByOne = function (itemId) {
+    const aliasId = this.aliasIdFromItemId(itemId);
+    if (!aliasId) return;
+    this.reduceByOneWithAlias(itemId, aliasId);
+  };
+  /**
+   * reduce item by one in cart
+   * @param {String} itemId
    * @param {String} aliasId
    */
-  this.reduceByOne = function (itemId, aliasId) {
+  this.reduceByOneWithAlias = function (itemId, aliasId) {
     const aliasCart = this.aliasCarts[aliasId];
     aliasCart.items[itemId].qty--;
     aliasCart.items[itemId].price -= aliasCart.items[itemId].item.price;
@@ -61,13 +70,48 @@ function Cart(oldCart) {
   /**
    * remove item from cart
    * @param {String} itemId
+   */
+  this.aliasIdFromItemId = (itemId) => {
+    const items = [];
+    Object.values(this.aliasCarts).forEach((cart) => items.push(Object.values(cart.items)));
+    const allItems = items.reduce((a, c) => [...a, ...c], []);
+    const item = allItems.find((it) => it.item._id.toString() === itemId.toString());
+    if (!item) return null;
+    const aliasId = item.item.alias._id;
+    return aliasId;
+  };
+  /**
+   * remove item from cart
+   * @param {String} itemId
+   */
+  this.removeItem = function (itemId) {
+    const aliasId = this.aliasIdFromItemId(itemId);
+    if (!aliasId) return;
+    this.removeItemByAlias(itemId, aliasId);
+  };
+  /**
+   * remove item from cart by alias
+   * @param {String} itemId
    * @param {String} aliasId
    */
-  this.removeItem = function (itemId, aliasId) {
+  this.removeItemByAlias = function (itemId, aliasId) {
     const aliasCart = this.aliasCarts[aliasId];
     aliasCart.totalQty -= aliasCart.items[itemId].qty;
     aliasCart.totalPrice -= aliasCart.items[itemId].price;
     delete aliasCart.items[itemId];
+  };
+
+  this.clearEmptyCarts = () => {
+    const emptyCarts = Object.values(this.aliasCarts).reduce((a, aliasCart) => {
+      if (JSON.stringify(aliasCart.items) === '{}') {
+        a.push(aliasCart.alias._id);
+      }
+      return a;
+    }, []);
+    if (emptyCarts.length)
+      emptyCarts.forEach((cart) => {
+        delete this.aliasCarts[cart];
+      });
   };
 
   this.generateArray = function generateArray() {

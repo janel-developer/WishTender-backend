@@ -16,7 +16,6 @@ const itemSchema = new mongoose.Schema(
 
     currency: { type: String, trim: true },
     url: { type: String, trim: true },
-    imageUrl: { type: String, trim: true },
     wishlist: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Wishlist',
@@ -28,7 +27,6 @@ const itemSchema = new mongoose.Schema(
       required: true,
     },
     itemImage: { type: String },
-    message: { type: String },
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

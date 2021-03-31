@@ -9,6 +9,142 @@
       "notes": "should this NOT send if there's a currency cookie present? is there anny other use for a locale? I think it maybe also helps format currency, so maybe yea. Which means the user might have to select locale too not just currency?"
     }
   ],
+
+  "/api/users/registration": {
+    "POST": {
+      "request": { "body": { "email": "dash@wishy.com", "password": "abcde123" } },
+      "responses": {
+        "success": [
+          {
+            "code": 201,
+            "body": {
+              "confirmed": false,
+              "aliases": [],
+              "wishlists": [],
+              "_id": "6060af841bf1e5b93de7f059",
+              "email": "dash@wishy.com",
+              "__v": 0
+            }
+          }
+        ],
+        "errors": []
+      }
+    }
+  },
+  "/api/aliases": {
+    "POST": {
+      "request": {
+        "body": { "country": "US", "aliasName": "Dashie Bark-Huss", "handle": "DashieWashie" }
+      },
+      "responses": {
+        "success": [
+          {
+            "code": 201,
+            "body": {
+              "wishlists": ["6060b04360668fb9a120dc34"],
+              "_id": "6060b04360668fb9a120dc33",
+              "aliasName": "Dashie Bark-Huss",
+              "handle": "DashieWashie",
+              "currency": "USD",
+              "handle_lowercased": "dashiewashie",
+              "__v": 1
+            }
+          }
+        ],
+        "errors": []
+      }
+    }
+  },
+  "/api/aliases/6060b04360668fb9a120dc33": {
+    "PATCH": {
+      "request": {
+        "body": { "aliasName": "Dashie R Bark-Huss", "handle": "DashieWashie3", "image": "<file>" },
+        "Content-Type": "multipart/form-data"
+      },
+      "responses": {
+        "success": [
+          {
+            "code": 200
+          }
+        ],
+        "errors": []
+      }
+    }
+  },
+  "/api/wishlistItems": {
+    "POST": {
+      "request": {
+        "body": {
+          "itemName": "Awesome Earrings ",
+          "imageCrop": {
+            "crop": { "width": 480, "height": 480, "x": 0, "y": 11 },
+            "url": "https://cdn-images.farfetch-contents.com/16/52/85/70/16528570_32324453_480.jpg"
+          },
+          "price": "40900",
+          "currency": "USD",
+          "url": "https://www.farfetch.com/shopping/women/area-fringed-crystal-earrings-item-16528570.aspx?storeid=10507",
+          "wishlist": "603a8d02bf6c85032169fe7d"
+        }
+      },
+      "responses": {
+        "success": [
+          {
+            "code": 201,
+            "body": {
+              "_id": "606200f31b9ef3da46be8702",
+              "itemName": "Awesome Earrings",
+              "price": 40900,
+              "url": "https://www.farfetch.com/shopping/women/area-fringed-crystal-earrings-item-16528570.aspx?storeid=10507",
+              "currency": "USD",
+              "wishlist": "606200f21b9ef3da46be8700",
+              "itemImage": "/data/images/itemImages/989988d6-ec10-408b-93d1-e6119b44b248.png",
+              "alias": "606200f21b9ef3da46be86ff",
+              "__v": 0
+            }
+          }
+        ],
+        "errors": []
+      }
+    }
+  },
+  "/api/wishlistItems/606200f31b9ef3da46be8702": {
+    "PATCH": {
+      "request": {
+        "body": {
+          "itemName": "Awesomer Earrings",
+          "image": "<blob>",
+          "price": "40900",
+          "currency": "USD",
+          "url": "https://www.farfetch.com/shopping/women/area-fringed-crystal-earrings-item-16528570.aspx?storeid=10507"
+        },
+        "Content-Type": "multipart/form-data"
+      },
+      "responses": { "success": { "code": 200 }, "errors": [] }
+    }
+  },
+  "api/wishlistItems/606200f31b9ef3da46be8702": {
+    "DELETE": { "responses": { "success": { "code": 204 }, "errors": [] } }
+  },
+  "/api/wishlists/6060b04360668fb9a120dc34": {
+    "PATCH": {
+      "requests": {
+        "body": {
+          "aliasName": "Dashie R Bark-Huss",
+          "handle": "DashieWashie3",
+          "image": "<file>"
+        },
+        "Content-Type": "multipart/form-data"
+      },
+      "responses": {
+        "success": [
+          {
+            "code": 200
+          }
+        ],
+        "errors": []
+      }
+    }
+  },
   "/api/orders/603a8d02bf6c85032169fe7c": {
     "GET": {
       "request": {},
@@ -16,48 +152,46 @@
         "success": [
           {
             "code": 200,
-            "body": [
-              {
-                "_id": "603a9b8bbf6c85032169fe80",
-                "gifts": [
-                  {
-                    "item": {
-                      "_id": "603a8e00bf6c85032169fe7e",
-                      "itemName": "Gucci Ken Scott Print Hooded Jacket - Farfetch",
-                      "price": 210000,
-                      "url": "https://www.farfetch.com/shopping/women/gucci-ken-scott-print-hooded-jacket-item-16331626.aspx?storeid=10644",
-                      "currency": "USD",
-                      "wishlist": "603a8d02bf6c85032169fe7d",
-                      "itemImage": "/data/images/itemImages/ca1c1ba8-44df-4b0a-8b65-486e2a346f0f.png"
-                    },
-                    "qty": 1,
-                    "price": 210000
-                  }
-                ],
-                "alias": {
-                  "_id": "603a8d02bf6c85032169fe7c",
-                  "handle": "dadasheshe1",
-                  "aliasName": "KULLi",
-                  "currency": "USD",
-                  "handle_lowercased": "dadasheshe1"
-                },
-                "tender": {
-                  "amount": 210000,
-                  "currency": "USD",
-                  "converted": null
-                },
-                "noteToWisher": {
-                  "message": "Hey, you're a huge inspiration for me. This gift is to show my gratitude.",
-                  "read": "2020-02-28T14:42:11.394Z"
-                },
-                "fromLine": "Fred",
-                "thankYouNote": {
-                  "message": "Thank you Fred for these awesome gifts!",
-                  "dateSent": "2020-02-28T14:50:11.394Z"
-                },
-                "paidOn": "2020-02-26T14:42:11.394Z"
-              }
-            ]
+            "body": {
+              "_id": "603a9b8bbf6c85032169fe80",
+              "gifts": [
+                {
+                  "item": {
+                    "_id": "603a8e00bf6c85032169fe7e",
+                    "itemName": "Gucci Ken Scott Print Hooded Jacket - Farfetch",
+                    "price": 210000,
+                    "url": "https://www.farfetch.com/shopping/women/gucci-ken-scott-print-hooded-jacket-item-16331626.aspx?storeid=10644",
+                    "currency": "USD",
+                    "wishlist": "603a8d02bf6c85032169fe7d",
+                    "itemImage": "/data/images/itemImages/ca1c1ba8-44df-4b0a-8b65-486e2a346f0f.png"
+                  },
+                  "qty": 1,
+                  "price": 210000
+                }
+              ],
+              "alias": {
+                "_id": "603a8d02bf6c85032169fe7c",
+                "handle": "dadasheshe1",
+                "aliasName": "KULLi",
+                "currency": "USD",
+                "handle_lowercased": "dadasheshe1"
+              },
+              "tender": {
+                "amount": 210000,
+                "currency": "USD",
+                "converted": null
+              },
+              "noteToWisher": {
+                "message": "Hey, you're a huge inspiration for me. This gift is to show my gratitude.",
+                "read": "2020-02-28T14:42:11.394Z"
+              },
+              "fromLine": "Fred",
+              "thankYouNote": {
+                "message": "Thank you Fred for these awesome gifts!",
+                "dateSent": "2020-02-28T14:50:11.394Z"
+              },
+              "paidOn": "2020-02-26T14:42:11.394Z"
+            }
           }
         ],
         "errors": []
@@ -65,6 +199,96 @@
     }
   },
 
+  "/api/cart/": {
+    "GET": {
+      "request": {
+        "cookies": {
+          "session": {
+            "required": false,
+            "example": {
+              "connect.sid": "s%3AmIxDSVrYYXLyUq_io625Hd3b03_fqaem.e8lUzzBOeoyOUvki01xi3e9bJfw7R0vizODYLK9KyMg"
+            }
+          }
+        }
+      },
+      "responses": {
+        "success": [
+          {
+            "status": 200,
+            "body": {
+              "aliasCarts": {
+                "603a8d02bf6c85032169fe7c": {
+                  "items": {
+                    "603a8e00bf6c85032169fe7e": {
+                      "item": {
+                        "_id": "603a8e00bf6c85032169fe7e",
+                        "itemName": "Gucci Ken Scott Print Hooded Jacket - Farfetch",
+                        "price": 210000,
+                        "url": "https://www.farfetch.com/shopping/women/gucci-ken-scott-print-hooded-jacket-item-16331626.aspx?storeid=10644",
+                        "currency": "USD",
+                        "wishlist": "603a8d02bf6c85032169fe7d",
+                        "itemImage": "/data/images/itemImages/ca1c1ba8-44df-4b0a-8b65-486e2a346f0f.png",
+                        "alias": {
+                          "wishlists": ["603a8d02bf6c85032169fe7d"],
+                          "_id": "603a8d02bf6c85032169fe7c",
+                          "handle": "dadasheshe1",
+                          "aliasName": "KULLi",
+                          "currency": "USD",
+                          "handle_lowercased": "dadasheshe1",
+                          "__v": 1,
+                          "profileImage": "/data/images/profileImages/e22c1277-38d3-4189-a434-dc22be5f86d0.png"
+                        },
+                        "__v": 0
+                      },
+                      "qty": 2,
+                      "price": 420000
+                    },
+                    "60564e94457d6517e54db750": {
+                      "item": {
+                        "_id": "60564e94457d6517e54db750",
+                        "itemName": "Alexander McQueen Hybrid Panelled Jeans - Farfetch",
+                        "price": 700000,
+                        "url": "https://www.farfetch.com/shopping/women/alexander-mcqueen-hybrid-panelled-jeans-item-16091948.aspx?storeid=9359",
+                        "currency": "USD",
+                        "wishlist": "603a8d02bf6c85032169fe7d",
+                        "itemImage": "/data/images/itemImages/4ca45b60-a16e-45a7-98c2-57be39ef450c.png",
+                        "alias": {
+                          "wishlists": ["603a8d02bf6c85032169fe7d"],
+                          "_id": "603a8d02bf6c85032169fe7c",
+                          "handle": "dadasheshe1",
+                          "aliasName": "KULLi",
+                          "currency": "USD",
+                          "handle_lowercased": "dadasheshe1",
+                          "__v": 1,
+                          "profileImage": "/data/images/profileImages/e22c1277-38d3-4189-a434-dc22be5f86d0.png"
+                        },
+                        "__v": 0
+                      },
+                      "qty": 1,
+                      "price": 700000
+                    }
+                  },
+                  "totalQty": 7,
+                  "totalPrice": 1120000,
+                  "alias": {
+                    "wishlists": ["603a8d02bf6c85032169fe7d"],
+                    "_id": "603a8d02bf6c85032169fe7c",
+                    "handle": "dadasheshe1",
+                    "aliasName": "KULLi",
+                    "currency": "USD",
+                    "handle_lowercased": "dadasheshe1",
+                    "__v": 1,
+                    "profileImage": "/data/images/profileImages/e22c1277-38d3-4189-a434-dc22be5f86d0.png"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "errors": []
+      }
+    }
+  },
   "/api/cart/add-to-cart/": {
     "PATCH": {
       "request": {
@@ -154,9 +378,237 @@
         ],
         "errors": [
           {
-            "code": 404,
+            "code": 400,
             "body": {
-              "message": "Item doesn't exist"
+              "message": "Item doesn't exist."
+            }
+          },
+          {
+            "code": 400,
+            "body": {
+              "message": "Form validation errors",
+              "errors": [
+                {
+                  "msg": "No item id included.",
+                  "param": "itemId",
+                  "location": "body"
+                }
+              ]
+            }
+          },
+          {
+            "code": 400,
+            "body": {
+              "message": "Item id not valid."
+            }
+          }
+        ]
+      }
+    }
+  },
+  "/api/cart/remove-from-cart/": {
+    "PATCH": {
+      "request": {
+        "cookies": {
+          "session": {
+            "required": true,
+            "example": {
+              "connect.sid": "s%3AmIxDSVrYYXLyUq_io625Hd3b03_fqaem.e8lUzzBOeoyOUvki01xi3e9bJfw7R0vizODYLK9KyMg"
+            }
+          }
+        },
+        "body": { "itemId": "60564e94457d6517e54db750" }
+      },
+      "responses": {
+        "success": [
+          {
+            "status": 200,
+            "body": {
+              "aliasCarts": {
+                "603a8d02bf6c85032169fe7c": {
+                  "items": {
+                    "603a8e00bf6c85032169fe7e": {
+                      "item": {
+                        "_id": "603a8e00bf6c85032169fe7e",
+                        "itemName": "Gucci Ken Scott Print Hooded Jacket - Farfetch",
+                        "price": 210000,
+                        "url": "https://www.farfetch.com/shopping/women/gucci-ken-scott-print-hooded-jacket-item-16331626.aspx?storeid=10644",
+                        "currency": "USD",
+                        "wishlist": "603a8d02bf6c85032169fe7d",
+                        "itemImage": "/data/images/itemImages/ca1c1ba8-44df-4b0a-8b65-486e2a346f0f.png",
+                        "alias": {
+                          "wishlists": ["603a8d02bf6c85032169fe7d"],
+                          "_id": "603a8d02bf6c85032169fe7c",
+                          "handle": "dadasheshe1",
+                          "aliasName": "KULLi",
+                          "currency": "USD",
+                          "handle_lowercased": "dadasheshe1",
+                          "__v": 1,
+                          "profileImage": "/data/images/profileImages/e22c1277-38d3-4189-a434-dc22be5f86d0.png"
+                        },
+                        "__v": 0
+                      },
+                      "qty": 2,
+                      "price": 420000
+                    },
+                    "60564e94457d6517e54db750": {
+                      "item": {
+                        "_id": "60564e94457d6517e54db750",
+                        "itemName": "Alexander McQueen Hybrid Panelled Jeans - Farfetch",
+                        "price": 700000,
+                        "url": "https://www.farfetch.com/shopping/women/alexander-mcqueen-hybrid-panelled-jeans-item-16091948.aspx?storeid=9359",
+                        "currency": "USD",
+                        "wishlist": "603a8d02bf6c85032169fe7d",
+                        "itemImage": "/data/images/itemImages/4ca45b60-a16e-45a7-98c2-57be39ef450c.png",
+                        "alias": {
+                          "wishlists": ["603a8d02bf6c85032169fe7d"],
+                          "_id": "603a8d02bf6c85032169fe7c",
+                          "handle": "dadasheshe1",
+                          "aliasName": "KULLi",
+                          "currency": "USD",
+                          "handle_lowercased": "dadasheshe1",
+                          "__v": 1,
+                          "profileImage": "/data/images/profileImages/e22c1277-38d3-4189-a434-dc22be5f86d0.png"
+                        },
+                        "__v": 0
+                      },
+                      "qty": 1,
+                      "price": 700000
+                    }
+                  },
+                  "totalQty": 7,
+                  "totalPrice": 1120000,
+                  "alias": {
+                    "wishlists": ["603a8d02bf6c85032169fe7d"],
+                    "_id": "603a8d02bf6c85032169fe7c",
+                    "handle": "dadasheshe1",
+                    "aliasName": "KULLi",
+                    "currency": "USD",
+                    "handle_lowercased": "dadasheshe1",
+                    "__v": 1,
+                    "profileImage": "/data/images/profileImages/e22c1277-38d3-4189-a434-dc22be5f86d0.png"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "errors": [
+          {
+            "code": 400,
+            "body": {
+              "message": "No Cart."
+            }
+          },
+          {
+            "code": 400,
+            "body": {
+              "message": "Form validation errors",
+              "errors": [
+                {
+                  "msg": "No item id included.",
+                  "param": "itemId",
+                  "location": "body"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  },
+  "/api/cart/reduce/": {
+    "PATCH": {
+      "request": {
+        "cookies": {
+          "session": {
+            "required": true,
+            "example": {
+              "connect.sid": "s%3AmIxDSVrYYXLyUq_io625Hd3b03_fqaem.e8lUzzBOeoyOUvki01xi3e9bJfw7R0vizODYLK9KyMg"
+            }
+          }
+        },
+        "body": { "itemId": "60564e94457d6517e54db750" }
+      },
+      "responses": {
+        "success": [
+          {
+            "status": 200,
+            "body": {
+              "aliasCarts": {
+                "603a8d02bf6c85032169fe7c": {
+                  "items": {
+                    "603a8e00bf6c85032169fe7e": {
+                      "item": {
+                        "_id": "603a8e00bf6c85032169fe7e",
+                        "itemName": "Gucci Ken Scott Print Hooded Jacket - Farfetch",
+                        "price": 210000,
+                        "url": "https://www.farfetch.com/shopping/women/gucci-ken-scott-print-hooded-jacket-item-16331626.aspx?storeid=10644",
+                        "currency": "USD",
+                        "wishlist": "603a8d02bf6c85032169fe7d",
+                        "itemImage": "/data/images/itemImages/ca1c1ba8-44df-4b0a-8b65-486e2a346f0f.png",
+                        "alias": {
+                          "wishlists": ["603a8d02bf6c85032169fe7d"],
+                          "_id": "603a8d02bf6c85032169fe7c",
+                          "handle": "dadasheshe1",
+                          "aliasName": "KULLi",
+                          "currency": "USD",
+                          "handle_lowercased": "dadasheshe1",
+                          "__v": 1,
+                          "profileImage": "/data/images/profileImages/e22c1277-38d3-4189-a434-dc22be5f86d0.png"
+                        },
+                        "__v": 0
+                      },
+                      "qty": 2,
+                      "price": 420000
+                    },
+                    "60564e94457d6517e54db750": {
+                      "item": {
+                        "_id": "60564e94457d6517e54db750",
+                        "itemName": "Alexander McQueen Hybrid Panelled Jeans - Farfetch",
+                        "price": 700000,
+                        "url": "https://www.farfetch.com/shopping/women/alexander-mcqueen-hybrid-panelled-jeans-item-16091948.aspx?storeid=9359",
+                        "currency": "USD",
+                        "wishlist": "603a8d02bf6c85032169fe7d",
+                        "itemImage": "/data/images/itemImages/4ca45b60-a16e-45a7-98c2-57be39ef450c.png",
+                        "alias": {
+                          "wishlists": ["603a8d02bf6c85032169fe7d"],
+                          "_id": "603a8d02bf6c85032169fe7c",
+                          "handle": "dadasheshe1",
+                          "aliasName": "KULLi",
+                          "currency": "USD",
+                          "handle_lowercased": "dadasheshe1",
+                          "__v": 1,
+                          "profileImage": "/data/images/profileImages/e22c1277-38d3-4189-a434-dc22be5f86d0.png"
+                        },
+                        "__v": 0
+                      },
+                      "qty": 1,
+                      "price": 700000
+                    }
+                  },
+                  "totalQty": 7,
+                  "totalPrice": 1120000,
+                  "alias": {
+                    "wishlists": ["603a8d02bf6c85032169fe7d"],
+                    "_id": "603a8d02bf6c85032169fe7c",
+                    "handle": "dadasheshe1",
+                    "aliasName": "KULLi",
+                    "currency": "USD",
+                    "handle_lowercased": "dadasheshe1",
+                    "__v": 1,
+                    "profileImage": "/data/images/profileImages/e22c1277-38d3-4189-a434-dc22be5f86d0.png"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "errors": [
+          {
+            "code": 400,
+            "body": {
+              "message": "No Cart."
             }
           },
           {
@@ -209,13 +661,19 @@
           }
         ],
         "errors": [
-          { "code": 404, "body": { "message": "Alias doesn't exist" } },
+          { "code": 400, "body": { "message": "Alias doesn't exist" } },
           {
             "code": 400,
             "body": {
               "errors": [
                 { "msg": "No order information included.", "param": "order", "location": "body" }
               ]
+            }
+          },
+          {
+            "code": 400,
+            "body": {
+              "errors": [{ "msg": "No currency set.", "param": "currency", "location": "cookies" }]
             }
           },
           {
@@ -310,5 +768,10 @@
         }
       }
     }
-  }
+  },
+  "/api/connectAccount/createConnect": { "POST": {} },
+  "/api/connectAccount/activateConnect": { "PATCH": {} },
+  "/api/connectAccount/currentAccount": { "GET": {} },
+  "/api/connectAccount/correctCurrency": { "PATCH": {} },
+  "/api/connectAccount/refreshConnectLink": { "GET": {} }
 }
