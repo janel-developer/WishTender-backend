@@ -260,7 +260,7 @@ class StripeService {
       });
       return info.url;
     } catch (error) {
-      throw new ApplicationError({}, `Couldn't create onboard linke:${error}`);
+      throw new ApplicationError({}, `Couldn't create onboard link:${error}`);
     }
   }
 

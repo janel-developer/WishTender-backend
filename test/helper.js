@@ -176,6 +176,7 @@ module.exports.after = async () => {
 };
 
 module.exports.validUser = {
+  country: 'US',
   email: 'frank@acme.org',
   password: 'verysecret',
 };

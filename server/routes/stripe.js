@@ -28,7 +28,7 @@ module.exports = () => {
       try {
         const account = await stripeAccountInfoService.getAccountByUser(req.user._id);
         const loginLink = await stripeService.createLoginLink(account.stripeAccountId);
-        res.redirect(301, loginLink);
+        res.redirect(302, loginLink);
       } catch (err) {
         throw new ApplicationError({}, `Couldn't get login link for stripe account:${err}`);
       }

@@ -53,12 +53,12 @@ module.exports = () => {
    *
    * Forwarding confirm email form
    *
-   * res 301
+   * res 302
    */
   confirmationRoutes.get('/:email/:token', (req, res, next) => {
     logger.log('silly', 'Forwarding to confirm email form');
     res.redirect(
-      301,
+      302,
       `http://localhost:3000/confirm-email?email=${req.params.email}&token=${req.params.token}`
     );
   });

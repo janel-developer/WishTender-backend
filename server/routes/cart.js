@@ -1,6 +1,6 @@
 const express = require('express');
 const { ObjectId } = require('mongoose').Types;
-const ItemModel = require('../models/Alias.Model');
+const ItemModel = require('../models/WishlistItem.Model');
 
 const logger = require('../lib/logger');
 const { addToCart, removeItem, reduceByOne } = require('../services/CartService');
@@ -23,9 +23,23 @@ module.exports = () => {
       const { itemId } = req.body;
       if (!ObjectId.isValid(itemId)) return res.status(400).send({ message: `Item id not valid.` });
 
-      const item = await ItemModel.findById(itemId);
+      const item = await ItemModel.findById(itemId)
+
+        .populate({
+          path: 'user',
+          model: 'User',
+          populate: {
+            path: 'stripeAccountInfo',
+            model: 'StripeAccountInfo',
+          },
+        })
+        .exec();
 
       if (!item) return res.status(400).send({ message: `Item doesn't exist.` });
+      if (!item.user.stripeAccountInfo || !item.user.stripeAccountInfo.activated)
+        return res.status(400).send({
+          message: `This item is not available because the user who posted the item has not activated their account.`,
+        });
       return next();
     },
     async (req, res, next) => {

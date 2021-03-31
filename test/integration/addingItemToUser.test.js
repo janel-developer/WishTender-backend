@@ -93,7 +93,7 @@ describe('add item to user', () => {
         .redirects(0)
         .send();
 
-      res.status.should.be.equal(301);
+      res.status.should.be.equal(302);
     });
     it('should confirm user', async () => {
       const token = await helper.TokenModel.findOne({ user: user._id });

@@ -103,6 +103,8 @@ async function authUserHasNoAlias(req, res, next) {
 module.exports = () => {
   aliasRoutes.post(
     '/',
+    middlewares.onlyAllowInBodySanitizer(['handle', 'country', 'aliasName']),
+
     authLoggedIn,
     authUserHasNoAlias,
     authCountrySupported,
@@ -129,19 +131,6 @@ module.exports = () => {
     }
   );
 
-  aliasRoutes.get('/:id', async (req, res, next) => {
-    logger.log('silly', `getting alias by id`);
-
-    const { id } = req.params;
-    let alias;
-    try {
-      alias = await aliasService.getAliasById(id);
-    } catch (err) {
-      return next(err);
-    }
-
-    return res.json(alias);
-  });
   aliasRoutes.get(
     '/',
     (req, res, next) => {
@@ -185,6 +174,15 @@ module.exports = () => {
 
   aliasRoutes.patch(
     '/:id',
+    (r, s, n) => {
+      console.log(r.params);
+      return n();
+    },
+    middlewares.onlyAllowInBodySanitizer(['handle', 'aliasName']),
+    (r, s, n) => {
+      console.log(r.params);
+      return n();
+    },
     authUserOwnsAlias,
     middlewares.upload.single('image'),
     middlewares.handleImage(imageService, { h: 300, w: 300 }),
@@ -204,36 +202,21 @@ module.exports = () => {
           new ApplicationError({ err, body: req.body }, `alias could not be updated: ${err}`)
         );
       }
-      return res.send(200);
+      return res.sendStatus(200);
     }
   );
-
-  aliasRoutes.put('/:id', authUserOwnsAlias, async (req, res, next) => {
-    logger.log('silly', `updating alias by id`);
-    const { id } = req.params;
-
-    const updates = req.body;
-    if (updates.user || updates._id)
-      return next(new ApplicationError({}, `No user or id updates allowed from this route.`));
-    let alias;
-    try {
-      alias = await aliasService.updateAlias(id, updates);
-    } catch (err) {
-      return next(err);
-    }
-    return res.json(alias);
-  });
-  aliasRoutes.delete('/:id', authUserOwnsAlias, async (req, res, next) => {
-    logger.log('silly', `deleting user by id`);
-    const { id } = req.params;
-    let alias;
-    try {
-      alias = await aliasService.deleteAlias(id);
-    } catch (err) {
-      return next(err);
-    }
-    return res.json(alias);
-  });
+  // --- No deleting aliases in version 1 of wishtender
+  // aliasRoutes.delete('/:id', authUserOwnsAlias, async (req, res, next) => {
+  //   logger.log('silly', `deleting user by id`);
+  //   const { id } = req.params;
+  //   let alias;
+  //   try {
+  //     alias = await aliasService.deleteAlias(id);
+  //   } catch (err) {
+  //     return next(err);
+  //   }
+  //   return res.json(alias);
+  // });
 
   return aliasRoutes;
 };

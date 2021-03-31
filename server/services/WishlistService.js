@@ -102,7 +102,7 @@ class WishlistService {
         wishlist[field] = val;
       });
       await wishlist.save();
-      if (Object.keys(updates).includes('coverImage')) {
+      if (Object.keys(updates).includes('coverImage') && oldImageFile) {
         deleteImage(oldImageFile);
       }
       return;

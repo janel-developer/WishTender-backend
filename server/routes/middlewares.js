@@ -1,4 +1,5 @@
 const multer = require('multer');
+const { sanitize, sanitizeBody } = require('express-validator');
 const { createCroppedImage } = require('../lib/canvas');
 
 const upload = multer({
@@ -27,3 +28,14 @@ module.exports.cropImage = (dims) => async (req, res, next) => {
   req.file = await createCroppedImage(req.body.imageCrop.url, req.body.imageCrop.crop, dims);
   return next();
 };
+
+module.exports.onlyAllowInBodySanitizer = (allow) =>
+  sanitizeBody('*').customSanitizer((value, { req, location, path }) => {
+    if (location === 'body') {
+      if (!allow.includes(path)) {
+        delete req.body[path];
+        return;
+      }
+      return value;
+    }
+  });
