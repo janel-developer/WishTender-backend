@@ -19,7 +19,7 @@ TEST_EXPRESS_ACCOUNT
 TEST_EXPRESS_ACCOUNT_CA
 ```
 
-You can ask me for mine if you are working on this with me. Or you can setup your own. examples:
+You can ask me for mine (I'm best reached on twitter [@DashBarkHuss](https://twitter.com/DashBarkHuss)) if you are working on this with me. Or you can setup your own. examples:
 
 ```
 DEVELOPMENT_DB_DSN= mongodb://127.0.0.1:27017/development (if you set up mongo locally, or go to the mongo atlas site to set up a cluster then get the URI you need to paste here)
