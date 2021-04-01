@@ -29,11 +29,11 @@ THANKYOU_EMAIL = someemail@zoho.com (I believe it is set up to work with zoho em
 THANKYOU_PASSWORD = yourzohoemailpassword 
 CONFIRM_EMAIL = someemail@zoho.com
 CONFIRM_PASSWORD = some password
-TEST_EMAIL = hayley16@ethereal.email (you can set up a free etheral emai, this helps you test without sending actual emails and getting labeled as spam)
+TEST_EMAIL = hayley16@ethereal.email (you can set up a free etheral email, this helps you test without sending actual emails and getting labeled as spam)
 TEST_PASSWORD = the test email password
 STRIPE_SECRET_TEST_KEY = get this from stripe
 STRIPE_PUBLIC_TEST_KEY= get this from stripe
-APPFEE=.10 this doesn't need to be an enrironment variable. What was I thinking?
+APPFEE=.10 (this doesn't need to be an environment variable. What was I thinking?)
 TEST_EXPRESS_ACCOUNT= a stripe test data connect account id (only necessary for some tests)
 TEST_EXPRESS_ACCOUNT_CA = a stripe test data connect account id from canada (only necessary for some tests)
 ```
