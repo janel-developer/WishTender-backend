@@ -138,7 +138,7 @@ module.exports = () => {
       try {
         const imageFile = req.file && req.file.storedFilename;
         const itemInfo = { ...req.body };
-        if (imageFile) itemInfo.itemImage = `/data/images/itemImages/${imageFile}`;
+        if (imageFile) itemInfo.itemImage = imageService.filepathToStore(imageFile);
         delete itemInfo.imageCrop;
         const item = await wishlistItemService.addWishlistItem(itemInfo);
         return res.status(201).send(item);
@@ -187,7 +187,7 @@ module.exports = () => {
       try {
         const imageFile = req.file && req.file.storedFilename;
         const patch = { ...req.body };
-        if (imageFile) patch.itemImage = `/data/images/itemImages/${imageFile}`;
+        if (imageFile) patch.itemImage = imageService.filepathToStore(imageFile);
         await wishlistItemService.updateWishlistItem(req.params.id, patch);
       } catch (err) {
         if (req.file && req.file.storedFilename) {

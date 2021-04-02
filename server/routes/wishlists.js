@@ -105,7 +105,7 @@ module.exports = () => {
       try {
         const imageFile = req.file && req.file.storedFilename;
         const patch = { ...req.body };
-        if (imageFile) patch.coverImage = `/data/images/coverImages/${imageFile}`;
+        if (imageFile) patch.coverImage = imageService.filepathToStore(imageFile);
         await wishlistService.updateWishlist(req.params.id, patch);
       } catch (err) {
         if (req.file && req.file.storedFilename) {
