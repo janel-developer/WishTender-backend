@@ -4,7 +4,7 @@ const { uploadToS3, deleteFromS3 } = require('../lib/s3/s3');
 class AWSImageService extends ImageService {
   async store(buffer, dims) {
     const { preparedImage, filepath, filename } = await this.prepareImage(buffer, dims);
-    await uploadToS3(preparedImage, filepath, filename);
+    await uploadToS3(preparedImage, filepath);
     return filename;
   }
 

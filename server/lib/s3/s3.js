@@ -10,13 +10,13 @@ const config = {
   Bucket: BUCKET_NAME,
 };
 
-function uploadToS3(buffer, path, filename) {
+function uploadToS3(buffer, path) {
   const s3bucket = new AWS.S3(config);
   const result = new Promise((res, rej) => {
     s3bucket.createBucket(() => {
       const params = {
         Bucket: BUCKET_NAME,
-        Key: path + filename,
+        Key: path,
         Body: buffer,
       };
 
@@ -59,4 +59,4 @@ function deleteFromS3(filepath) {
   return result;
 }
 
-module.export = { uploadToS3, deleteFromS3 };
+module.exports = { uploadToS3, deleteFromS3 };
