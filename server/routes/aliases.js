@@ -17,11 +17,6 @@ const wishlistService = new WishlistService(Wishlist);
 const profileImageDirectory = `images/profileImages/`;
 const imageService = new ImageService(profileImageDirectory);
 
-//aws
-// const profileImageDirectory = `https://wishtender.s3.amazonaws.com/images/coverImages/`;
-// const  bucketFolder = `images/coverImages/`;
-// const imageService = new ImageService(profileImageDirectory);
-
 const aliasRoutes = express.Router();
 const aliasService = new AliasService(AliasModel);
 
