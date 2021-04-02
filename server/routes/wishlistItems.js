@@ -8,7 +8,10 @@ const logger = require('../lib/logger');
 const { ApplicationError } = require('../lib/Error');
 const wishlists = require('./wishlists');
 const middlewares = require('./middlewares');
-const ImageService = require('../services/ImageService');
+const ImageService =
+  process.env.NODE_ENV === 'production' || process.env.REMOTE
+    ? require('../services/AWSImageService')
+    : require('../services/FSImageService');
 const { body, check, validationResult } = require('express-validator');
 
 const isValidPrice = (value, decimalPlaces) => {
@@ -67,7 +70,7 @@ const currencyInfo = (currency, locale = 'en') => {
   return info;
 };
 
-const profileImageDirectory = `${__dirname}/../public/data/images/itemImages`;
+const profileImageDirectory = `images/itemImages/`;
 const imageService = new ImageService(profileImageDirectory);
 
 const wishlistItemRoutes = express.Router();

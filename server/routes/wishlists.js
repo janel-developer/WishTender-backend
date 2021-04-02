@@ -13,9 +13,12 @@ const wishlistRoutes = express.Router();
 const wishlistService = new WishlistService(WishlistModel);
 const aliasService = new AliasService(AliasModel);
 
-const ImageService = require('../services/ImageService');
+const ImageService =
+  process.env.NODE_ENV === 'production' || process.env.REMOTE
+    ? require('../services/AWSImageService')
+    : require('../services/FSImageService');
 
-const coverImageDirectory = `${__dirname}/../public/data/images/coverImages`;
+const coverImageDirectory = `images/coverImages/`;
 const imageService = new ImageService(coverImageDirectory);
 
 function authUserLoggedIn(req, res, next) {
