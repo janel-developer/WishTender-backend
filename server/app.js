@@ -43,10 +43,7 @@ module.exports = (config) => {
     );
     next();
   });
-  app.use((req, res, next) => {
-    console.log(req);
-    next();
-  });
+
   app.use(express.static(`${__dirname}/public`));
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
