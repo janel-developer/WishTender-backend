@@ -1,27 +1,21 @@
 const sharp = require('sharp');
 const { v4: uuidv4 } = require('uuid');
-const util = require('util');
 const path = require('path');
-const fs = require('fs');
-
-const fsunlink = util.promisify(fs.unlink);
 
 class ImageService {
   constructor(directory) {
     this.directory = directory;
   }
 
-  async store(buffer, dims) {
+  async prepareImage(buffer, dims) {
     const filename = ImageService.filename();
     const filepath = this.filepath(filename);
-    await sharp(buffer)
-      .resize(dims.w, dims.h, { fit: sharp.fit.inside, withoutEnlargement: true })
-      .toFile(filepath);
-    return filename;
-  }
+    const preparedImage = await sharp(buffer).resize(dims.w, dims.h, {
+      fit: sharp.fit.inside,
+      withoutEnlargement: true,
+    });
 
-  async delete(filename) {
-    return fsunlink(this.filepath(filename));
+    return { preparedImage, filepath, filename };
   }
 
   static filename() {
@@ -29,7 +23,7 @@ class ImageService {
   }
 
   filepath(filename) {
-    return path.resolve(`${this.directory}/${filename}`);
+    return `${this.directory}${filename}`;
   }
 }
 

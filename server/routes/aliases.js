@@ -5,13 +5,22 @@ const AliasService = require('../services/AliasService');
 const logger = require('../lib/logger');
 const { ApplicationError } = require('../lib/Error');
 const middlewares = require('./middlewares');
-const ImageService = require('../services/ImageService');
+const ImageService =
+  process.env.NODE_ENV === 'production' || process.env.REMOTE
+    ? require('../services/AWSImageService')
+    : require('../services/FSImageService');
 const Wishlist = require('../models/Wishlist.Model');
 const WishlistService = require('../services/WishlistService');
+
 const wishlistService = new WishlistService(Wishlist);
 
-const profileImageDirectory = `${__dirname}/../public/data/images/profileImages`;
+const profileImageDirectory = `images/profileImages/`;
 const imageService = new ImageService(profileImageDirectory);
+
+//aws
+// const profileImageDirectory = `https://wishtender.s3.amazonaws.com/images/coverImages/`;
+// const  bucketFolder = `images/coverImages/`;
+// const imageService = new ImageService(profileImageDirectory);
 
 const aliasRoutes = express.Router();
 const aliasService = new AliasService(AliasModel);
@@ -190,7 +199,7 @@ module.exports = () => {
       try {
         const imageFile = req.file && req.file.storedFilename;
         const patch = { ...req.body };
-        if (imageFile) patch.profileImage = `/data/images/profileImages/${imageFile}`;
+        if (imageFile) patch.profileImage = imageService.filepathToStore(imageFile);
         await aliasService.updateAlias(req.params.id, patch);
         // if image uploaded succefully, delete old image
       } catch (err) {
