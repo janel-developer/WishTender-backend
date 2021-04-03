@@ -1,6 +1,7 @@
 const axios = require('axios');
 const scrape = require('./scrapeForProductInfo/scrapeForProductInfo');
 const WishModel = require('../models/Wish.Model');
+const logger = require('../lib/logger');
 
 /**
  * Logic for fetching speakers information
@@ -24,6 +25,7 @@ class WishesService {
         if (res.status === 200) {
           return scrape(res.data);
         }
+        // logger()
         console.log('res----------------------');
         console.log(res);
         throw res.statusText;

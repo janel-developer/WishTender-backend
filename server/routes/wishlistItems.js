@@ -188,7 +188,7 @@ module.exports = () => {
         const imageFile = req.file && req.file.storedFilename;
         const patch = { ...req.body };
         if (imageFile) patch.itemImage = imageService.filepathToStore(imageFile);
-        await wishlistItemService.updateWishlistItem(req.params.id, patch);
+        await wishlistItemService.updateWishlistItem(req.params.id, patch, imageService.delete);
       } catch (err) {
         if (req.file && req.file.storedFilename) {
           await imageService.delete(req.file.storedFilename);
@@ -211,7 +211,7 @@ module.exports = () => {
     let wishlistItem;
     try {
       wishlistItem = await wishlistItemService.deleteWishlistItem(id);
-      //need to delete image
+      await imageService.delete(wishlistItem.itemImage);
     } catch (err) {
       return next(err);
     }
