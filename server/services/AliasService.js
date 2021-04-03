@@ -1,8 +1,6 @@
-const fs = require('fs');
 const UserModel = require('../models/User.Model');
 const { ApplicationError } = require('../lib/Error');
 const logger = require('../lib/logger');
-const { deleteImage } = require('./utils');
 /**
  * Logic for Alias
  */
@@ -113,7 +111,7 @@ class AliasService {
    *
    * @returns {object} the updated alias
    */
-  async updateAlias(id, updates) {
+  async updateAlias(id, updates, deleteImage) {
     // const output = await this.AliasModel.updateOne({ _id: id }, updates);
     try {
       const alias = await this.AliasModel.findOne({ _id: id });

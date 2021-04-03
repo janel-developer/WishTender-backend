@@ -1,7 +1,6 @@
 const WishlistModel = require('../models/Wishlist.Model');
 const { createCroppedImage } = require('../lib/canvas');
 const { ApplicationError } = require('../lib/Error');
-const { deleteImage } = require('./utils');
 const { decimalMultiplier } = require('./StripeService');
 
 const ExchangeRatesApiInterface = require('../lib/ExchangeRatesApiInterface');
@@ -186,20 +185,23 @@ class WishlistItemService {
    *
    * @returns {updatedItem: object} updated wishlist
    */
-  async updateWishlistItem(id, updates) {
-    const output = await this.WishlistItemModel.updateOne({ _id: id }, updates);
-    let updatedItem;
-    if (output.nModified) {
-      updatedItem = await this.getWishlistItems([id]);
-      [updatedItem] = updatedItem;
-    } else {
-      throw new ApplicationError(
-        { id, updates },
-        `WishlistItem not updated. Updates: ${JSON.stringify(updates)}`
-      );
+  async updateWishlistItem(id, updates, deleteImage) {
+    try {
+      const wishlistItem = await this.WishlistModel.findOne({ _id: id });
+      const oldImageFile = wishlistItem.itemImage;
+      Object.entries(updates).forEach((update) => {
+        const field = update[0];
+        const val = update[1];
+        wishlistItem[field] = val;
+      });
+      await wishlistItem.save();
+      if (Object.keys(updates).includes('itemImage') && oldImageFile) {
+        await deleteImage(oldImageFile);
+      }
+      return;
+    } catch (err) {
+      throw new ApplicationError({}, `Problem updating Wishlist Item.${err}`);
     }
-
-    return updatedItem;
   }
 
   /**
@@ -217,9 +219,7 @@ class WishlistItemService {
       throw new ApplicationError({ id, err }, `Couldn't delete wishlist item. Item not found.`);
     }
     try {
-      const oldImageFile = item.itemImage;
       await item.remove();
-      deleteImage(oldImageFile);
     } catch (err) {
       throw new ApplicationError({ id, err }, `Couldn't delete wishlist item.${err}`);
     }

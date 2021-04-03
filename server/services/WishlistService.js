@@ -1,7 +1,6 @@
 const UserModel = require('../models/User.Model');
 const AliasModel = require('../models/Alias.Model');
 const { ApplicationError } = require('../lib/Error');
-const { deleteImage } = require('./utils');
 
 /**
  * Logic for wishlist
@@ -91,7 +90,7 @@ class WishlistService {
    *
    * @returns {object} the updated wishlist
    */
-  async updateWishlist(id, updates) {
+  async updateWishlist(id, updates, deleteImage) {
     // const output = await this.AliasModel.updateOne({ _id: id }, updates);
     try {
       const wishlist = await this.WishlistModel.findOne({ _id: id });
@@ -103,11 +102,11 @@ class WishlistService {
       });
       await wishlist.save();
       if (Object.keys(updates).includes('coverImage') && oldImageFile) {
-        deleteImage(oldImageFile);
+        await deleteImage(oldImageFile);
       }
       return;
     } catch (err) {
-      throw new ApplicationError({ id, updates }, `Wishlist not updated.${err}`);
+      throw new ApplicationError({}, `Problem updating Wishlist.${err}`);
     }
   }
 

@@ -195,7 +195,7 @@ module.exports = () => {
         const imageFile = req.file && req.file.storedFilename;
         const patch = { ...req.body };
         if (imageFile) patch.profileImage = imageService.filepathToStore(imageFile);
-        await aliasService.updateAlias(req.params.id, patch);
+        await aliasService.updateAlias(req.params.id, patch, imageService.delete);
         // if image uploaded succefully, delete old image
       } catch (err) {
         if (req.file && req.file.storedFilename) {
