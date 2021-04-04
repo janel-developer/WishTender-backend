@@ -34,8 +34,23 @@ module.exports = (config) => {
 
   app.use(cors());
   app.use((req, res, next) => {
+    const origins = [
+      'https://wishtenderstaging.netlify.app',
+      'https://wishtenderdev.netlify.app',
+      'https://wishtender.netlify.app',
+      'https://www.wishtender.com',
+    ];
+    if (process.env.NODE_ENV !== 'production') origins.push('http://localhost:3000');
+    let allowedOrigin;
+    if (req.get('origin')) {
+      allowedOrigin = origins.includes(req.get('origin')) ? req.get('origin') : '';
+    } else if (req.headers.referer) {
+      const reg = /(http:\/\/|https:\/\/)(.*)(?=\/)|(http:\/\/|https:\/\/)(.*)/g;
+      const origin = req.headers.referer.match(reg)[0];
+      allowedOrigin = origins.includes(origin) ? origin : '';
+    }
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, Accept, Content-Type');
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigin || '');
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader(
       'Access-Control-Allow-Methods',
@@ -58,6 +73,11 @@ module.exports = (config) => {
       resave: true,
       saveUninitialized: false,
       store: new MongoStore({ mongooseConnection: mongoose.connection }),
+      cookie: {
+        secure: !!(process.env.NODE_ENV === 'production' || process.env.REMOTE),
+        httpOnly: true,
+        sameSite: process.env.NODE_ENV === 'production' || process.env.REMOTE ? 'none' : true,
+      },
     })
   );
 
@@ -66,6 +86,7 @@ module.exports = (config) => {
 
   app.use((req, res, next) => {
     console.log(req.user);
+    req.session.p = 1;
     next();
   });
   app.use(auth.setUser);
@@ -88,6 +109,9 @@ module.exports = (config) => {
     }
   });
 
+  app.get('/api/k', (req, res, next) => {
+    res.send(212);
+  });
   app.use('/api', routes());
   app.set('views', __dirname + '/views');
   app.set('view engine', 'pug');
