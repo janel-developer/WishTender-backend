@@ -43,6 +43,7 @@ module.exports = (config) => {
     if (process.env.NODE_ENV !== 'production') origins.push('http://localhost:3000');
     let allowedOrigin;
     if (req.get('origin')) {
+      // couldn't someone just head a key in post man to origin? is that ok? Maybe in production change this so allowedOrigin it's hard coded, not dynamic
       allowedOrigin = origins.includes(req.get('origin')) ? req.get('origin') : '';
     } else if (req.headers.referer) {
       const reg = /(http:\/\/|https:\/\/)(.*)(?=\/)|(http:\/\/|https:\/\/)(.*)/g;
