@@ -49,6 +49,7 @@ module.exports = (config) => {
       const origin = req.headers.referer.match(reg)[0];
       allowedOrigin = origins.includes(origin) ? origin : '';
     }
+    console.log('allowedOrigin', allowedOrigin);
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, Accept, Content-Type');
     res.setHeader('Access-Control-Allow-Origin', allowedOrigin || '');
     res.setHeader('Access-Control-Allow-Credentials', true);
@@ -85,6 +86,9 @@ module.exports = (config) => {
   app.use(auth.session);
 
   app.use((req, res, next) => {
+    console.log(
+      `env production or remote: ${!!(process.env.NODE_ENV === 'production' || process.env.REMOTE)}`
+    );
     console.log(req.user);
     req.session.p = 1;
     next();
