@@ -30,7 +30,12 @@ const setLocaleCookie = (req, res, next) => {
   if (!cookieLocale && req.headers['accept-language']) {
     const locale = getPreferredLocale(req.headers['accept-language']);
     const localeObj = makeLocaleObj(locale);
-    res.cookie('locale', JSON.stringify(localeObj), { maxAge: new Date() * 0.001 + 300 });
+    res.cookie('locale', JSON.stringify(localeObj), {
+      maxAge: new Date() * 0.001 + 300,
+      secure: !!(process.env.NODE_ENV === 'production' || process.env.REMOTE),
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === 'production' || process.env.REMOTE ? 'none' : true,
+    });
     req.locale = JSON.stringify(localeObj); // set for currency middle ware
   }
   next();
