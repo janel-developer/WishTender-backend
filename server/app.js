@@ -32,15 +32,30 @@ module.exports = (config) => {
 
   app.set('trust proxy', 1);
 
-  app.use(cors());
+  const origins = [
+    'https://wishtenderstaging.netlify.app',
+    'https://wishtenderdev.netlify.app',
+    'https://wishtender.netlify.app',
+    'https://www.wishtender.com',
+  ];
+  if (process.env.NODE_ENV !== 'production') origins.push('http://localhost:3000');
+  app.use(
+    cors({
+      credentials: true,
+      origin(origin, callback) {
+        // allow requests with no origin
+        // (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        if (origins.indexOf(origin) === -1) {
+          const msg =
+            'The CORS policy for this site does not allow access from the specified Origin.';
+          return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+      },
+    })
+  );
   app.use((req, res, next) => {
-    const origins = [
-      'https://wishtenderstaging.netlify.app',
-      'https://wishtenderdev.netlify.app',
-      'https://wishtender.netlify.app',
-      'https://www.wishtender.com',
-    ];
-    if (process.env.NODE_ENV !== 'production') origins.push('http://localhost:3000');
     let allowedOrigin;
     if (req.get('origin')) {
       // couldn't someone just head a key in post man to origin? is that ok? Maybe in production change this so allowedOrigin it's hard coded, not dynamic
@@ -51,7 +66,7 @@ module.exports = (config) => {
       allowedOrigin = origins.includes(origin) ? origin : '';
     }
     console.log('allowedOrigin', allowedOrigin);
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, Accept, Content-Type');
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, Accept,Content-Type');
     res.setHeader('Access-Control-Allow-Origin', allowedOrigin || '');
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader(
@@ -115,7 +130,7 @@ module.exports = (config) => {
   });
 
   app.get('/api/k', (req, res, next) => {
-    res.send(212);
+    res.status(201).send({ user: 90 });
   });
   app.use('/api', routes());
   app.set('views', __dirname + '/views');
