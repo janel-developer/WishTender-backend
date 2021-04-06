@@ -92,6 +92,7 @@ module.exports = (config) => {
       saveUninitialized: false,
       store: new MongoStore({ mongooseConnection: mongoose.connection }),
       cookie: {
+        domain: 'wishtender.com',
         secure: !!(process.env.NODE_ENV === 'production' || process.env.REMOTE),
         httpOnly: true,
         sameSite: process.env.NODE_ENV === 'production' || process.env.REMOTE ? 'none' : true,
