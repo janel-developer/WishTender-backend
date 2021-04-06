@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const flash = require('connect-flash');
 const expressValidator = require('express-validator');
 
-const session = require('express-session'); //will not work in production
+const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
 const cookieParser = require('cookie-parser');
 require('dotenv').config({ path: `${__dirname}/./../../.env` });
@@ -84,20 +84,21 @@ module.exports = (config) => {
   app.use(setLocaleCookie);
 
   // Use the session middleware
-  app.use(
-    // ['/users/current'],
+
+  app.use((req, res, next) =>
     session({
-      secret: 'very secret 12345',
+      secret: 'very secret 12345', // to do, make environment variable for production
       resave: true,
       saveUninitialized: false,
       store: new MongoStore({ mongooseConnection: mongoose.connection }),
       cookie: {
-        domain: 'wishtender.com',
+        domain:
+          req.get('origin').slice(0, 17) === 'http://localhost:' ? 'localhost' : 'wishtender.com',
         secure: !!(process.env.NODE_ENV === 'production' || process.env.REMOTE),
         httpOnly: true,
         sameSite: process.env.NODE_ENV === 'production' || process.env.REMOTE ? 'none' : true,
       },
-    })
+    })(req, res, next)
   );
 
   app.use(auth.initialize);
