@@ -37,6 +37,7 @@ module.exports = (config) => {
     'https://wishtenderdev.netlify.app',
     'https://wishtender.netlify.app',
     'https://www.wishtender.com',
+    'https://staging.wishtender.com',
   ];
   if (process.env.NODE_ENV !== 'production') origins.push('http://localhost:3000');
   app.use(
