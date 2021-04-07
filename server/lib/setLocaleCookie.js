@@ -18,8 +18,8 @@ const getPreferredLocale = (acceptLanguageHeader) => {
 };
 
 const makeLocaleObj = (locale) => {
-  let countryCode = locale.match(/(?<=-)[A-Z]*/g);
-  countryCode = countryCode ? countryCode[0] : null;
+  let countryCode = locale.match(/(?<=-)[A-Z|a-z]*/g);
+  countryCode = countryCode ? countryCode[0].toUpperCase() : null;
   let languageCode = locale.match(/[^-]*/);
   languageCode = languageCode ? languageCode[0] : null;
   return { locale, countryCode, languageCode };
