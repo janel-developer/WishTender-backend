@@ -59,7 +59,7 @@ module.exports = (config) => {
   app.use((req, res, next) => {
     let allowedOrigin;
     if (req.get('origin')) {
-      // couldn't someone just head a key in post man to origin? is that ok? Maybe in production change this so allowedOrigin it's hard coded, not dynamic
+      // couldn't someone just add a key in postman to origin? is that ok? Maybe in production change this so allowedOrigin it's hard coded, not dynamic
       allowedOrigin = origins.includes(req.get('origin')) ? req.get('origin') : '';
     } else if (req.headers.referer) {
       const reg = /(http:\/\/|https:\/\/)(.*)(?=\/)|(http:\/\/|https:\/\/)(.*)/g;

@@ -15,6 +15,7 @@ class ExchangeRateApiInterface {
       'JPY',
       'BGN',
       'CZK',
+      'CZK',
       'DKK',
       'GBP',
       'HUF',
@@ -54,7 +55,9 @@ class ExchangeRateApiInterface {
    */
   async getExchangeRate(from, to) {
     const exchangeRate = await axios
-      .get(`${this.baseURI}/latest?base=${from}&symbols=${to}`)
+      .get(
+        `${this.baseURI}/latest?latest?access_key=${process.env.EXCHANGE_RATE_KEY}&base=${from}&symbols=${to}`
+      )
       .then((x) => x.data.rates[to])
       .catch((response) => {
         throw new Error(`Error: ${response.response.data.error}`);
@@ -69,7 +72,9 @@ class ExchangeRateApiInterface {
    */
   async getAllExchangeRates(baseCurrency) {
     const exchangeRate = await axios
-      .get(`${this.baseURI}/latest?base=${baseCurrency}`)
+      .get(
+        `${this.baseURI}/latest?access_key=${process.env.EXCHANGE_RATE_KEY}&base=${baseCurrency}`
+      )
       .then((x) => x.data.rates)
       .catch((response) => {
         throw new Error(`${response.response.data.error}`);

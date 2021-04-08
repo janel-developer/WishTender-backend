@@ -22,7 +22,7 @@ const OrderModel = require('../models/Order.Model');
 const AliasModel = require('../models/Alias.Model');
 const { validate } = require('email-validator');
 
-const ExchangeRatesApiInterface = require('../lib/ExchangeRatesApiInterface');
+const ExchangeRatesApiInterface = require('../lib/RatesAPI');
 const ratesApi = new ExchangeRatesApiInterface();
 
 const orderService = new OrderService(OrderModel);

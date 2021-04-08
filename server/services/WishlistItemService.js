@@ -3,7 +3,7 @@ const { createCroppedImage } = require('../lib/canvas');
 const { ApplicationError } = require('../lib/Error');
 const { decimalMultiplier } = require('./StripeService');
 
-const ExchangeRatesApiInterface = require('../lib/ExchangeRatesApiInterface');
+const ExchangeRatesApiInterface = require('../lib/RatesAPI');
 const { resolveContent } = require('nodemailer/lib/shared');
 const ratesAPI = new ExchangeRatesApiInterface();
 /**
