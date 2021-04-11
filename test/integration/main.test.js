@@ -41,6 +41,8 @@ describe('wisher flow', () => {
     const result = await s3.clearBucketS3();
     await www.server.close();
     await helper.after();
+    if (wisherUS) wisherUS.close();
+    if (gifter) gifter.close();
   });
 
   context('user:wisher 1', () => {
@@ -320,20 +322,10 @@ describe('wisher flow', () => {
       locale.languageCode.should.equal('en');
     });
     it('should create checkout session', async () => {
+      gifter.jar.setCookie('currency=USD');
       const res = await gifter
         .post('/api/checkout')
-        .set('Cookie', 'currency=USD')
-        .send({
-          alias: alias._id,
-          order: {
-            buyerInfo: { email: 'dashiellbarkhuss@gmail.com', fromLine: 'Dash' },
-            noteToWisher: 'Thank you you for being the best author if short stories.',
-          },
-        });
-      await chai
-        .request(www.app)
-        .post('/api/checkout')
-        .set('Cookie', 'currency=USD')
+        .set('Cookie', 'currency=USD; Domain=localhost')
         .send({
           alias: alias._id,
           order: {

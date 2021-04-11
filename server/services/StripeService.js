@@ -6,7 +6,8 @@ const StripeAccountInfoService = require('./StripeAccountInfoService');
 const StripeAccountInfoModel = require('../models/StripeAccountInfo.Model');
 const CartService = require('./CartService');
 
-const { AliasModel } = require('../../test/helper');
+const AliasModel = require('../models/Alias.Model');
+
 const { ApplicationError } = require('../lib/Error');
 require('dotenv').config();
 const { currencyInfo } = require('../lib/currencyFormatHelpers');
@@ -176,6 +177,7 @@ class StripeService {
    */
   async checkoutCart(aliasCart, presentmentCurrency, usToPresRate, decimalMultiplierUsToPres) {
     // get alias stripe account
+    console.log('jijiiijijijijij');
     const alias = await this.AliasModel.findOne({ _id: aliasCart.alias._id })
       .populate({
         path: 'user',

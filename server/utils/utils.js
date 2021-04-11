@@ -10,4 +10,17 @@ const isLocalhost = (req) => {
   return false;
 };
 
-module.exports = { isLocalhost };
+const getAcceptableDomain = (req) => {
+  let domain = 'wishtender.com';
+  if (isLocalhost(req) && process.env.NODE_ENV !== 'production') {
+    domain = 'localhost';
+  } else if (
+    req.get('user-agent').slice(0, 15) === 'node-superagent' &&
+    process.env.NODE_ENV === 'test'
+  ) {
+    domain = '';
+  }
+  return domain;
+};
+
+module.exports = { isLocalhost, getAcceptableDomain };

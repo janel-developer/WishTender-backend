@@ -4,6 +4,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const flash = require('connect-flash');
 const expressValidator = require('express-validator');
+const { getAcceptableDomain } = require('./utils/utils');
 
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
@@ -85,29 +86,20 @@ module.exports = (config) => {
 
   // Use the session middleware
 
-  app.use((req, res, next) => {
-    let domain;
-    if (req.get('origin')) {
-      domain =
-        req.get('origin').slice(0, 17) === 'http://localhost:' ? 'localhost' : 'wishtender.com';
-    } else if (req.headers.referer) {
-      const reg = /(http:\/\/|https:\/\/)(.*)(?=\/)|(http:\/\/|https:\/\/)(.*)/g;
-      const origin = req.headers.referer.match(reg)[0];
-      domain = origin === 'localhost' ? 'localhost' : 'wishtender';
-    }
-    return session({
+  app.use((req, res, next) =>
+    session({
       secret: 'very secret 12345', // to do, make environment variable for production
       resave: true,
       saveUninitialized: false,
       store: new MongoStore({ mongooseConnection: mongoose.connection }),
       cookie: {
-        domain,
+        domain: getAcceptableDomain(req),
         secure: !!(process.env.NODE_ENV === 'production' || process.env.REMOTE),
         httpOnly: true,
         sameSite: process.env.NODE_ENV === 'production' || process.env.REMOTE ? 'none' : true,
       },
-    })(req, res, next);
-  });
+    })(req, res, next)
+  );
 
   app.use(auth.initialize);
   app.use(auth.session);
