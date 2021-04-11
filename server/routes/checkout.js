@@ -29,6 +29,7 @@ const orderService = new OrderService(OrderModel);
 
 module.exports = () => {
   checkoutRoutes.get(
+    // this is the route that stripe send users too after a success. I'm not sure if it is incorrect because it is a get and gets are supposed to be "safe" but this is changing the database.
     '/success',
     async (req, res, next) => {
       const sess = await stripe.checkout.sessions.retrieve(req.query.session_id, {
