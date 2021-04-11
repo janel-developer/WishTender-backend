@@ -76,6 +76,7 @@ aliasSchema.path('user').validate(async function (value) {
     const UserModel = require('./User.Model');
 
     const user = await UserModel.findOne({ _id: value });
+    const all = await UserModel.find();
     if (!user) {
       throw new ApplicationError(
         { user: value },

@@ -94,6 +94,7 @@ module.exports = () => {
         if (err) {
           return next(err);
         }
+        req;
         logger.log('silly', `user logged in`);
         return res.status(201).send(user);
       });

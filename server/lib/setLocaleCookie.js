@@ -1,3 +1,5 @@
+const { getAcceptableDomain } = require('../utils/utils');
+
 const getPreferredLocale = (acceptLanguageHeader) => {
   if (!acceptLanguageHeader.length) return '';
   const locales = acceptLanguageHeader
@@ -30,10 +32,10 @@ const setLocaleCookie = (req, res, next) => {
   if (!cookieLocale && req.headers['accept-language']) {
     const locale = getPreferredLocale(req.headers['accept-language']);
     const localeObj = makeLocaleObj(locale);
+
     res.cookie('locale', JSON.stringify(localeObj), {
       maxAge: new Date() * 0.001 + 300,
-      domain:
-        req.get('origin').slice(0, 17) === 'http://localhost:' ? 'localhost' : 'wishtender.com',
+      domain: getAcceptableDomain(req),
       secure: !!(process.env.NODE_ENV === 'production' || process.env.REMOTE),
       sameSite: process.env.NODE_ENV === 'production' || process.env.REMOTE ? 'none' : true,
     });
