@@ -5,7 +5,7 @@ const helper = require('../helper');
 const Email = require('../../server/lib/email/Email');
 const StripeService = require('../../server/services/StripeService');
 const { expect } = require('chai');
-
+const s3 = require('../../server/lib/s3/s3');
 const should = chai.should();
 chai.use(chaiHttp);
 
@@ -21,7 +21,8 @@ let email;
 const testStripeAccountUS = 'acct_1IaWXDPvC6FHr3i8';
 
 describe('wisher flow', () => {
-  before(async () => {
+  before(async function () {
+    this.timeout(7000);
     sinon.stub(Email.prototype, 'send').callsFake(function fakeFn() {
       const arr = this.html.match(/(?<=confirmation\/)(.*)(?=">Confirm<)/g)[0].split('/');
       email = { email: arr[0], token: arr[1] };
@@ -31,13 +32,17 @@ describe('wisher flow', () => {
       .returns({ id: testStripeAccountUS, default_currency: 'usd', country: 'US' });
 
     await helper.before();
+    const result = await s3.clearBucketS3();
     www = await require('../../bin/wwwfortesting')();
     wisherUS = chai.request.agent(www.app);
     gifter = chai.request.agent(www.app);
   });
   after(async () => {
+    const result = await s3.clearBucketS3();
     await www.server.close();
     await helper.after();
+    if (wisherUS) wisherUS.close();
+    if (gifter) gifter.close();
   });
 
   context('user:wisher 1', () => {
@@ -54,7 +59,8 @@ describe('wisher flow', () => {
       alias = res.body;
       res.status.should.be.equal(201);
     });
-    it('should add profile picture', async () => {
+    it('should add profile picture', async function () {
+      this.timeout(7000);
       const res = await wisherUS
         .patch(`/api/aliases/${alias._id}`)
         .set('Content-Type', 'multipart/form-data')
@@ -65,7 +71,8 @@ describe('wisher flow', () => {
         );
       res.status.should.be.equal(200);
     });
-    it('should add cover picture', async () => {
+    it('should add cover picture', async function () {
+      this.timeout(7000);
       const res = await wisherUS
         .patch(`/api/wishlists/${alias.wishlists[0]}`)
         .set('Content-Type', 'multipart/form-data')
@@ -76,13 +83,15 @@ describe('wisher flow', () => {
         );
       res.status.should.be.equal(200);
     });
-    it('should edit wishlist message', async () => {
+    it('should edit wishlist message', async function () {
+      this.timeout(7000);
       const res = await wisherUS
         .patch(`/api/wishlists/${alias.wishlists[0]}`)
         .send({ wishlistMessage: 'Awesome' });
       res.status.should.be.equal(200);
     });
-    it('should add item', async () => {
+    it('should add item', async function () {
+      this.timeout(7000);
       const res = await wisherUS.post(`/api/wishlistItems`).send({
         itemName: 'Saint Laurent mid-rise straight-leg Jeans - Farfetch',
         price: '85000',
@@ -99,7 +108,8 @@ describe('wisher flow', () => {
       res.status.should.be.equal(201);
     });
     let earringsId;
-    it('should add 2nd item', async () => {
+    it('should add 2nd item', async function () {
+      this.timeout(7000);
       const res = await wisherUS.post(`/api/wishlistItems`).send({
         itemName: 'Awesome Earrings ',
         price: '40900',
@@ -115,7 +125,8 @@ describe('wisher flow', () => {
       earringsId = res.body._id;
       res.status.should.be.equal(201);
     });
-    it('should add 3rd item', async () => {
+    it('should add 3rd item', async function () {
+      this.timeout(7000);
       const res = await wisherUS.post(`/api/wishlistItems`).send({
         itemName: 'Candy',
         price: '1000',
@@ -131,7 +142,8 @@ describe('wisher flow', () => {
       candyId = res.body._id;
       res.status.should.be.equal(201);
     });
-    it('should add 4th item', async () => {
+    it('should add 4th item', async function () {
+      this.timeout(7000);
       const res = await wisherUS.post(`/api/wishlistItems`).send({
         itemName: 'purse',
         price: '5000',
@@ -147,7 +159,8 @@ describe('wisher flow', () => {
       purseId = res.body._id;
       res.status.should.be.equal(201);
     });
-    it('should update item', async () => {
+    it('should update item', async function () {
+      this.timeout(10000);
       const res = await wisherUS
         .patch(`/api/wishlistItems/${earringsId}`)
         .field('itemName', 'Sparkly Earrings')
@@ -309,20 +322,10 @@ describe('wisher flow', () => {
       locale.languageCode.should.equal('en');
     });
     it('should create checkout session', async () => {
+      gifter.jar.setCookie('currency=USD');
       const res = await gifter
         .post('/api/checkout')
-        .set('Cookie', 'currency=USD')
-        .send({
-          alias: alias._id,
-          order: {
-            buyerInfo: { email: 'dashiellbarkhuss@gmail.com', fromLine: 'Dash' },
-            noteToWisher: 'Thank you you for being the best author if short stories.',
-          },
-        });
-      await chai
-        .request(www.app)
-        .post('/api/checkout')
-        .set('Cookie', 'currency=USD')
+        .set('Cookie', 'currency=USD; Domain=localhost')
         .send({
           alias: alias._id,
           order: {

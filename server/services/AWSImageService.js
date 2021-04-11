@@ -1,5 +1,6 @@
 const ImageService = require('./ImageService');
 const { uploadToS3, deleteFromS3 } = require('../lib/s3/s3');
+const logger = require('../lib/logger');
 
 class AWSImageService extends ImageService {
   async store(buffer, dims) {
@@ -8,13 +9,26 @@ class AWSImageService extends ImageService {
     return filename;
   }
 
-  async delete(filename) {
-    const result = await deleteFromS3(this.filepath(filename));
-    return result;
+  // async delete(filename) {
+  //   const result = await deleteFromS3(this.filepath(filename));
+  //   return result;
+  // }
+
+  async delete(path) {
+    let deleteFile;
+    if (path.slice(0, 6) === 'https:') {
+      deleteFile = path.split(this.directory)[1];
+    } else {
+      deleteFile = path;
+    }
+    const result = await deleteFromS3(this.filepath(deleteFile));
+    logger.log('silly', `deleted ${result.Deleted.Key}`);
   }
 
   filepathToStore(filename) {
-    return `https://wishtender.s3.amazonaws.com/${this.filepath(filename)}`;
+    return `https://wishtender${
+      process.env.NODE_ENV === 'test' ? '-test' : ''
+    }.s3.amazonaws.com/${this.filepath(filename)}`;
   }
 }
 

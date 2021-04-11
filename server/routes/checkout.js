@@ -22,7 +22,7 @@ const OrderModel = require('../models/Order.Model');
 const AliasModel = require('../models/Alias.Model');
 const { validate } = require('email-validator');
 
-const ExchangeRatesApiInterface = require('../lib/ExchangeRatesApiInterface');
+const ExchangeRatesApiInterface = require('../lib/RatesAPI');
 const ratesApi = new ExchangeRatesApiInterface();
 
 const orderService = new OrderService(OrderModel);
@@ -272,7 +272,7 @@ module.exports = () => {
       orderObject.alias = req.body.alias;
       try {
         const checkoutSession = await CheckoutService.checkout(aliasCart, currency, orderObject);
-        res.status(201).send(JSON.stringify({ checkoutSessionId: checkoutSession.id }));
+        res.status(201).send({ checkoutSessionId: checkoutSession.id });
       } catch (err) {
         next(err);
       }

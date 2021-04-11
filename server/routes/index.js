@@ -10,6 +10,7 @@ const orderRoutes = require('./orders');
 const stripeRoutes = require('./stripe');
 const connectAccountRoutes = require('./connectAccount');
 const confirmation = require('./confirmation');
+const exchange = require('./exchange');
 
 const router = express.Router();
 module.exports = () => {
@@ -25,5 +26,6 @@ module.exports = () => {
   router.use('/orders', orderRoutes());
   router.use('/stripe', stripeRoutes());
   router.use('/connectAccount', connectAccountRoutes());
+  router.use('/exchange', exchange());
   return router;
 };

@@ -6,7 +6,7 @@ const logger = require('../lib/logger');
 const { ApplicationError } = require('../lib/Error');
 const middlewares = require('./middlewares');
 const ImageService =
-  process.env.NODE_ENV === 'production' || process.env.REMOTE
+  process.env.NODE_ENV === 'production' || process.env.REMOTE || process.env.AWS
     ? require('../services/AWSImageService')
     : require('../services/FSImageService');
 const Wishlist = require('../models/Wishlist.Model');
