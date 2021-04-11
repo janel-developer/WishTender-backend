@@ -1,18 +1,24 @@
 const AWS = require('aws-sdk');
 const logger = require('../logger');
 
-const BUCKET_NAME = 'wishtender';
-const IAM_USER_KEY = process.env.AWS_ACCESS_KEY_ID;
-const IAM_USER_SECRET = process.env.AWS_SECRET_ACCESS_KEY;
+const BUCKET_NAME = process.env.NODE_ENV === 'test' ? 'wishtender-test' : 'wishtender';
+const IAM_USER_KEY =
+  process.env.NODE_ENV === 'test'
+    ? process.env.AWS_TEST_ACCESS_KEY_ID
+    : process.env.AWS_ACCESS_KEY_ID;
+const IAM_USER_SECRET =
+  process.env.NODE_ENV === 'test'
+    ? process.env.AWS_TEST_SECRET_ACCESS_KEY
+    : process.env.AWS_SECRET_ACCESS_KEY;
 const config = {
   accessKeyId: IAM_USER_KEY,
   secretAccessKey: IAM_USER_SECRET,
   Bucket: BUCKET_NAME,
 };
 
-function uploadToS3(buffer, path) {
+async function uploadToS3(buffer, path) {
   const s3bucket = new AWS.S3(config);
-  const result = new Promise((res, rej) => {
+  const result = await new Promise((res, rej) => {
     s3bucket.createBucket(() => {
       const params = {
         Bucket: BUCKET_NAME,
@@ -33,7 +39,7 @@ function uploadToS3(buffer, path) {
   return result;
 }
 
-function deleteFromS3(filepath) {
+async function deleteFromS3(filepath) {
   const s3 = new AWS.S3(config);
 
   const params = {
@@ -46,17 +52,64 @@ function deleteFromS3(filepath) {
       ],
     },
   };
-  const result = new Promise((res, rej) => {
+  const result = await new Promise((res, rej) => {
     s3.deleteObjects(params, function (err, data) {
       if (err) {
         logger.log('error', err.message);
-        rej(err);
+        return rej(err);
+      }
+      if (!data.Deleted.length) {
+        return rej(new Error('AWS image not deleted'));
       }
       logger.log('silly', 'delete from AWS successful');
-      res(data);
+      return res(data);
     });
   });
   return result;
 }
+const deleteBucketS3 = async () => {
+  const s3 = new AWS.S3(config);
 
-module.exports = { uploadToS3, deleteFromS3 };
+  const params = {
+    Bucket: BUCKET_NAME !== 'wishtender-test' ? null : BUCKET_NAME,
+  };
+
+  // Call S3 to delete the bucket
+  s3.deleteBucket(params, function (err, data) {
+    if (err) {
+      console.log('Error', err);
+    } else {
+      console.log('Success', data);
+    }
+  });
+};
+const clearBucketS3 = async () => {
+  const s3 = new AWS.S3(config);
+
+  const params = {
+    Bucket: BUCKET_NAME !== 'wishtender-test' ? null : BUCKET_NAME,
+    Delete: {
+      Objects: [
+        {
+          Key: 'images/',
+        },
+      ],
+    },
+  };
+  const result = await new Promise((res, rej) => {
+    s3.deleteObjects(params, function (err, data) {
+      if (err) {
+        logger.log('error', err.message);
+        return rej(err);
+      }
+      if (!data.Deleted.length) {
+        return rej(new Error('AWS image not deleted'));
+      }
+      logger.log('silly', 'deleted images folder from AWS Bucket successful');
+      return res(data);
+    });
+  });
+  return result;
+};
+
+module.exports = { uploadToS3, deleteFromS3, deleteBucketS3, clearBucketS3 };

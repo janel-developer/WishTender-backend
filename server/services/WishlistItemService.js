@@ -1,10 +1,9 @@
 const WishlistModel = require('../models/Wishlist.Model');
-const { createCroppedImage } = require('../lib/canvas');
 const { ApplicationError } = require('../lib/Error');
 const { decimalMultiplier } = require('./StripeService');
 
 const ExchangeRatesApiInterface = require('../lib/RatesAPI');
-const { resolveContent } = require('nodemailer/lib/shared');
+
 const ratesAPI = new ExchangeRatesApiInterface();
 /**
  * Logic for fetching wishlist items
@@ -185,9 +184,10 @@ class WishlistItemService {
    *
    * @returns {updatedItem: object} updated wishlist
    */
-  async updateWishlistItem(id, updates, deleteImage) {
+  async updateWishlistItem(id, updates, imageService) {
+    console.log('here12345');
     try {
-      const wishlistItem = await this.WishlistModel.findOne({ _id: id });
+      const wishlistItem = await this.WishlistItemModel.findOne({ _id: id });
       const oldImageFile = wishlistItem.itemImage;
       Object.entries(updates).forEach((update) => {
         const field = update[0];
@@ -196,7 +196,7 @@ class WishlistItemService {
       });
       await wishlistItem.save();
       if (Object.keys(updates).includes('itemImage') && oldImageFile) {
-        await deleteImage(oldImageFile);
+        await imageService.delete(oldImageFile);
       }
       return;
     } catch (err) {
@@ -221,6 +221,7 @@ class WishlistItemService {
     try {
       await item.remove();
     } catch (err) {
+      console.log(err);
       throw new ApplicationError({ id, err }, `Couldn't delete wishlist item.${err}`);
     }
 

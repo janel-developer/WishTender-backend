@@ -6,10 +6,9 @@ const WishlistModel = require('../models/Wishlist.Model');
 const WishlistService = require('../services/WishlistService');
 const logger = require('../lib/logger');
 const { ApplicationError } = require('../lib/Error');
-const wishlists = require('./wishlists');
 const middlewares = require('./middlewares');
 const ImageService =
-  process.env.NODE_ENV === 'production' || process.env.REMOTE
+  process.env.NODE_ENV === 'production' || process.env.REMOTE || process.env.AWS
     ? require('../services/AWSImageService')
     : require('../services/FSImageService');
 const { body, check, validationResult } = require('express-validator');
@@ -188,7 +187,7 @@ module.exports = () => {
         const imageFile = req.file && req.file.storedFilename;
         const patch = { ...req.body };
         if (imageFile) patch.itemImage = imageService.filepathToStore(imageFile);
-        await wishlistItemService.updateWishlistItem(req.params.id, patch, imageService.delete);
+        await wishlistItemService.updateWishlistItem(req.params.id, patch, imageService);
       } catch (err) {
         if (req.file && req.file.storedFilename) {
           await imageService.delete(req.file.storedFilename);

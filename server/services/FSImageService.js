@@ -11,8 +11,23 @@ class FSImageService extends ImageService {
     return filename;
   }
 
-  async delete(filename) {
+  async delete(path) {
+    let deleteFunc;
+    if (path.slice(0, 5) === '/data') {
+      deleteFunc = this.deleteByPath;
+    } else {
+      deleteFunc = this.deleteFilename;
+    }
+    await deleteFunc(path);
+  }
+
+  async deleteFilename(filename) {
     return fsunlink(`${__dirname}/../public/data/${this.filepath(filename)}`);
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async deleteByPath(path) {
+    return fsunlink(`${__dirname}/../public${path}`);
   }
 
   filepathToStore(filename) {
