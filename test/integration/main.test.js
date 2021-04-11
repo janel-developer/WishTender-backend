@@ -323,16 +323,13 @@ describe('wisher flow', () => {
     });
     it('should create checkout session', async () => {
       gifter.jar.setCookie('currency=USD');
-      const res = await gifter
-        .post('/api/checkout')
-        .set('Cookie', 'currency=USD; Domain=localhost')
-        .send({
-          alias: alias._id,
-          order: {
-            buyerInfo: { email: 'dashiellbarkhuss@gmail.com', fromLine: 'Dash' },
-            noteToWisher: 'Thank you you for being the best author if short stories.',
-          },
-        });
+      const res = await gifter.post('/api/checkout').send({
+        alias: alias._id,
+        order: {
+          buyerInfo: { email: 'dashiellbarkhuss@gmail.com', fromLine: 'Dash' },
+          noteToWisher: 'Thank you you for being the best author if short stories.',
+        },
+      });
 
       // eslint-disable-next-line no-unused-expressions
       expect(res.body.checkoutSessionId).to.exist;
