@@ -13,7 +13,8 @@ const CartService = require('../services/CartService');
 const CheckoutService = require('../services/CheckoutService');
 const { ApplicationError } = require('../lib/Error');
 const { currencyInfo, unitToStandard } = require('../lib/currencyFormatHelpers');
-
+const ReceiptEmail = require('../lib/email/ReceiptEmail');
+const TenderReceivedEmail = require('../lib/email/TenderReceivedEmail');
 const checkoutRoutes = express.Router();
 
 const stripeService = new StripeService(stripe);
@@ -23,12 +24,14 @@ const AliasModel = require('../models/Alias.Model');
 const { validate } = require('email-validator');
 
 const ExchangeRatesApiInterface = require('../lib/RatesAPI');
+const { ConsoleTransportOptions } = require('winston/lib/winston/transports');
 const ratesApi = new ExchangeRatesApiInterface();
 
 const orderService = new OrderService(OrderModel);
 
 module.exports = () => {
   checkoutRoutes.get(
+    // this is the route that stripe send users too after a success. I'm not sure if it is incorrect because it is a get and gets are supposed to be "safe" but this is changing the database.
     '/success',
     async (req, res, next) => {
       const sess = await stripe.checkout.sessions.retrieve(req.query.session_id, {
@@ -155,14 +158,28 @@ module.exports = () => {
             })
             .exec();
         }
-        // send reciept to notify wisher
-        const orderId = order._id;
-        const tenderEmail = order.buyerInfo.email;
+        // send receipt to notify gifter
+        try {
+          const receiptEmail = new ReceiptEmail(order);
+          const info = await receiptEmail.sendSync().then((inf) => inf);
+          if (info) {
+            console.log(info);
+          }
+        } catch (err) {
+          return next(new ApplicationError({}, `Couldn't send receipt to tender ${err}`));
+        }
 
-        const content = `Thank you for you for your purchase! You purchased a WishTender for ${alias.aliasName} ${alias.handle}. Total: ${order.total}. Items`;
-
-        //send email to notify wisher
+        // send notification email to notify wisher
         const wishersEmail = alias.user.email;
+        try {
+          const tenderReceivedEmail = new TenderReceivedEmail(order, wishersEmail);
+          const info = await tenderReceivedEmail.sendSync().then((inf) => inf);
+          if (info) {
+            console.log(info);
+          }
+        } catch (err) {
+          return next(new ApplicationError({}, `Couldn't send notification to  wisher ${err}`));
+        }
 
         // needs link to manage purchases
         const content2 = `Someone purchased a gift for you! Send a thank you note to keep your fans happy.`;
@@ -221,7 +238,7 @@ module.exports = () => {
             let rate;
             // get conversion
             try {
-              // api.exchangeratesapi.io supports all the currencies of cross-borderpayouts as of 3/23/21. If this fails then we need to check if stripe or the rates api has changed
+              // ratesapi.io supports all the currencies of cross-borderpayouts as of 3/23/21. If this fails then we need to check if stripe or the rates api has changed
               rate = await ratesApi.getExchangeRate(currency, 'USD');
             } catch (error) {
               return next(error);
