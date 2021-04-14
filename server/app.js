@@ -99,7 +99,7 @@ module.exports = (config) => {
           !!(process.env.NODE_ENV === 'production' || process.env.REMOTE) && !isLocalhost(req),
         httpOnly: true,
         // sameSite: process.env.NODE_ENV === 'production' || process.env.REMOTE ? 'none' : true,
-        sameSite: false,
+        sameSite: 'none',
       },
     })(req, res, next)
   );
