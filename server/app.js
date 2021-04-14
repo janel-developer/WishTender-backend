@@ -92,6 +92,7 @@ module.exports = (config) => {
       resave: true,
       saveUninitialized: false,
       store: new MongoStore({ mongooseConnection: mongoose.connection }),
+      // proxy: true,
       cookie: {
         domain: getAcceptableDomain(req),
         secure: !!(process.env.NODE_ENV === 'production' || process.env.REMOTE),
@@ -110,6 +111,9 @@ module.exports = (config) => {
     );
     console.log(req.user);
     req.session.p = 1;
+    res.on('close', () => {
+      console.log('close', res._headers);
+    });
     next();
   });
   app.use(auth.setUser);
