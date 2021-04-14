@@ -95,11 +95,9 @@ module.exports = (config) => {
       // proxy: true,
       cookie: {
         domain: getAcceptableDomain(req),
-        secure:
-          !!(process.env.NODE_ENV === 'production' || process.env.REMOTE) && !isLocalhost(req),
+        secure: !!(process.env.NODE_ENV === 'production' || process.env.REMOTE),
         httpOnly: true,
-        // sameSite: process.env.NODE_ENV === 'production' || process.env.REMOTE ? 'none' : true,
-        sameSite: 'none',
+        sameSite: process.env.NODE_ENV === 'production' || process.env.REMOTE ? 'none' : true,
       },
     })(req, res, next)
   );
