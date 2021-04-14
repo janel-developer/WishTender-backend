@@ -10,10 +10,21 @@ const isLocalhost = (req) => {
   return false;
 };
 
+const getLocalhostOrigin = (req) => {
+  if (req.get('origin')) {
+    return req.get('origin').slice(0, 21);
+  }
+  if (req.headers.referer) {
+    const reg = /(?<=http:\/\/|https:\/\/)(.*)(?=\/)|(?<=http:\/\/|https:\/\/)(.*)/g;
+    const origin = req.headers.referer.match(reg)[0];
+    return origin;
+  }
+};
+
 const getAcceptableDomain = (req) => {
   let domain = 'wishtender.com';
   if (isLocalhost(req) && process.env.NODE_ENV !== 'production') {
-    domain = 'localhost';
+    domain = getLocalhostOrigin(req);
   } else if (
     req.get('user-agent').slice(0, 15) === 'node-superagent' &&
     process.env.NODE_ENV === 'test'
