@@ -4,7 +4,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const flash = require('connect-flash');
 const expressValidator = require('express-validator');
-const { getAcceptableDomain } = require('./utils/utils');
+const { getAcceptableDomain, isLocalhost } = require('./utils/utils');
 
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
