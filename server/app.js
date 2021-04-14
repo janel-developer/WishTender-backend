@@ -4,7 +4,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const flash = require('connect-flash');
 const expressValidator = require('express-validator');
-const { getAcceptableDomain } = require('./utils/utils');
+const { getAcceptableDomain, isLocalhost } = require('./utils/utils');
 
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
@@ -95,9 +95,11 @@ module.exports = (config) => {
       // proxy: true,
       cookie: {
         domain: getAcceptableDomain(req),
-        secure: !!(process.env.NODE_ENV === 'production' || process.env.REMOTE),
+        secure:
+          !!(process.env.NODE_ENV === 'production' || process.env.REMOTE) && !isLocalhost(req),
         httpOnly: true,
-        sameSite: process.env.NODE_ENV === 'production' || process.env.REMOTE ? 'none' : true,
+        // sameSite: process.env.NODE_ENV === 'production' || process.env.REMOTE ? 'none' : true,
+        sameSite: false,
       },
     })(req, res, next)
   );
