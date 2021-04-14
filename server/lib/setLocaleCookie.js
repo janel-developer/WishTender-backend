@@ -37,7 +37,8 @@ const setLocaleCookie = (req, res, next) => {
       maxAge: new Date() * 0.001 + 300,
       domain: getAcceptableDomain(req),
       secure: !!(process.env.NODE_ENV === 'production' || process.env.REMOTE),
-      sameSite: process.env.NODE_ENV === 'production' || process.env.REMOTE ? 'none' : true,
+      sameSite: false,
+      // sameSite: process.env.NODE_ENV === 'production' || process.env.REMOTE ? 'none' : true,
     });
     req.locale = JSON.stringify(localeObj); // set for currency middle ware
   }
