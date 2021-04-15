@@ -97,8 +97,7 @@ module.exports = (config) => {
         domain: getAcceptableDomain(req),
         secure: !!(process.env.NODE_ENV === 'production' || process.env.REMOTE),
         httpOnly: true,
-        sameSite: true,
-        // sameSite: process.env.NODE_ENV === 'production' || process.env.REMOTE ? 'none' : true,
+        sameSite: process.env.NODE_ENV === 'production' || process.env.REMOTE ? 'none' : true,
       },
     })(req, res, next)
   );
