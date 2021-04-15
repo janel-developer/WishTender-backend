@@ -23,8 +23,13 @@ const getLocalhostOrigin = (req) => {
 
 const getAcceptableDomain = (req) => {
   let domain = 'wishtender.com';
-  if (isLocalhost(req) && process.env.NODE_ENV !== 'production') {
+  if (isLocalhost(req) || process.env.NODE_ENV !== 'production') {
     // domain = 'localhost';
+    domain = '';
+  } else if (
+    req.get('user-agent').slice(0, 14) === 'PostmanRuntime' &&
+    process.env.NODE_ENV !== 'production'
+  ) {
     domain = '';
   } else if (
     req.get('user-agent').slice(0, 15) === 'node-superagent' &&
