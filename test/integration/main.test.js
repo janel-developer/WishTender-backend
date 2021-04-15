@@ -1,11 +1,12 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const sinon = require('sinon');
+const { expect } = require('chai');
 const helper = require('../helper');
 const Email = require('../../server/lib/email/Email');
 const StripeService = require('../../server/services/StripeService');
-const { expect } = require('chai');
 const s3 = require('../../server/lib/s3/s3');
+
 const should = chai.should();
 chai.use(chaiHttp);
 
