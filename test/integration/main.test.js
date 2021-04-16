@@ -335,5 +335,6 @@ describe('wisher flow', () => {
       // eslint-disable-next-line no-unused-expressions
       expect(res.body.checkoutSessionId).to.exist;
     });
+    it('should ');
   });
 });

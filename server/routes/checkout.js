@@ -146,7 +146,7 @@ module.exports = () => {
           alias.user.stripeAccountInfo.accountFees = {
             due: inThirtyDays,
             lastAccountFeePaid: time,
-            accountFeesPaid: [...alias.user.stripeAccountInfo.accountFees.accountFeesPaid, now],
+            accountFeesPaid: [...alias.user.stripeAccountInfo.accountFees.accountFeesPaid, time],
           };
 
           await alias.user.stripeAccountInfo.save();
