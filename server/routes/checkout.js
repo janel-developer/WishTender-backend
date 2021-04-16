@@ -4,6 +4,13 @@ const stripe = require('stripe')(
     ? process.env.STRIPE_SECRET_KEY
     : process.env.STRIPE_SECRET_TEST_KEY
 );
+
+const mongoose = require('mongoose');
+
+const { Schema } = mongoose;
+const SessionSchema = new Schema({ session: String, _id: String }, { strict: false });
+const Session = mongoose.model('sessions', SessionSchema, 'sessions');
+
 const { body, cookie, validationResult } = require('express-validator');
 const express = require('express');
 const { ObjectId } = require('mongoose').Types;
@@ -25,6 +32,7 @@ const { validate } = require('email-validator');
 
 const ExchangeRatesApiInterface = require('../lib/RatesAPI');
 const { ConsoleTransportOptions } = require('winston/lib/winston/transports');
+const { json } = require('express');
 const ratesApi = new ExchangeRatesApiInterface();
 
 const orderService = new OrderService(OrderModel);
@@ -146,7 +154,7 @@ module.exports = () => {
           alias.user.stripeAccountInfo.accountFees = {
             due: inThirtyDays,
             lastAccountFeePaid: time,
-            accountFeesPaid: [...alias.user.stripeAccountInfo.accountFees.accountFeesPaid, now],
+            accountFeesPaid: [...alias.user.stripeAccountInfo.accountFees.accountFeesPaid, time],
           };
 
           await alias.user.stripeAccountInfo.save();
@@ -180,16 +188,19 @@ module.exports = () => {
         } catch (err) {
           return next(new ApplicationError({}, `Couldn't send notification to  wisher ${err}`));
         }
-
-        // needs link to manage purchases
-        const content2 = `Someone purchased a gift for you! Send a thank you note to keep your fans happy.`;
       }
-      if (req.session.cart && Object.keys(req.session.cart.aliasCarts).length <= 1) {
-        delete req.session.cart;
-      } else if (req.session.cart) {
-        delete req.session.cart.aliasCarts[alias_id];
+      const session = await Session.findOne({ _id: order.session });
+      if (session) {
+        const jsonSession = JSON.parse(session.session);
+        if (jsonSession.cart && Object.keys(jsonSession.cart.aliasCarts).length <= 1) {
+          delete jsonSession.cart;
+          session.session = JSON.stringify(jsonSession);
+        } else if (jsonSession.cart) {
+          delete jsonSession.cart.aliasCarts[alias_id];
+          session.session = JSON.stringify(jsonSession);
+        }
+        await session.save();
       }
-
       res.redirect(301, `http://localhost:3000/order?success=true&session_id=${session_id}`);
     }
   );
@@ -286,6 +297,7 @@ module.exports = () => {
       logger.log('silly', `starting checkout flow...`);
       const currency = req.user ? req.user.currency : null || req.cookies.currency;
       const orderObject = req.body.order;
+      orderObject.session = req.sessionID;
       orderObject.alias = req.body.alias;
       try {
         const checkoutSession = await CheckoutService.checkout(aliasCart, currency, orderObject);
