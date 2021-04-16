@@ -10,7 +10,6 @@ const OrderService = require('./OrderService');
 const OrderModel = require('../models/Order.Model');
 const CartService = require('./CartService');
 const StripeService = require('../services/StripeService');
-const { currencyInfo } = require('../lib/currencyFormatHelpers');
 
 const stripeService = new StripeService(stripe);
 

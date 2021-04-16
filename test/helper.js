@@ -251,6 +251,7 @@ module.exports.sessionIdFromRes = (res) => {
   return sessionId;
 };
 module.exports.sessionIdFromResReq = (res) => {
+  // eslint-disable-next-line no-underscore-dangle
   const cookieHeader = res.req._headers.cookie;
   const regex = /(?<=connect.sid=s%3A)(.*)(?=\.)/g;
   const sessionId = cookieHeader.match(regex)[0];
