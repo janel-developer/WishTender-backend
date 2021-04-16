@@ -297,7 +297,7 @@ describe('wisher flow', () => {
         alias: alias._id,
         order: {
           buyerInfo: { email: 'dashiellbarkhuss@gmail.com', fromLine: 'Dash' },
-          noteToWisher: 'Thank you you for being the best author if short stories.',
+          noteToWisher: 'Thank you for being the best author of short stories.',
         },
       });
       res.status.should.be.equal(400);
@@ -328,13 +328,13 @@ describe('wisher flow', () => {
         alias: alias._id,
         order: {
           buyerInfo: { email: 'dashiellbarkhuss@gmail.com', fromLine: 'Dash' },
-          noteToWisher: 'Thank you you for being the best author if short stories.',
+          noteToWisher: 'Thank you for being the best author of short stories.',
         },
       });
 
       // eslint-disable-next-line no-unused-expressions
       expect(res.body.checkoutSessionId).to.exist;
     });
-    it('should ');
+    // it('should ');
   });
 });
