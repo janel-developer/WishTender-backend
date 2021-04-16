@@ -114,7 +114,7 @@ const checkout = async (aliasCart, currency, orderObject) => {
     currency,
   };
 
-  orderService.createOrder(newOrderObject);
+  await orderService.createOrder(newOrderObject);
   return checkoutSession;
 };
 

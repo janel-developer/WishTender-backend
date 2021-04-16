@@ -107,7 +107,6 @@ class OrderService {
    * gets order
    * @param {Object} query
    *
-   *
    * @returns {Object} the order
    */
   async getOrder(query) {

@@ -8,6 +8,11 @@ const orderSchema = new mongoose.Schema(
     buyerInfo: { type: Object },
 
     cart: { type: Object },
+    session: {
+      type: String,
+      ref: 'Session',
+      required: true,
+    },
     convertedCart: { type: Object },
     noteToWisher: String,
     noteToTender: String,
