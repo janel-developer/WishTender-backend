@@ -90,7 +90,7 @@ class WishlistService {
    *
    * @returns {object} the updated wishlist
    */
-  async updateWishlist(id, updates, deleteImage) {
+  async updateWishlist(id, updates, imageService) {
     // const output = await this.AliasModel.updateOne({ _id: id }, updates);
     try {
       const wishlist = await this.WishlistModel.findOne({ _id: id });
@@ -102,7 +102,7 @@ class WishlistService {
       });
       await wishlist.save();
       if (Object.keys(updates).includes('coverImage') && oldImageFile) {
-        await deleteImage(oldImageFile);
+        await imageService.delete(oldImageFile);
       }
       return;
     } catch (err) {
