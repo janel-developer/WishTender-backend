@@ -38,6 +38,12 @@ const getAcceptableDomain = (req) => {
     process.env.NODE_ENV === 'test'
   ) {
     domain = '';
+  } else if (
+    req.get('referer') &&
+    req.get('referer').slice(0, 18) === 'http://172.20.10.3' &&
+    process.env.NODE_ENV !== 'production'
+  ) {
+    domain = '172.20.10.3';
   }
   return domain;
 };
