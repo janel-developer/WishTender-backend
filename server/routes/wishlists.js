@@ -51,6 +51,7 @@ async function authUserOwnsWishlist(req, res, next) {
   ) {
     // should authorize that user of wishlist is req.user
     if (!req.user.wishlists.includes(req.params.id)) {
+      logger.log('silly', "Not Authorized. Wishlist doesn't belong to logged in user.");
       return res.status(403).send({
         message: `Not Authorized. Wishlist doesn't belong to logged in user. `,
       });
@@ -98,7 +99,7 @@ module.exports = () => {
   wishlistRoutes.patch(
     '/:id',
     authUserOwnsWishlist,
-    middlewares.onlyAllowInBodySanitizer(['wishlistMessage']),
+    middlewares.onlyAllowInBodySanitizer(['wishlistMessage', 'wishlistName']),
     middlewares.upload.single('image'),
     middlewares.handleImage(imageService, { h: 180, w: 600 }),
     async (req, res, next) => {
@@ -106,7 +107,7 @@ module.exports = () => {
         const imageFile = req.file && req.file.storedFilename;
         const patch = { ...req.body };
         if (imageFile) patch.coverImage = imageService.filepathToStore(imageFile);
-        await wishlistService.updateWishlist(req.params.id, patch, imageService.delete);
+        await wishlistService.updateWishlist(req.params.id, patch, imageService);
       } catch (err) {
         if (req.file && req.file.storedFilename) {
           await imageService.delete(req.file.storedFilename);

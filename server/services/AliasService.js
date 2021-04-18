@@ -111,7 +111,7 @@ class AliasService {
    *
    * @returns {object} the updated alias
    */
-  async updateAlias(id, updates, deleteImage) {
+  async updateAlias(id, updates, imageService) {
     // const output = await this.AliasModel.updateOne({ _id: id }, updates);
     try {
       const alias = await this.AliasModel.findOne({ _id: id });
@@ -123,7 +123,7 @@ class AliasService {
       });
       await alias.save();
       if (Object.keys(updates).includes('profileImage') && oldImageFile) {
-        deleteImage(oldImageFile);
+        imageService.delete(oldImageFile);
       }
       return;
     } catch (err) {
