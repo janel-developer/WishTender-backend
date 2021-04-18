@@ -1,9 +1,4 @@
 const Email = require('./Email');
-const Currency = require('../currency');
-const RatesAPI = require('../RatesAPI');
-
-const ratesAPI = new RatesAPI();
-const currency = new Currency(ratesAPI);
 
 require('dotenv').config();
 
@@ -14,7 +9,6 @@ class TenderReceivedEmail extends Email {
    * @param {string} wisherEmail the wishers email
    */
   constructor(order, wisherEmail) {
-    const { cart } = order;
     const pass = process.env.NOTIFICATIONS_PASSWORD;
     const email =
       process.env.NODE_ENV !== 'production'
