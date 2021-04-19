@@ -42,6 +42,8 @@ module.exports = (config) => {
   ];
   if (process.env.NODE_ENV !== 'production') origins.push('http://localhost:3000');
   app.use((req, res, next) => {
+    logger.log('silly', `${req.method}: ${req.path}`);
+
     cors({
       credentials: true,
       origin(origin, callback) {
