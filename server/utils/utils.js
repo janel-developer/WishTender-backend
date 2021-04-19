@@ -26,6 +26,11 @@ const getPhoneDomain = (req) => {
   return origin;
 };
 
+const isPhoneDebugging = (req) =>
+  req.headers['user-agent'] &&
+  req.headers['user-agent'].match('iPhone') &&
+  process.env.NODE_ENV !== 'production';
+
 const getAcceptableDomain = (req) => {
   let domain = 'wishtender.com';
   if (isLocalhost(req) && process.env.NODE_ENV !== 'production') {
@@ -43,14 +48,10 @@ const getAcceptableDomain = (req) => {
     process.env.NODE_ENV === 'test'
   ) {
     domain = '';
-  } else if (
-    req.headers['user-agent'] &&
-    req.headers['user-agent'].match('iPhone') &&
-    process.env.NODE_ENV !== 'production'
-  ) {
+  } else if (isPhoneDebugging(req)) {
     domain = getPhoneDomain(req);
   }
   return domain;
 };
 
-module.exports = { isLocalhost, getAcceptableDomain };
+module.exports = { isLocalhost, getAcceptableDomain, isPhoneDebugging, getPhoneDomain };

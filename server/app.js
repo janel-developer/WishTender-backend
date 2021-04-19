@@ -4,7 +4,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const flash = require('connect-flash');
 const expressValidator = require('express-validator');
-const { getAcceptableDomain, isLocalhost } = require('./utils/utils');
+const { getAcceptableDomain, isLocalhost, isPhoneDebugging } = require('./utils/utils');
 
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
@@ -41,13 +41,14 @@ module.exports = (config) => {
     'https://staging.wishtender.com',
   ];
   if (process.env.NODE_ENV !== 'production') origins.push('http://localhost:3000');
-  app.use(
+  app.use((req, res, next) => {
     cors({
       credentials: true,
       origin(origin, callback) {
         // allow requests with no origin
         // (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
+        if (isPhoneDebugging(req)) origins.push(origin);
         if (origins.indexOf(origin) === -1) {
           const msg =
             'The CORS policy for this site does not allow access from the specified Origin.';
@@ -55,8 +56,8 @@ module.exports = (config) => {
         }
         return callback(null, true);
       },
-    })
-  );
+    })(req, res, next);
+  });
   app.use((req, res, next) => {
     let allowedOrigin;
     if (req.get('origin')) {
