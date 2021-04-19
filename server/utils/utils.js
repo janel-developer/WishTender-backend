@@ -20,6 +20,11 @@ const getLocalhostOrigin = (req) => {
     return origin;
   }
 };
+const getPhoneDomain = (req) => {
+  const reg = /(?<=http:\/\/|https:\/\/)(.*)(?=:)/g;
+  const origin = req.headers.referer.match(reg)[0];
+  return origin;
+};
 
 const getAcceptableDomain = (req) => {
   let domain = 'wishtender.com';
@@ -39,11 +44,11 @@ const getAcceptableDomain = (req) => {
   ) {
     domain = '';
   } else if (
-    req.get('referer') &&
-    req.get('referer').slice(0, 18) === 'http://172.20.10.3' &&
+    req.headers['user-agent'] &&
+    req.headers['user-agent'].match('iPhone') &&
     process.env.NODE_ENV !== 'production'
   ) {
-    domain = '172.20.10.3';
+    domain = getPhoneDomain(req);
   }
   return domain;
 };
