@@ -103,11 +103,13 @@ module.exports = () => {
     middlewares.upload.single('image'),
     middlewares.handleImage(imageService, { h: 180, w: 600 }),
     async (req, res, next) => {
+      console.log('wishlists.js/106');
       try {
         const imageFile = req.file && req.file.storedFilename;
         const patch = { ...req.body };
         if (imageFile) patch.coverImage = imageService.filepathToStore(imageFile);
         await wishlistService.updateWishlist(req.params.id, patch, imageService);
+        console.log('wishlists.js/112');
       } catch (err) {
         if (req.file && req.file.storedFilename) {
           await imageService.delete(req.file.storedFilename);

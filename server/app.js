@@ -107,13 +107,16 @@ module.exports = (config) => {
   app.use(auth.session);
 
   app.use((req, res, next) => {
-    console.log(
-      `env production or remote: ${!!(process.env.NODE_ENV === 'production' || process.env.REMOTE)}`
-    );
-    console.log(req.user);
     req.session.p = 1;
+    console.log('req.headers: ', req.headers);
+    console.log('req.body: ', req.body);
+    console.log('req.cookies: ', req.cookies);
+    console.log('req.user: ', req.user);
+
     res.on('close', () => {
-      console.log('close', res._headers);
+      console.log('res.statusCode', res.statusCode);
+      console.log('res.statusMessage', res.statusMessage);
+      console.log('res.headers', res._headers);
     });
     next();
   });
@@ -126,9 +129,7 @@ module.exports = (config) => {
   });
 
   app.use(async (req, res, next) => {
-    logger.log('silly', `cookie: ${req.headers.cookie}`);
     logger.log('silly', `${req.method}: ${req.path}`);
-    logger.log('silly', `sessionID: ${req.sessionID}`);
     try {
       // req.session.visits = req.session.visits ? req.session.visits + 1 : 1;
       return next();
