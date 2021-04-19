@@ -29,7 +29,8 @@ const getPhoneDomain = (req) => {
 const isPhoneDebugging = (req) =>
   req.headers['user-agent'] &&
   req.headers['user-agent'].match('iPhone') &&
-  process.env.NODE_ENV !== 'production';
+  process.env.NODE_ENV !== 'production' &&
+  !process.env.REMOTE;
 
 const getAcceptableDomain = (req) => {
   let domain = 'wishtender.com';
