@@ -297,6 +297,7 @@ module.exports = () => {
       logger.log('silly', `starting checkout flow...`);
       const currency = req.user ? req.user.currency : null || req.cookies.currency;
       const orderObject = req.body.order;
+      orderObject.noteToWisher = { message: orderObject.noteToWisher, read: null };
       orderObject.session = req.sessionID;
       orderObject.alias = req.body.alias;
       try {

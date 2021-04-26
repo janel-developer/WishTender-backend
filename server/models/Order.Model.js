@@ -11,11 +11,11 @@ const orderSchema = new mongoose.Schema(
     session: {
       type: String,
       ref: 'Session',
-      required: true,
+      // required: true,
     },
     convertedCart: { type: Object },
-    noteToWisher: String,
-    noteToTender: String,
+    noteToWisher: { type: Object },
+    noteToTender: { type: Object },
     payment: { type: Object },
     processedBy: {
       type: String,
