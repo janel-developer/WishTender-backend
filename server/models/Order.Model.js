@@ -1,11 +1,11 @@
 /* eslint-disable global-require */
 const mongoose = require('mongoose');
-const { ApplicationError } = require('../lib/Error');
 
 const orderSchema = new mongoose.Schema(
   {
     processorPaymentID: { type: String, required: true },
     buyerInfo: { type: Object },
+    seen: { type: Boolean, default: false },
 
     cart: { type: Object },
     session: {
