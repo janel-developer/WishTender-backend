@@ -13,8 +13,24 @@ module.exports = () => {
   orderRoutes.get('/:alias', async (req, res, next) => {
     logger.log('silly', 'getting orders by alias');
     const orders = await orderService.getCompletedOrdersByAlias(req.params.alias);
-    console.log(orders);
-    res.send(orders);
+
+    const restructuredOrders = orders.map((order) => ({
+      _id: order._id,
+      gifts: Object.values(order.cart.items),
+      alias: order.toJSON().cart.alias,
+      tender: {
+        amount: order.toJSON().cart.totalPrice,
+        currency: order.cart.alias.currency,
+        afterConversion: order.toJSON().convertedCart
+          ? order.toJSON().cashFlow.toConnect.amount
+          : null,
+      },
+      noteToWisher: order.noteToWisher,
+      fromLine: order.buyerInfo.fromLine,
+      notToTender: order.noteToTender,
+      paidOn: order.paidOn,
+    }));
+    res.send(restructuredOrders);
   });
   orderRoutes.post(
     '/reply/:id',

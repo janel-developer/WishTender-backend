@@ -13,7 +13,7 @@ _id: string,
         itemName: string,
         price: integer,
         url: string,
-        currency: string,
+        currency: string 3-letter uppercase,
         wishlist: string,
         itemImage: string,
       },
@@ -27,23 +27,20 @@ _id: string,
     _id: string,
     handle: string,
     aliasName: string,
-    currency: string,
+    currency: string 3-letter uppercase,
     handle_lowercased: string,
   },
   tender: {
     amount: integer,
-    currency: string,
-    converted: null || {
-      amount: integer,
-      currency: string,
-    },
+    currency: string 3-letter uppercase,
+    afterConversion: null || integer,
   },
-  noteFromGifter: {
+  noteToWisher: {
     message: string,
-    read: null || datetime,
+    read: null || datetime(iso 8601),
   },
   fromLine: string,
-  thankYouNote: null || {
+  noteToTender: null || {
     message: string,
     dateSent:datetime(iso 8601)
   },
