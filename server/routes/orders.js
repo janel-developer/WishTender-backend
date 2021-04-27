@@ -32,7 +32,7 @@ module.exports = () => {
     }));
     res.send(restructuredOrders);
   });
-  orderRoutes.post(
+  orderRoutes.patch(
     '/reply/:id',
     async (req, res, next) => {
       if (!req.user) return res.status(401).send('No user logged in.');
