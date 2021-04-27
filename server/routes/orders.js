@@ -7,16 +7,56 @@ const OrderService = require('../services/OrderService');
 const orderService = new OrderService(OrderModel);
 const orderRoutes = express.Router();
 const ThankYouEmail = require('../lib/email/ThankYouEmail');
-const { readableHighWaterMark } = require('../lib/logger');
 
 module.exports = () => {
   orderRoutes.get('/:alias', async (req, res, next) => {
     logger.log('silly', 'getting orders by alias');
     const orders = await orderService.getCompletedOrdersByAlias(req.params.alias);
-    console.log(orders);
-    res.send(orders);
+
+    const restructuredOrders = orders.map((order) => ({
+      _id: order._id,
+      gifts: Object.values(order.cart.items),
+      alias: order.toJSON().cart.alias,
+      tender: {
+        amount: order.toJSON().cart.totalPrice,
+        currency: order.cart.alias.currency,
+        afterConversion: order.toJSON().convertedCart
+          ? order.toJSON().cashFlow.toConnect.amount
+          : null,
+      },
+      noteToWisher: order.noteToWisher,
+      fromLine: order.buyerInfo.fromLine,
+      notToTender: order.noteToTender,
+      paidOn: order.paidOn,
+    }));
+    res.send(restructuredOrders);
   });
-  orderRoutes.post(
+  orderRoutes.patch(
+    '/read/:id',
+    async (req, res, next) => {
+      if (!req.user) return res.status(401).send('No user logged in.');
+      try {
+        req.order = await orderService.getOrder({ _id: req.params.id });
+        if (req.user.aliases[0].toString() !== req.order.alias.toString())
+          return res.status(401).send("User doesn't have permission.");
+      } catch (err) {
+        return next(new ApplicationError({}, `Couldn't mark as read: ${err}`));
+      }
+      return next();
+    },
+    async (req, res, next) => {
+      if (req.order.noteToWisher && req.order.noteToWisher.read)
+        return res.status(409).send({ message: 'Note to wisher already read.' });
+      return next();
+    },
+    async (req, res, next) => {
+      logger.log('silly', 'marking note to wisher as read');
+      req.order.noteToWisher.read = true;
+      await req.order.save();
+      res.status(201);
+    }
+  );
+  orderRoutes.patch(
     '/reply/:id',
     async (req, res, next) => {
       if (!req.user) return res.status(401).send('No user logged in.');
@@ -30,7 +70,7 @@ module.exports = () => {
       return next();
     },
     async (req, res, next) => {
-      if (req.order.noteToTender)
+      if (req.order.noteToTender && req.order.noteToTender.message)
         return res.status(409).send({ message: 'Note to tender already sent.' });
       return next();
     },
@@ -49,7 +89,7 @@ module.exports = () => {
 
         const info = await thankYouEmail.sendSync().then((inf) => inf);
         if (info) {
-          req.order.noteToTender = { message, dateSent: new Date().toISOString() };
+          req.order.noteToTender = { message, sent: new Date().toISOString() };
           await req.order.save();
         }
       } catch (err) {
