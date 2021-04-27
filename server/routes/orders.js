@@ -14,23 +14,23 @@ module.exports = () => {
     logger.log('silly', 'getting orders by alias');
     const orders = await orderService.getCompletedOrdersByAlias(req.params.alias);
 
-    // orders.map((order) => ({
-    //   _id: order._id,
-    //   gifts: Object.values(order.cart.items),
-    //   alias: order.toJSON().cart.alias,
-    //   tender: {
-    //     amount: order.toJSON().cart.totalPrice,
-    //     currency: order.cart.alias.currency,
-    //     afterConversion: order.toJSON().convertedCart
-    //       ? order.toJSON().cashFlow.toConnect.amount
-    //       : null,
-    //     noteToWisher: {message: order.noteToWisher, read: order.noteToWisherRead}, // noteToWisherRead does not exist yest
-    //     fromLine: order.buyerInfo.fromLine,
-    //     thankYouNote: {message:order.noteToTender, read: order.noteToTenderSent }, //noteToTenderSent does not exist yet
-    //     paidOn: order.paidOn,
-    //   },
-    // }))[0]
-    res.send(orders);
+    const restructuredOrders = orders.map((order) => ({
+      _id: order._id,
+      gifts: Object.values(order.cart.items),
+      alias: order.toJSON().cart.alias,
+      tender: {
+        amount: order.toJSON().cart.totalPrice,
+        currency: order.cart.alias.currency,
+        afterConversion: order.toJSON().convertedCart
+          ? order.toJSON().cashFlow.toConnect.amount
+          : null,
+      },
+      noteToWisher: order.noteToWisher,
+      fromLine: order.buyerInfo.fromLine,
+      notToTender: order.noteToTender,
+      paidOn: order.paidOn,
+    }));
+    res.send(restructuredOrders);
   });
   orderRoutes.post(
     '/reply/:id',

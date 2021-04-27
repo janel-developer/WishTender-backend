@@ -40,7 +40,7 @@ _id: string,
     read: null || datetime(iso 8601),
   },
   fromLine: string,
-  thankYouNote: null || {
+  noteToTender: null || {
     message: string,
     dateSent:datetime(iso 8601)
   },
