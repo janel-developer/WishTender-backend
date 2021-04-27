@@ -42,7 +42,7 @@ _id: string,
   fromLine: string,
   noteToTender: null || {
     message: string,
-    dateSent:datetime(iso 8601)
+    sent:datetime(iso 8601)
   },
   paidOn: datetime(iso 8601),
 };
