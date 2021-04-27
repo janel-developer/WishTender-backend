@@ -65,7 +65,7 @@ module.exports = () => {
 
         const info = await thankYouEmail.sendSync().then((inf) => inf);
         if (info) {
-          req.order.noteToTender = { message, dateSent: new Date().toISOString() };
+          req.order.noteToTender = { message, sent: new Date().toISOString() };
           await req.order.save();
         }
       } catch (err) {
