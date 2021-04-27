@@ -18,7 +18,7 @@ _id: string,
         itemImage: string,
       },
       qty: integer,
-      totalPrice: integer,
+      price: integer,
     },
     {<gift_object>},
     {<gift_object>}
@@ -33,7 +33,7 @@ _id: string,
   tender: {
     amount: integer,
     currency: string 3-letter uppercase,
-    afterConversion: null || integer,
+    afterConversion: null || integer, //if there was a conversion, sometimes the amount isn't as expected
   },
   noteToWisher: {
     message: string,

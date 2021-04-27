@@ -31,6 +31,43 @@ module.exports = () => {
     }));
     res.send(restructuredOrders);
   });
+  orderRoutes.get(
+    '/new/:alias',
+    async (req, res, next) => {
+      if (!req.user) return res.status(401).send('No user logged in.');
+      return next();
+    },
+    async (req, res, next) => {
+      logger.log('silly', 'getting new orders by alias');
+      const newOrders = await orderService.getNewOrdersByAlias({ _id: req.params.alias });
+      res.status(200).send(newOrders);
+    }
+  );
+  orderRoutes.patch(
+    '/seen/:id',
+    async (req, res, next) => {
+      if (!req.user) return res.status(401).send('No user logged in.');
+      try {
+        req.order = await orderService.getOrder({ _id: req.params.id });
+        if (req.user.aliases[0].toString() !== req.order.alias.toString())
+          return res.status(403).send("User doesn't have permission.");
+      } catch (err) {
+        return next(new ApplicationError({}, `Couldn't mark as read: ${err}`));
+      }
+      return next();
+    },
+    async (req, res, next) => {
+      if (req.order.seen) return res.status(409).send({ message: 'Wish already marked as seen.' });
+      return next();
+    },
+    async (req, res, next) => {
+      logger.log('silly', 'marking wish as seen');
+      req.order.seen = true;
+      await req.order.save();
+      res.status(201);
+    }
+  );
+
   orderRoutes.patch(
     '/read/:id',
     async (req, res, next) => {
@@ -38,7 +75,7 @@ module.exports = () => {
       try {
         req.order = await orderService.getOrder({ _id: req.params.id });
         if (req.user.aliases[0].toString() !== req.order.alias.toString())
-          return res.status(401).send("User doesn't have permission.");
+          return res.status(403).send("User doesn't have permission.");
       } catch (err) {
         return next(new ApplicationError({}, `Couldn't mark as read: ${err}`));
       }
@@ -63,7 +100,7 @@ module.exports = () => {
       try {
         req.order = await orderService.getOrder({ _id: req.params.id });
         if (req.user.aliases[0].toString() !== req.order.alias.toString())
-          return res.status(401).send("User doesn't have permission.");
+          return res.status(403).send("User doesn't have permission.");
       } catch (err) {
         return next(new ApplicationError({}, `Couldn't reply to tender ${err}`));
       }
