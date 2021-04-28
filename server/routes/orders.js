@@ -15,6 +15,7 @@ module.exports = () => {
 
     const restructuredOrders = orders.map((order) => ({
       _id: order._id,
+      seen: order.seen,
       gifts: Object.values(order.cart.items),
       alias: order.toJSON().cart.alias,
       tender: {
