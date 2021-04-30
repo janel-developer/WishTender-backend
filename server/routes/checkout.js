@@ -136,7 +136,7 @@ module.exports = () => {
             type: 'connect to customer',
           },
         ];
-        order.save();
+        await order.save();
         let alias;
         if (order.fees.stripe.accountDues === 200) {
           alias = await AliasModel.findOne({ _id: alias_id })
@@ -259,7 +259,7 @@ module.exports = () => {
             itemToUSD = Math.round(rate * totalPrice * decimalMultiplier);
           }
           const usdDollars = unitToStandard(itemToUSD, 'USD');
-          const noteLengthOK = note.length <= usdDollars;
+          const noteLengthOK = note.length <= usdDollars + 30;
           if (!noteLengthOK)
             throw new Error(
               `Note must be less than ${usdDollars} characters. You're note is ${
