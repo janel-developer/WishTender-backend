@@ -37,7 +37,7 @@ const orderSchema = new mongoose.Schema(
     paid: { type: Boolean, required: true },
     paidOn: { type: Date },
     createdAt: { type: Date, default: Date.now },
-    expireAt: { type: Date, default: Date.now, index: { expires: '1d' } }, // 1d live as long as the stripe session
+    expireAt: { type: Date }, //default: Date.now, index: { expires: '1d' } }, // 1d live as long as the stripe session
   },
   {
     toJSON: {

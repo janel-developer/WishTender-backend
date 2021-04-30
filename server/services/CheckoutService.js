@@ -81,6 +81,7 @@ const checkout = async (aliasCart, currency, orderObject) => {
   };
   newOrderObject.processedBy = 'Stripe';
   newOrderObject.paid = false;
+  newOrderObject.expireAt = new Date().toISOString();
   newOrderObject.total = { amount: fees.charge, currency };
   newOrderObject.wishersTender = { intended: { amount: fees.wishersTender, currency } };
 

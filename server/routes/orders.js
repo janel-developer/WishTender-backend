@@ -65,7 +65,7 @@ module.exports = () => {
       logger.log('silly', 'marking wish as seen');
       req.order.seen = true;
       await req.order.save();
-      res.status(201);
+      res.status(201).send();
     }
   );
 
