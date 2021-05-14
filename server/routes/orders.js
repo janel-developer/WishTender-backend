@@ -27,7 +27,7 @@ module.exports = () => {
       },
       noteToWisher: order.noteToWisher,
       fromLine: order.buyerInfo.fromLine,
-      notToTender: order.noteToTender,
+      noteToTender: order.noteToTender,
       paidOn: order.paidOn,
     }));
     res.send(restructuredOrders);
