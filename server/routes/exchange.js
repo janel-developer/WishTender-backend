@@ -1,7 +1,7 @@
 const express = require('express');
 
 const exchangeRateRoutes = express.Router();
-const ExchangeRateApiInterface = require('../lib/RatesAPI');
+const ExchangeRateApiInterface = require('../lib/ExchangeRate-Api');
 
 const ratesApi = new ExchangeRateApiInterface();
 module.exports = () => {

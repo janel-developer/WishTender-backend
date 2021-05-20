@@ -1,9 +1,9 @@
 const Email = require('./Email');
 const Currency = require('../currency');
-const RatesAPI = require('../RatesAPI');
+const ExchangeRateAPI = require('../ExchangeRate-API');
 
-const ratesAPI = new RatesAPI();
-const currency = new Currency(ratesAPI);
+const exchangeRateAPI = new ExchangeRateAPI();
+const currency = new Currency(exchangeRateAPI);
 
 require('dotenv').config();
 

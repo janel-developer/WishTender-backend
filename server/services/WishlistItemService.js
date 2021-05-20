@@ -2,7 +2,7 @@ const WishlistModel = require('../models/Wishlist.Model');
 const { ApplicationError } = require('../lib/Error');
 const { decimalMultiplier } = require('./StripeService');
 
-const ExchangeRatesApiInterface = require('../lib/RatesAPI');
+const ExchangeRatesApiInterface = require('../lib/ExchangeRate-Api');
 
 const ratesAPI = new ExchangeRatesApiInterface();
 /**
