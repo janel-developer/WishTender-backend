@@ -43,10 +43,15 @@ stripePayoutDefaultCurrencies = [
 ];
 ```
 
-## Currencies Supported by [ratesapi.io](https://ratesapi.io/)
+## Currencies supported by [exchangerate-api.com](https://www.exchangerate-api.com/docs/supported-currencies)
 
-I stopped using from exchangeratesapi because they started charging.
-RatesApi supports all the same currencies as exchangeratesapi because they are also based on the European Central Bank.
+I stopped using ratesapi because they shut down. So now I'm using the free version of exchangerate-api. They give 1.5K API Requests p/m which is the highest I've seen for a free version. But they only update once per day and they aren't
+
+They have a lot of currencies.
+
+To simplify things, I will still support only the currencies ones ratesapi.io supported. In the future I will look to support more currencies.
+
+## ratesapi.io
 
 ```javascript
 ratesApiCurrencies = [
@@ -86,43 +91,174 @@ ratesApiCurrencies = [
 ];
 ```
 
-If they need to be updated for some reason, you can get the currencies the RatesApi supports in two ways:
+## exchangerate-api
 
-## On European Central Bank Site
+"AED",
+"AFN",
+"ALL",
+"AMD",
+"ANG",
+"AOA",
+"ARS",
+"AUD",
+"AWG",
+"AZN",
+"BAM",
+"BBD",
+"BDT",
+"BGN",
+"BHD",
+"BIF",
+"BMD",
+"BND",
+"BOB",
+"BRL",
+"BSD",
+"BTN",
+"BWP",
+"BYN",
+"BZD",
+"CAD",
+"CDF",
+"CHF",
+"CLP",
+"CNY",
+"COP",
+"CRC",
+"CUC",
+"CUP",
+"CVE",
+"CZK",
+"DJF",
+"DKK",
+"DOP",
+"DZD",
+"EGP",
+"ERN",
+"ETB",
+"EUR",
+"FJD",
+"FKP",
+"FOK",
+"GBP",
+"GEL",
+"GGP",
+"GHS",
+"GIP",
+"GMD",
+"GNF",
+"GTQ",
+"GYD",
+"HKD",
+"HNL",
+"HRK",
+"HTG",
+"HUF",
+"IDR",
+"ILS",
+"IMP",
+"INR",
+"IQD",
+"IRR",
+"ISK",
+"JMD",
+"JOD",
+"JPY",
+"KES",
+"KGS",
+"KHR",
+"KID",
+"KMF",
+"KRW",
+"KWD",
+"KYD",
+"KZT",
+"LAK",
+"LBP",
+"LKR",
+"LRD",
+"LSL",
+"LYD",
+"MAD",
+"MDL",
+"MGA",
+"MKD",
+"MMK",
+"MNT",
+"MOP",
+"MRU",
+"MUR",
+"MVR",
+"MWK",
+"MXN",
+"MYR",
+"MZN",
+"NAD",
+"NGN",
+"NIO",
+"NOK",
+"NPR",
+"NZD",
+"OMR",
+"PAB",
+"PEN",
+"PGK",
+"PHP",
+"PKR",
+"PLN",
+"PYG",
+"QAR",
+"RON",
+"RSD",
+"RUB",
+"RWF",
+"SAR",
+"SBD",
+"SCR",
+"SDG",
+"SEK",
+"SGD",
+"SHP",
+"SLL",
+"SOS",
+"SRD",
+"SSP",
+"STN",
+"SYP",
+"SZL",
+"THB",
+"TJS",
+"TMT",
+"TND",
+"TOP",
+"TRY",
+"TTD",
+"TVD",
+"TWD",
+"TZS",
+"UAH",
+"UGX",
+"USD",
+"UYU",
+"UZS",
+"VES",
+"VND",
+"VUV",
+"WST",
+"XAF",
+"XCD",
+"XDR",
+"XOF",
+"XPF",
+"YER",
+"ZAR"
+])
 
-1. Go [here](https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html)
-1. In the console run:
+````
 
-   ```javascript
-   exchangeRateAPICurrencies = [];
-   for (i = 0; i < 90; i++) {
-     exchangeRateAPICurrencies.push(
-       document.querySelector(
-         '#main-wrapper > main > div.jumbo-box > div.lower > div > div > table > tbody > tr:nth-child(' +
-           (i + 1) +
-           ')'
-       ).children[0].innerText
-     );
-   }
-   exchangeRateAPICurrencies.push('EUR');
-   exchangeRateAPICurrencies; //> this is the new array
-   ```
+## Stripe Payout Currencies Supported by exchangerate-api.com
 
-## Through the api
-
-1. Do a call to the api call `GET` `https://api.ratesapi.io/api/latest?base=USD`
-2. Then with the data from the response:
-
-```javascript
-function onlyUnique(value, index, self) {
-  return self.indexOf(value) === index;
-}
-result = Object.keys(responseObject.rates).filter(onlyUnique);
-```
-
-## Stripe Payout Currencies Supported by ratesapi.io
-
-As of today, 4/7/21, all the default currencies of the stripe payout countries are supported by ratesapi.io.
+As of today, 5/19/21, all the default currencies of the stripe payout countries are supported by exchangerate-api.com
 
 WishTender must be able to convert gift prices to USD in order to calculate gift card note length. So WishTender can only support cross border connect accounts which our exchange rate API supports.
 
@@ -143,7 +279,7 @@ currenciesSupportedByBoth = [
   'GBP',
   'USD',
 ];
-```
+````
 
 How to replicate:
 
@@ -155,7 +291,9 @@ function onlyUnique(value, index, self) {
   return self.indexOf(value) === index;
 }
 stripeCur = stripeCur.filter(onlyUnique);
-const currenciesSupportedByBoth = stripeCur.filter((value) => ratesApiCurrencies.includes(value));
+const currenciesSupportedByBoth = stripeCur.filter((value) =>
+  exchangeRateApiCurrencies.includes(value)
+);
 
 currenciesSupportedByBoth; // currencies supported by both stripe and ech
 ```

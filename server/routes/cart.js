@@ -109,7 +109,8 @@ module.exports = () => {
   );
   cartRoutes.get('/', async (req, res, next) => {
     logger.log('silly', `Getting cart: ${JSON.stringify(req.session.cart)}`);
-    res.status(200).json(req.session.cart);
+    // res.status(200).json(req.session.cart);
+    res.status(200).json(req.session.cart || {});
   });
   return cartRoutes;
 };

@@ -30,7 +30,7 @@ const OrderModel = require('../models/Order.Model');
 const AliasModel = require('../models/Alias.Model');
 const { validate } = require('email-validator');
 
-const ExchangeRatesApiInterface = require('../lib/RatesAPI');
+const ExchangeRatesApiInterface = require('../lib/ExchangeRate-Api');
 const { ConsoleTransportOptions } = require('winston/lib/winston/transports');
 const { json } = require('express');
 const ratesApi = new ExchangeRatesApiInterface();
@@ -86,6 +86,7 @@ module.exports = () => {
       };
 
       const { session_id, alias_id } = req.query;
+      let alias;
 
       // update user account fee due
       const order = await orderService.getOrder({ processorPaymentID: session_id });
@@ -137,7 +138,6 @@ module.exports = () => {
           },
         ];
         await order.save();
-        let alias;
         if (order.fees.stripe.accountDues === 200) {
           alias = await AliasModel.findOne({ _id: alias_id })
             .populate({
@@ -201,7 +201,10 @@ module.exports = () => {
         }
         await session.save();
       }
-      res.redirect(301, `http://localhost:3000/order?success=true&session_id=${session_id}`);
+      res.redirect(
+        301,
+        `http://localhost:3000/order?success=true&session_id=${session_id}&aliasHandle=${alias.handle}`
+      );
     }
   );
   checkoutRoutes.get('/canceled', async (req, res, next) => {
@@ -226,9 +229,14 @@ module.exports = () => {
     cookie('currency', 'No currency set').custom(
       (currency, { req, location, path }) => (req.user && req.user.currency) || currency
     ),
-    cookie('currency', 'Cookie currency must be upper case and 3 letters or you must be logged in.')
-      .isUppercase()
-      .isLength({ min: 3, max: 3 }),
+    cookie(
+      'currency',
+      'Cookie currency must be upper case and 3 letters or you must be logged in or set to no conversion.'
+    ).custom(
+      (currency, { req, location, path }) =>
+        currency === 'noConversion' ||
+        (currency.length === 3 && currency.toUpperCase() === currency)
+    ),
     body('alias', `No alias id included.`).exists(),
     body('order', `Missing order info`).exists(),
     body('order.buyerInfo.fromLine', `Must be less than 25 characters.`).isLength({ max: 35 }),
@@ -295,7 +303,15 @@ module.exports = () => {
       }
 
       logger.log('silly', `starting checkout flow...`);
-      const currency = req.user ? req.user.currency : null || req.cookies.currency;
+      let currency;
+      if (req.user) {
+        currency = req.user.currency;
+      } else if (req.cookies.currency === 'noConversion') {
+        currency = aliasCart.alias.currency;
+      } else {
+        currency = req.cookies.currency;
+      }
+
       const orderObject = req.body.order;
       orderObject.noteToWisher = { message: orderObject.noteToWisher, read: null };
       orderObject.session = req.sessionID;

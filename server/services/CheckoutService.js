@@ -5,7 +5,7 @@ const stripe = require('stripe')(
     ? process.env.STRIPE_SECRET_KEY
     : process.env.STRIPE_SECRET_TEST_KEY
 );
-const ExchangeRatesApiInterface = require('../lib/RatesAPI');
+const ExchangeRatesApiInterface = require('../lib/ExchangeRate-Api');
 const OrderService = require('./OrderService');
 const OrderModel = require('../models/Order.Model');
 const CartService = require('./CartService');
