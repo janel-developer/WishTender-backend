@@ -1,6 +1,30 @@
 const axios = require('axios');
 require('dotenv').config();
 
+const NodeCache = require('node-cache');
+
+const myCache = new NodeCache();
+
+const checkCache = (key) => {
+  let cache;
+  console.log(myCache);
+  if (myCache.has(key)) {
+    cache = myCache.get(key); //check if time passed from key
+    const now = parseInt(
+      Date.now().toString().slice(0, `${cache.time_next_update_unix}`.length),
+      10
+    );
+    if (cache.time_next_update_unix < now) {
+      myCache.del(key);
+      return null;
+    }
+    return cache;
+  }
+};
+const storeInCache = (key, data) => {
+  myCache.set(key, data);
+};
+
 class ExchangeRateAPI {
   /**
    * ratesapi.io API interface
@@ -54,17 +78,24 @@ class ExchangeRateAPI {
    * @returns {Number} the exchange rate to multiply the starting price
    */
   async getExchangeRate(from, to) {
+    const cacheKey = `pair${from}${to}`;
+    const cache = checkCache(cacheKey);
+    if (cache) {
+      return cache.conversion_rate;
+    }
     const exchangeRate = await axios
       .get(`${this.baseURI}/${process.env.EXCHANGE_RATE_KEY}/pair/${from}/${to}`)
       .then((x) => {
         if (x.data.result === 'error') {
           throw new Error(`Error: ${x.data['error-type']}`);
         }
+        storeInCache(cacheKey, x.data);
         return x.data.conversion_rate;
       })
       .catch((err) => {
         throw new Error(`Error: ${err}`);
       });
+
     return exchangeRate;
   }
 
@@ -74,19 +105,25 @@ class ExchangeRateAPI {
    * @returns {Number} the exchange rate to multiply the starting price
    */
   async getAllExchangeRates(baseCurrency) {
-    const exchangeRate = await axios
+    const cacheKey = `latest${baseCurrency}`;
+    const cache = checkCache(cacheKey);
+    if (cache) {
+      return cache.conversion_rates;
+    }
+    const exchangeRates = await axios
       .get(`${this.baseURI}/${process.env.EXCHANGE_RATE_KEY}/latest?base=${baseCurrency}`)
       .then((x) => {
         if (x.data.result === 'error') {
           throw new Error(`Error: ${x.data['error-type']}`);
         }
-        //   "time_next_update_unix": 1585353700, caching should be from here because services use it too we can cache this https://www.geeksforgeeks.org/how-to-access-cache-data-in-node-js/
+        storeInCache(cacheKey, x.data);
         return x.data.conversion_rates;
       })
       .catch((err) => {
         throw new Error(`Error: ${err}`);
       });
-    return exchangeRate;
+
+    return exchangeRates;
   }
 }
 
