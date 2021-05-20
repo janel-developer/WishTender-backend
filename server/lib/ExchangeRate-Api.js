@@ -1,4 +1,5 @@
 const axios = require('axios');
+require('dotenv').config();
 
 class ExchangeRateAPI {
   /**
@@ -6,7 +7,7 @@ class ExchangeRateAPI {
    * @constructor
    */
   constructor() {
-    this.baseURI = 'https://v6.exchangerate-api.com/v6/';
+    this.baseURI = 'https://v6.exchangerate-api.com/v6';
 
     // more are supported by exchangerate-api but I'm simplifying it for now
     this.supportedCurrencies = [
@@ -54,10 +55,15 @@ class ExchangeRateAPI {
    */
   async getExchangeRate(from, to) {
     const exchangeRate = await axios
-      .get(`${this.baseURI}/pair/${from}/${to}`)
-      .then((x) => x.conversion_rate)
-      .catch((response) => {
-        throw new Error(`Error: ${response.response.data.error}`);
+      .get(`${this.baseURI}/${process.env.EXCHANGE_RATE_KEY}/pair/${from}/${to}`)
+      .then((x) => {
+        if (x.data.result === 'error') {
+          throw new Error(`Error: ${x.data['error-type']}`);
+        }
+        return x.data.conversion_rate;
+      })
+      .catch((err) => {
+        throw new Error(`Error: ${err}`);
       });
     return exchangeRate;
   }
@@ -70,13 +76,15 @@ class ExchangeRateAPI {
   async getAllExchangeRates(baseCurrency) {
     const exchangeRate = await axios
       .get(`${this.baseURI}/${process.env.EXCHANGE_RATE_KEY}/latest?base=${baseCurrency}`)
-      .then(
-        (x) =>
-          //   "time_next_update_unix": 1585353700, caching should be from here because services use it too we can cache this https://www.geeksforgeeks.org/how-to-access-cache-data-in-node-js/
-          x.conversion_rates
-      )
-      .catch((response) => {
-        throw new Error(`${response['error-type']}`);
+      .then((x) => {
+        if (x.data.result === 'error') {
+          throw new Error(`Error: ${x.data['error-type']}`);
+        }
+        //   "time_next_update_unix": 1585353700, caching should be from here because services use it too we can cache this https://www.geeksforgeeks.org/how-to-access-cache-data-in-node-js/
+        return x.data.conversion_rates;
+      })
+      .catch((err) => {
+        throw new Error(`Error: ${err}`);
       });
     return exchangeRate;
   }
