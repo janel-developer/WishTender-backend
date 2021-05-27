@@ -204,11 +204,11 @@ class WishlistItemService {
   }
 
   /**
-   * deletes a wishlist item
+   * deletes a wishlist item entirely
    *
    *@param {string} id the wishlist item id
    *
-   * @returns {object} deleted wishlist
+   * @returns {object} deleted wishlist item from the
    */
   async deleteWishlistItem(id) {
     let item;
