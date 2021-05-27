@@ -108,7 +108,7 @@ module.exports = () => {
       const aliasId = req.body.aliasId;
       const currentCart = req.session.cart;
       const cart = await reduceByOne(currentCart, itemId, aliasId);
-      req.session.cart = cart;
+      req.session.cart = { aliasCarts: cart.aliasCarts };
       logger.log('silly', `Cart in session updated: ${JSON.stringify(req.session.cart)}`);
       res.status(200).json(req.session.cart);
     }
@@ -119,7 +119,7 @@ module.exports = () => {
     //need to update cart here, not just in checkout, then send an updated alert here in the cart
 
     const { cart } = req.session;
-    if (cart) {
+    if (cart && cart.aliasCarts && Object.keys(cart.aliasCarts).length) {
       const result = await updateCart(cart);
       if (result.modified) {
         req.session.cart = result.cart;

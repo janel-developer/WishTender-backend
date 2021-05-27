@@ -98,9 +98,10 @@ const updateAliasCart = async (aliasCart) => {
   const aliasCartCopy = aliasCart;
   let modified = 0;
   const itemIds = Object.keys(aliasCart.items);
-  // for each item, update the price
+  // for each item, update the price/
   await new Promise((resolve) => {
     let itemsUpdated = 0;
+    // to do below- delete alias cart if not items
     itemIds.forEach(async (itemId) => {
       let itemInfo;
       try {
@@ -119,16 +120,19 @@ const updateAliasCart = async (aliasCart) => {
         aliasCartCopy.items[itemId].price = itemInfo.price * aliasCartCopy.items[itemId].qty;
         modified += 1;
       }
-      ['currency', 'itemImage', 'itemName'].forEach((property) => {
-        if (aliasCartCopy.items[itemId].item[property] !== itemInfo[property]) {
-          aliasCartCopy.items[itemId].item[property] = itemInfo[property];
-          modified += 1;
-        }
-      });
+      if (itemInfo) {
+        ['currency', 'itemImage', 'itemName'].forEach((property) => {
+          if (aliasCartCopy.items[itemId].item[property] !== itemInfo[property]) {
+            aliasCartCopy.items[itemId].item[property] = itemInfo[property];
+            modified += 1;
+          }
+        });
+      }
       itemsUpdated += 1;
       if (itemsUpdated === itemIds.length) resolve();
     });
   });
+
   recalculateTotalsAliasCart(aliasCartCopy);
   return { aliasCart: aliasCartCopy, modified };
 };
