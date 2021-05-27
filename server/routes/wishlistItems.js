@@ -159,19 +159,19 @@ module.exports = () => {
       'itemName',
       'imageCrop',
       'price',
-      'currency',
+      'currency', // currency is not patched... why is this here?
       'url',
       'image',
     ]),
     // to do : validate currency
     throwIfNotAuthorizedResource,
     middlewares.upload.single('image'),
-    (req, res, next) => {
-      if (!Object.keys(req.body).length) {
-        return next(new ApplicationError({}, 'No data submitted.'));
-      }
-      return next();
-    },
+    // (req, res, next) => {
+    //   if (!Object.keys(req.body).length) {
+    //     return next(new ApplicationError({}, 'No data submitted.'));
+    //   }
+    //   return next();
+    // },
     [check('price', 'Price must be integer').optional().isInt()],
     (req, res, next) => {
       const errors = validationResult(req).array();
