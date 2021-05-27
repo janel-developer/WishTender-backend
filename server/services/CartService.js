@@ -213,3 +213,4 @@ module.exports.addToCart = addToCart;
 module.exports.updateCartPrices = updateCartPrices;
 module.exports.updateCart = updateCart;
 module.exports.updateAliasCartPrices = updateAliasCartPrices;
+module.exports.updateAliasCart = updateAliasCart;
