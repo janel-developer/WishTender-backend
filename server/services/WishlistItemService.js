@@ -185,7 +185,6 @@ class WishlistItemService {
    * @returns {updatedItem: object} updated wishlist
    */
   async updateWishlistItem(id, updates, imageService) {
-    console.log('here12345');
     try {
       const wishlistItem = await this.WishlistItemModel.findOne({ _id: id });
       const oldImageFile = wishlistItem.itemImage;
