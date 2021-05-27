@@ -210,7 +210,7 @@ module.exports = () => {
     let wishlistItem;
     try {
       wishlistItem = await wishlistItemService.deleteWishlistItem(id);
-      await imageService.delete(wishlistItem.itemImage);
+      if (!wishlistItem.orders.length) await imageService.delete(wishlistItem.itemImage);
     } catch (err) {
       return next(err);
     }

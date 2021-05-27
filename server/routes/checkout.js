@@ -33,6 +33,10 @@ const { validate } = require('email-validator');
 const ExchangeRatesApiInterface = require('../lib/ExchangeRate-Api');
 const { ConsoleTransportOptions } = require('winston/lib/winston/transports');
 const { json } = require('express');
+const WishlistItem = require('../models/WishlistItem.Model');
+const WishlistItemService = require('../services/WishlistItemService');
+const orders = require('./orders');
+const wishlistItemService = new WishlistItemService(WishlistItem);
 const ratesApi = new ExchangeRatesApiInterface();
 
 const orderService = new OrderService(OrderModel);
@@ -138,6 +142,19 @@ module.exports = () => {
           },
         ];
         await order.save();
+        // add order number to items
+        // orders.cart.items.
+        let itemsUpdated = 0;
+
+        const items = Object.keys(order.cart.items);
+        await new Promise((resolve) => {
+          items.forEach(async (itemId) => {
+            await WishlistItem.update({ _id: itemId }, { $push: { orders: order } });
+            itemsUpdated += 1;
+            if (itemsUpdated === items.length) resolve();
+          });
+        });
+        // wishlistItemService.updateWishlistItem()
         if (order.fees.stripe.accountDues === 200) {
           alias = await AliasModel.findOne({ _id: alias_id })
             .populate({
