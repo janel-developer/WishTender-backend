@@ -3,7 +3,13 @@ const { ObjectId } = require('mongoose').Types;
 const ItemModel = require('../models/WishlistItem.Model');
 
 const logger = require('../lib/logger');
-const { addToCart, removeItem, reduceByOne } = require('../services/CartService');
+const {
+  addToCart,
+  removeItem,
+  reduceByOne,
+  updateAliasCartPrices,
+  updateCart,
+} = require('../services/CartService');
 
 const cartRoutes = express.Router();
 const { body, validationResult } = require('express-validator');
@@ -110,6 +116,18 @@ module.exports = () => {
   cartRoutes.get('/', async (req, res, next) => {
     logger.log('silly', `Getting cart: ${JSON.stringify(req.session.cart)}`);
     // res.status(200).json(req.session.cart);
+    //need to update cart here, not just in checkout, then send an updated alert here in the cart
+
+    const { cart } = req.session;
+    if (cart) {
+      const result = await updateCart(cart);
+      if (result.modified) {
+        req.session.cart = result.cart;
+        return res
+          .status(200)
+          .json(req.session.cart ? { ...req.session.cart, modified: result.modified } : {});
+      }
+    }
     res.status(200).json(req.session.cart || {});
   });
   return cartRoutes;
