@@ -83,7 +83,7 @@ module.exports = () => {
       const aliasId = req.body.aliasId;
       const currentCart = req.session.cart;
       const cart = removeItem(currentCart, itemId, aliasId);
-      req.session.cart = cart;
+      req.session.cart = { aliasCarts: cart.aliasCarts };
       logger.log('silly', `Cart in session updated: ${JSON.stringify(req.session.cart)}`);
       res.status(200).json(req.session.cart);
     }
