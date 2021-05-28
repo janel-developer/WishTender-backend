@@ -312,9 +312,10 @@ module.exports = () => {
       const aliasCart = req.session.cart.aliasCarts[aliasId];
       // const result = await CartService.updateAliasCartPrices(aliasCart);
       const result = await CartService.updateAliasCart(aliasCart);
-      if (result.modified) {
+      if (result.modified.itemModified.length) {
         req.session.cart.aliasCarts[aliasId] = result.aliasCart;
         return res.status(409).send({
+          cartsModified: [result.modified],
           message:
             'Some items in your cart have been updated by the wishlist owner or are no longer available. Refresh cart to check updated items before continuing.',
         });
