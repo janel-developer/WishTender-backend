@@ -115,17 +115,13 @@ module.exports = () => {
   );
   cartRoutes.get('/', async (req, res, next) => {
     logger.log('silly', `Getting cart: ${JSON.stringify(req.session.cart)}`);
-    // res.status(200).json(req.session.cart);
-    //need to update cart here, not just in checkout, then send an updated alert here in the cart
 
     const { cart } = req.session;
     if (cart && cart.aliasCarts && Object.keys(cart.aliasCarts).length) {
       const result = await updateCart(cart);
-      if (result.modified) {
-        req.session.cart = result.cart;
-        return res
-          .status(200)
-          .json(req.session.cart ? { ...req.session.cart, modified: result.modified } : {});
+      if (result.cartsModified.length) {
+        req.session.cart = { aliasCarts: result.aliasCarts };
+        return res.status(200).json(result);
       }
     }
     res.status(200).json(req.session.cart || {});

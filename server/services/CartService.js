@@ -91,12 +91,12 @@ const updateCartPrices = async (cart) => {
 /**
  * update alias cart prices
  * @param {Object} aliasCart
- * returns {Object} {aliasCart, modified}
+ * returns {Object} {aliasCart, modified:{alias,itemsModified:[{old,new]}}
  */
 const updateAliasCart = async (aliasCart) => {
   logger.log('silly', `checking item prices in the database and updating alias cart prices`);
-  const aliasCartCopy = aliasCart;
-  let modified = 0;
+  let aliasCartCopy = aliasCart;
+  const modified = { alias: aliasCartCopy.alias, itemsModified: [] };
   const itemIds = Object.keys(aliasCart.items);
   // for each item, update the price/
   await new Promise((resolve) => {
@@ -112,28 +112,41 @@ const updateAliasCart = async (aliasCart) => {
           `Wishlist Item not found when updating cart prices: ${itemId}`
         );
       }
+      const old = aliasCartCopy.items[itemId].item;
       if (!itemInfo) {
+        aliasCartCopy.totalQty -= aliasCartCopy.items[itemId].qty;
+        aliasCartCopy.totalPrice -=
+          aliasCartCopy.items[itemId].item.price * aliasCartCopy.items[itemId].qty;
         delete aliasCartCopy.items[itemId];
-        modified += 1;
-      } else if (+aliasCartCopy.items[itemId].item.price !== +itemInfo.price) {
-        aliasCartCopy.items[itemId].item.price = itemInfo.price;
-        aliasCartCopy.items[itemId].price = itemInfo.price * aliasCartCopy.items[itemId].qty;
-        modified += 1;
+        modified.itemsModified.push({ item: old, new: null });
+        if (!aliasCartCopy.items.length) aliasCartCopy = {};
+      } else {
+        if (+aliasCartCopy.items[itemId].item.price !== +itemInfo.price) {
+          aliasCartCopy.items[itemId].item.price = itemInfo.price;
+          aliasCartCopy.items[itemId].price = itemInfo.price * aliasCartCopy.items[itemId].qty;
+          modified.itemsModified.push({ item: old, new: aliasCartCopy.items[itemId].item });
+        }
+        const properties = ['currency', 'itemImage', 'itemName'];
+        const propChanged = properties.reduce(
+          (a, c) => (aliasCartCopy.items[itemId].item[c] !== itemInfo[c] ? true : a),
+          false
+        );
+        if (itemInfo && propChanged) {
+          properties.forEach((property) => {
+            if (aliasCartCopy.items[itemId].item[property] !== itemInfo[property]) {
+              aliasCartCopy.items[itemId].item[property] = itemInfo[property];
+            }
+          });
+          modified.itemsModified.push({ item: old, new: aliasCartCopy.items[itemId].item });
+        }
       }
-      if (itemInfo) {
-        ['currency', 'itemImage', 'itemName'].forEach((property) => {
-          if (aliasCartCopy.items[itemId].item[property] !== itemInfo[property]) {
-            aliasCartCopy.items[itemId].item[property] = itemInfo[property];
-            modified += 1;
-          }
-        });
-      }
+
       itemsUpdated += 1;
       if (itemsUpdated === itemIds.length) resolve();
     });
   });
 
-  recalculateTotalsAliasCart(aliasCartCopy);
+  if (Object.keys(aliasCartCopy).length) recalculateTotalsAliasCart(aliasCartCopy);
   return { aliasCart: aliasCartCopy, modified };
 };
 
@@ -141,19 +154,25 @@ const updateCart = async (cart) => {
   const aliases = Object.keys(cart.aliasCarts);
   let cartsUpdated = 0;
   const newCart = cart;
-  let modified = 0;
+  const cartsModified = [];
   await new Promise((resolve) => {
     aliases.forEach(async (alias) => {
-      const result = await updateAliasCart(cart.aliasCarts[alias]);
-      modified += result.modified;
-      if (result.modified) {
-        newCart.aliasCarts[alias] = result.aliasCart;
+      if (Object.keys(cart.aliasCarts[alias]).length) {
+        const result = await updateAliasCart(cart.aliasCarts[alias]);
+        cartsModified.push(result.modified);
+        if (result.modified.itemsModified.length) {
+          if (Object.keys(result.aliasCart).length) {
+            newCart.aliasCarts[alias] = result.aliasCart;
+          } else {
+            delete newCart.aliasCarts[alias];
+          }
+        }
       }
       cartsUpdated += 1;
       if (cartsUpdated === aliases.length) resolve();
     });
   });
-  return { cart: newCart, modified };
+  return { ...newCart, cartsModified };
 };
 
 module.exports.reduceByOne = (currentCart, itemId, aliasId) => {
