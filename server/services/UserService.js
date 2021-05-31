@@ -21,7 +21,7 @@ class UserService {
    * @param {object} user the user properties and values
    *
    *
-   * @returns {object} the wishlist item
+   * @returns {object} the new user
    */
   async addUser(user) {
     logger.log('silly', 'adding user');

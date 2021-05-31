@@ -11,6 +11,8 @@ const aliasService = new AliasService(AliasModel);
 const logger = require('../lib/logger');
 const { ApplicationError } = require('../lib/Error');
 const auth = require('../lib/auth');
+const { reset } = require('nodemon');
+const { update } = require('../models/User.Model');
 
 const authUserLoggedIn = (req, res, next) => {
   if (req.user) {
@@ -68,6 +70,44 @@ module.exports = () => {
 
     return res.status(401).send({ message: flashmsg });
   });
+  userRoutes.patch(
+    '/',
+    onlyAllowInBodySanitizer(['password', 'email']),
+
+    body('updates.email', `Password must be included to update email.`).custom(
+      ({ req }) => !!req.body.password
+    ),
+
+    async (req, res, next) => {
+      // this validation was called imperatively to get access to next()
+      await body('password', `Password invalid.`)
+        .optional()
+        .custom(async (password) => {
+          // const user = await UserModel.findOne({ email: username }).exec();
+          const passwordOK = await req.user.comparePassword(password);
+          if (!passwordOK) {
+            logger.log(`silly`, `Invalid Password`);
+            throw new Error(`Password invalid.`);
+          }
+          return true;
+        })
+        .run(req);
+      next();
+    },
+    (req, res, next) => {
+      const errors = validationResult(req).array();
+      if (errors.length) {
+        return res.status(400).send({ errors });
+      }
+      return next();
+    },
+
+    async (req, res, next) => {
+      const { updates } = req.body;
+      userService.updateUser(req.user._id, updates);
+      logger.log('silly', `sending login response`);
+    }
+  );
 
   userRoutes.post('/logout', (req, res) => {
     logger.log('silly', `logging out`);
@@ -79,8 +119,8 @@ module.exports = () => {
     '/registration',
     onlyAllowInBodySanitizer(['password', 'email']),
 
-    body('email', `No email id included.`).exists(),
-    body('password', `No password id included.`).exists(),
+    body('email', `No email is included.`).exists(),
+    body('password', `No password is included.`).exists(),
     async (req, res, next) => {
       logger.log('silly', `registering user`);
       let user;
@@ -90,7 +130,7 @@ module.exports = () => {
         return next(err);
       }
       logger.log('silly', `user registered`);
-      req.login(user, function (err) {
+      req.login(user, (err) => {
         if (err) {
           return next(err);
         }
