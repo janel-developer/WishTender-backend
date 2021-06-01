@@ -98,9 +98,7 @@ userSchema.pre('save', async function preSave(next) {
 
 userSchema.pre('remove', async function (next) {
   try {
-    //to do also detel all images
     const AliasModel = require('./Alias.Model');
-    // profileImage should we put this in alias and remove() here?
 
     const alias = await AliasModel.findOne({ user: this._id });
     if (alias) alias.deleteOne();
