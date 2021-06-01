@@ -44,20 +44,21 @@ const wishlistSchema = new mongoose.Schema(
   { timestamps: { createdAt: 'created_at' } }
 );
 
-wishlistSchema.pre('remove', async function (next) {
-  const AliasModel = require('./Alias.Model');
-  const WishlistItemModel = require('./WishlistItem.Model');
-  const alias = await AliasModel.findById(this.alias);
-  if (alias) {
-    alias.wishlists.pull(this._id);
-    await alias.save();
-  }
+// wishlistSchema.pre('remove', async function (next) {
+// in the future if there are multiple wishlist and theres a route to delete them:
+// const AliasModel = require('./Alias.Model');
+// const alias = await AliasModel.findById(this.alias);
+// if (alias) {
+//   alias.wishlists.pull(this._id);
+//   await alias.save();
+// }
+//   const WishlistItemModel = require('./WishlistItem.Model');
 
-  const items = await WishlistItemModel.find({ wishlist: this._id });
-  await items.forEach((it) => it.remove());
+//   const items = await WishlistItemModel.find({ wishlist: this._id });
+//   await items.forEach((it) => it.remove());
 
-  next();
-});
+//   next();
+// });
 
 wishlistSchema.path('alias').validate(async function (value) {
   const AliasModel = require('./Alias.Model');

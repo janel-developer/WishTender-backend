@@ -154,11 +154,36 @@ class UserService {
     let user;
     try {
       user = await this.UserModel.findById(id);
+      // .populate({
+      //   path: 'alias',
+      //   model: 'Alias',
+      // })
+      // .populate({
+      //   path: 'stripeAccountInfo',
+      //   model: 'StripeAccountInfo',
+      // })
+      // .populate({
+      //   path: 'wishlists',
+      //   model: 'Wishlist',
+      //   populate: {
+      //     path: 'wishlistItems',
+      //     model: 'WishlistItem',
+      //   },
+      // })
+      // .exec();
     } catch (err) {
-      throw new ApplicationError({ id, err }, `Couldn't delete user. User not found.`);
+      throw new ApplicationError({ id, err }, `Couldn't delete user. Couldn't retrieve user.`);
     }
-    await user.remove();
-    return user;
+
+    // should we remove or deactivate????
+    // should we remove or deactivate????
+    // populate alias
+    // populate stripeInfoAccounts
+    // populate wishlists
+    //    populate wishlistItems
+    // await user.remove();
+
+    // return user;
   }
 }
 module.exports = UserService;

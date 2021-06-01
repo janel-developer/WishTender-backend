@@ -39,18 +39,19 @@ const aliasSchema = new mongoose.Schema(
   { timestamps: { createdAt: 'created_at' } }
 );
 
-aliasSchema.pre('remove', async function (next) {
-  const UserModel = require('./User.Model');
-  const WishlistModel = require('./Wishlist.Model');
-  const user = await UserModel.findById(this.user);
-  if (user) {
-    user.aliases.pull(this._id);
-    await user.save();
-  }
-  const wishlists = await WishlistModel.find({ alias: this._id });
-  await wishlists.forEach((al) => al.remove());
-  next();
-});
+// in the future if there are miltiple aliases and a route to delete them.
+// aliasSchema.pre('remove', async function (next) {
+//   const UserModel = require('./User.Model');
+//   const WishlistModel = require('./Wishlist.Model');
+//   const user = await UserModel.findById(this.user);
+//   if (user) {
+//     user.aliases.pull(this._id);
+//     await user.save();
+//   }
+//   const wishlists = await WishlistModel.find({ alias: this._id });
+//   await wishlists.forEach((al) => al.remove());
+//   next();
+// });
 
 aliasSchema.pre('save', async function (next) {
   if (this.isModified('handle_lowercased')) {

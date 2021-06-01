@@ -9,13 +9,7 @@ const { Schema } = mongoose;
 
 const userSchema = new Schema(
   {
-    // username: { //commented out because I don't think we ever use username
-    //   type: String,
-    //   require: true,
-    //   trim: true,
-    //   index: { unique: true },
-    //   minlength: 3,
-    // },
+    // deleted: { type: Boolean, default: false },
     fName: {
       type: String,
       trim: true,
@@ -91,13 +85,34 @@ userSchema.pre('save', async function preSave(next) {
 });
 
 userSchema.pre('remove', async function (next) {
-  const AliasModel = require('./Alias.Model');
+  try {
+    const AliasModel = require('./Alias.Model');
 
-  const aliases = await AliasModel.find({ user: this._id });
-  await aliases.forEach((al) => al.remove());
-  const StripeAccountInfoModel = require('./StripeAccountInfo.Model');
-  if (this.stripeAccountInfo) {
-    await StripeAccountInfoModel.deleteOne({ _id: this.stripeAccountInfo });
+    const alias = await AliasModel.findOne({ user: this._id });
+    if (alias) alias.deleteOne();
+
+    const StripeAccountInfoModel = require('./StripeAccountInfo.Model');
+    if (this.stripeAccountInfo) {
+      await StripeAccountInfoModel.deleteOne({ _id: this.stripeAccountInfo });
+    }
+    const WishlistModel = require('./Wishlist.Model');
+    const wishlist = await WishlistModel.findOne({ user: this._id });
+    if (wishlist) wishlist.deleteOne();
+
+    const WishlistItemModel = require('./WishlistItem.Model');
+
+    const items = await WishlistItemModel.find({ user: this._id });
+    await new Promise((resolve) => {
+      let itemsUpdated = 0;
+      items.forEach(async (item) => {
+        await item.deleteOne();
+        itemsUpdated += 1;
+        if (itemsUpdated === items.length) resolve();
+      });
+    });
+    next();
+  } catch (err) {
+    throw new Error(`Problem removing user resources: ${err}`);
   }
 });
 
