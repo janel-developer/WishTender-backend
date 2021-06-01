@@ -70,44 +70,6 @@ module.exports = () => {
 
     return res.status(401).send({ message: flashmsg });
   });
-  userRoutes.patch(
-    '/',
-    onlyAllowInBodySanitizer(['password', 'email']),
-
-    body('updates.email', `Password must be included to update email.`).custom(
-      ({ req }) => !!req.body.password
-    ),
-
-    async (req, res, next) => {
-      // this validation was called imperatively to get access to next()
-      await body('password', `Password invalid.`)
-        .optional()
-        .custom(async (password) => {
-          // const user = await UserModel.findOne({ email: username }).exec();
-          const passwordOK = await req.user.comparePassword(password);
-          if (!passwordOK) {
-            logger.log(`silly`, `Invalid Password`);
-            throw new Error(`Password invalid.`);
-          }
-          return true;
-        })
-        .run(req);
-      next();
-    },
-    (req, res, next) => {
-      const errors = validationResult(req).array();
-      if (errors.length) {
-        return res.status(400).send({ errors });
-      }
-      return next();
-    },
-
-    async (req, res, next) => {
-      const { updates } = req.body;
-      userService.updateUser(req.user._id, updates);
-      logger.log('silly', `sending login response`);
-    }
-  );
 
   userRoutes.post('/logout', (req, res) => {
     logger.log('silly', `logging out`);
@@ -167,21 +129,62 @@ module.exports = () => {
     return res.json(user); // res.json(user) ?
   });
 
-  userRoutes.put('/:id', authUserLoggedIn, throwIfNotAuthorized, async (req, res, next) => {
-    logger.log('silly', `updating user by id`);
-    const { id } = req.params;
+  // don't think we ever use this
+  // userRoutes.put('/:id', authUserLoggedIn, throwIfNotAuthorized, async (req, res, next) => {
+  //   logger.log('silly', `updating user by id`);
+  //   const { id } = req.params;
 
-    const updates = req.body;
-    if (updates.password || updates._id)
-      return next(new ApplicationError({}, `No password or id updates allowed from this route.`));
-    let user;
-    try {
-      user = await userService.updateUser(id, updates);
-    } catch (err) {
-      return next(err);
+  //   const updates = req.body;
+  //   if (updates.password || updates._id)
+  //     return next(new ApplicationError({}, `No password or id updates allowed from this route.`));
+  //   let user;
+  //   try {
+  //     user = await userService.updateUser(id, updates);
+  //   } catch (err) {
+  //     return next(err);
+  //   }
+  //   return res.send(user);
+  // });
+
+  userRoutes.patch(
+    '/',
+    onlyAllowInBodySanitizer(['password', 'email']),
+
+    body('updates.email', `Password must be included to update email.`).custom(
+      ({ req }) => !!req.body.password
+    ),
+
+    async (req, res, next) => {
+      // this validation was called imperatively to get access to next()
+      await body('password', `Password invalid.`)
+        .optional()
+        .custom(async (password) => {
+          // const user = await UserModel.findOne({ email: username }).exec();
+          const passwordOK = await req.user.comparePassword(password);
+          if (!passwordOK) {
+            logger.log(`silly`, `Invalid Password`);
+            throw new Error(`Password invalid.`);
+          }
+          return true;
+        })
+        .run(req);
+      next();
+    },
+    (req, res, next) => {
+      const errors = validationResult(req).array();
+      if (errors.length) {
+        return res.status(400).send({ errors });
+      }
+      return next();
+    },
+
+    async (req, res, next) => {
+      const { updates } = req.body;
+      await userService.updateUser(req.user._id, updates);
+      return res.status(200).send();
     }
-    return res.send(user);
-  });
+  );
+
   userRoutes.delete('/:id', authUserLoggedIn, throwIfNotAuthorized, async (req, res, next) => {
     logger.log('silly', `deleting user by id`);
     const { id } = req.params;

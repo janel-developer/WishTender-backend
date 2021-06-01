@@ -4,6 +4,18 @@ const emailValidator = require('email-validator');
 const bcrypt = require('bcrypt');
 const StripeAccountInfo = require('./StripeAccountInfo.Model');
 
+const ImageService =
+  process.env.NODE_ENV === 'production' || process.env.REMOTE || process.env.AWS
+    ? require('../services/AWSImageService')
+    : require('../services/FSImageService');
+
+const profileImageDirectory = `images/profileImages/`;
+const profileImageService = new ImageService(profileImageDirectory);
+const coverImageDirectory = `images/coverImages/`;
+const coverImageService = new ImageService(coverImageDirectory);
+const itemImageDirectory = `images/itemImages/`;
+const itemImageService = new ImageService(itemImageDirectory);
+
 const SALT_ROUNDS = 12;
 const { Schema } = mongoose;
 
@@ -86,10 +98,13 @@ userSchema.pre('save', async function preSave(next) {
 
 userSchema.pre('remove', async function (next) {
   try {
+    //to do also detel all images
     const AliasModel = require('./Alias.Model');
+    // profileImage should we put this in alias and remove() here?
 
     const alias = await AliasModel.findOne({ user: this._id });
     if (alias) alias.deleteOne();
+    await profileImageService.delete(alias.profileImage);
 
     const StripeAccountInfoModel = require('./StripeAccountInfo.Model');
     if (this.stripeAccountInfo) {
@@ -98,6 +113,7 @@ userSchema.pre('remove', async function (next) {
     const WishlistModel = require('./Wishlist.Model');
     const wishlist = await WishlistModel.findOne({ user: this._id });
     if (wishlist) wishlist.deleteOne();
+    await coverImageService.delete(wishlist.coverImage);
 
     const WishlistItemModel = require('./WishlistItem.Model');
 
@@ -106,6 +122,7 @@ userSchema.pre('remove', async function (next) {
       let itemsUpdated = 0;
       items.forEach(async (item) => {
         await item.deleteOne();
+        if (!item.orders.length) await itemImageService.delete(item.itemImage);
         itemsUpdated += 1;
         if (itemsUpdated === items.length) resolve();
       });

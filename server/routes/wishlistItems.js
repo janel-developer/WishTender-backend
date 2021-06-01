@@ -7,70 +7,14 @@ const WishlistService = require('../services/WishlistService');
 const logger = require('../lib/logger');
 const { ApplicationError } = require('../lib/Error');
 const middlewares = require('./middlewares');
+const { body, check, validationResult } = require('express-validator');
 const ImageService =
   process.env.NODE_ENV === 'production' || process.env.REMOTE || process.env.AWS
     ? require('../services/AWSImageService')
     : require('../services/FSImageService');
-const { body, check, validationResult } = require('express-validator');
 
-const isValidPrice = (value, decimalPlaces) => {
-  const correctDecimalPlaces = value.split(/([,||.])/g).reverse()[0].length === decimalPlaces;
-  const commasNumbersPeriods =
-    /^(0|[1-9][0-9]{0,2}(?:(,[0-9]{3})*|[0-9]*))(\.[0-9]+){0,1}$/.test(value) ||
-    /^(0|[1-9][0-9]{0,2}(?:(.[0-9]{3})*|[0-9]*))(\,[0-9]+){0,1}$/.test(value);
-
-  return correctDecimalPlaces && commasNumbersPeriods;
-};
-
-const toDotDecimal = (price) =>
-  parseFloat(price.replace(/(,|\.)([0-9]{3})/g, `$2`).replace(/(,|\.)/, '.'));
-
-const toSmallestUnit = (price, currency) => {
-  const dotDec = toDotDecimal(price);
-  return new Intl.NumberFormat('en', {
-    style: 'currency',
-    currency,
-  })
-    .formatToParts(dotDec)
-    .reduce((a, c) => {
-      if (c.type === 'integer' || c.type === 'fraction') return a + c.value;
-      return a;
-    }, '');
-};
-const currencyInfo = (currency, locale = 'en') => {
-  const parts = new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency: 'USD',
-  }).formatToParts('1000');
-
-  let separator;
-  let decimal;
-  let decimalPlaces;
-  let symbol;
-  parts.forEach((p) => {
-    switch (p.type) {
-      case 'group':
-        separator = p.value;
-        break;
-      case 'decimal':
-        decimal = p.value;
-        break;
-      case 'fraction':
-        decimalPlaces = p.value.length;
-        break;
-      case 'currency':
-        symbol = p.value;
-        break;
-      default:
-      // code block
-    }
-  });
-  const info = { separator, decimal, decimalPlaces, symbol };
-  return info;
-};
-
-const profileImageDirectory = `images/itemImages/`;
-const imageService = new ImageService(profileImageDirectory);
+const itemImageDirectory = `images/itemImages/`;
+const imageService = new ImageService(itemImageDirectory);
 
 const wishlistItemRoutes = express.Router();
 const wishlistItemService = new WishlistItemService(WishlistItemModel);
