@@ -116,9 +116,9 @@ module.exports = (config) => {
     // console.log('req.user: ', req.user);
 
     res.on('close', () => {
-      // console.log('res.statusCode', res.statusCode);
-      // console.log('res.statusMessage', res.statusMessage);
-      // console.log('res.headers', res._headers);
+      console.log('res.statusCode', res.statusCode);
+      console.log('res.statusMessage', res.statusMessage);
+      console.log('res.headers', res._headers);
     });
     next();
   });

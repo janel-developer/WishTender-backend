@@ -150,10 +150,29 @@ class UserService {
    *
    * @returns {object} deleted wishlist
    */
-  async deleteUser(id) {
+  async hardDeleteUser(id) {
     let user;
     try {
       user = await this.UserModel.findById(id);
+    } catch (err) {
+      throw new ApplicationError({ id, err }, `Couldn't delete user. Couldn't retrieve user.`);
+    }
+
+    await user.remove();
+
+    return user;
+  }
+  /**
+   *  soft deletes a user
+   *
+   *@param {string} id the wishlist item id
+   *
+   * @returns {object} deleted wishlist
+   */
+  async softDeleteUser(id) {
+    let user;
+    try {
+      // user = await this.UserModel.findById(id);
     } catch (err) {
       throw new ApplicationError({ id, err }, `Couldn't delete user. Couldn't retrieve user.`);
     }

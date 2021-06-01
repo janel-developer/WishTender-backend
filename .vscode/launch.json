@@ -196,6 +196,20 @@
       "envFile": "${workspaceFolder}/.env"
     },
     {
+      "name": "account to test delete seeder",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/server/seed/createUserToTestDelete.js",
+      "console": "integratedTerminal",
+      "env": {
+        "PORT": "4000",
+        "NODE_ENV": "development"
+      },
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
       "name": "single mocha test", // this one doesn't pause the program, only thetest file
       "type": "node",
       "request": "launch",

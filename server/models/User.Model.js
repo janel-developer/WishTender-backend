@@ -3,18 +3,19 @@ const mongoose = require('mongoose');
 const emailValidator = require('email-validator');
 const bcrypt = require('bcrypt');
 const StripeAccountInfo = require('./StripeAccountInfo.Model');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_TEST_KEY);
+const StripeService = require('../services/StripeService');
+
+const stripeService = new StripeService(stripe);
 
 const ImageService =
   process.env.NODE_ENV === 'production' || process.env.REMOTE || process.env.AWS
     ? require('../services/AWSImageService')
     : require('../services/FSImageService');
 
-const profileImageDirectory = `images/profileImages/`;
-const profileImageService = new ImageService(profileImageDirectory);
-const coverImageDirectory = `images/coverImages/`;
-const coverImageService = new ImageService(coverImageDirectory);
-const itemImageDirectory = `images/itemImages/`;
-const itemImageService = new ImageService(itemImageDirectory);
+const profileImageService = new ImageService(`images/profileImages/`);
+const coverImageService = new ImageService(`images/coverImages/`);
+const itemImageService = new ImageService(`images/itemImages/`);
 
 const SALT_ROUNDS = 12;
 const { Schema } = mongoose;
@@ -101,16 +102,21 @@ userSchema.pre('remove', async function (next) {
     const AliasModel = require('./Alias.Model');
 
     const alias = await AliasModel.findOne({ user: this._id });
-    if (alias) alias.deleteOne();
-    await profileImageService.delete(alias.profileImage);
+    if (alias) {
+      alias.deleteOne();
+      await profileImageService.delete(alias.profileImage);
+    }
 
     const StripeAccountInfoModel = require('./StripeAccountInfo.Model');
     if (this.stripeAccountInfo) {
+      const stripeAccountInfo = await StripeAccountInfoModel.findOne({ user: this._id });
       await StripeAccountInfoModel.deleteOne({ _id: this.stripeAccountInfo });
+      const { stripeAccountId } = stripeAccountInfo;
+      // if (stripeAccountId) await stripeService.deleteAccount(stripeAccountId);
     }
     const WishlistModel = require('./Wishlist.Model');
     const wishlist = await WishlistModel.findOne({ user: this._id });
-    if (wishlist) wishlist.deleteOne();
+    if (wishlist) await wishlist.deleteOne();
     await coverImageService.delete(wishlist.coverImage);
 
     const WishlistItemModel = require('./WishlistItem.Model');

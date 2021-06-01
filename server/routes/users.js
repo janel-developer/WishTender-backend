@@ -16,7 +16,7 @@ const { update } = require('../models/User.Model');
 
 const authUserLoggedIn = (req, res, next) => {
   if (req.user) {
-    next();
+    return next();
   }
   res.status(401).send({ message: 'No user logged in' });
 };
@@ -187,14 +187,14 @@ module.exports = () => {
 
   userRoutes.delete('/:id', authUserLoggedIn, throwIfNotAuthorized, async (req, res, next) => {
     logger.log('silly', `deleting user by id`);
+    // add validations need to enter password and permentelty delete maybe have to email confirm
     const { id } = req.params;
-    let user;
     try {
-      user = await userService.deleteUser(id);
+      await userService.hardDeleteUser(id);
     } catch (err) {
       return next(err);
     }
-    return res.json({ success: true, user });
+    return res.status(200).send();
   });
 
   return userRoutes;
