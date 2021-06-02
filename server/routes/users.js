@@ -114,35 +114,6 @@ module.exports = () => {
     logger.log('silly', `no user`);
     res.sendStatus(204);
   });
-  userRoutes.get('/p', async (req, res, next) => {
-    try {
-      const l = UserModel.findByIdDeleted('60b6dbd120329b2952db39e5', function (err, doc) {
-        console.log(err || doc);
-      });
-      console.log(l);
-    } catch (error) {
-      console.log(error);
-    }
-    return res.status(200).send();
-  });
-  userRoutes.get('/r', async (req, res, next) => {
-    try {
-      const l = await userService.restoreUser('60b6dbd120329b2952db39e5');
-      console.log(l);
-    } catch (error) {
-      console.log(error);
-    }
-    return res.status(200).send();
-  });
-  userRoutes.get('/d', async (req, res, next) => {
-    try {
-      const l = await userService.softDeleteUser('60b6dbd120329b2952db39e5');
-      console.log(l);
-    } catch (error) {
-      console.log(error);
-    }
-    return res.status(200).send();
-  });
 
   userRoutes.get('/:id', async (req, res, next) => {
     logger.log('silly', `getting user by id`);
