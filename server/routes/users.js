@@ -114,6 +114,15 @@ module.exports = () => {
     logger.log('silly', `no user`);
     res.sendStatus(204);
   });
+  userRoutes.get('/p', async (req, res, next) => {
+    try {
+      const l = UserModel.findByIdDeleted('60b6dbd320329b2952db39e8');
+      console.log(l);
+    } catch (error) {
+      console.log(error);
+    }
+    return res.status(200).send();
+  });
 
   userRoutes.get('/:id', async (req, res, next) => {
     logger.log('silly', `getting user by id`);

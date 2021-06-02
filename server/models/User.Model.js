@@ -2,10 +2,9 @@
 const mongoose = require('mongoose');
 const emailValidator = require('email-validator');
 const bcrypt = require('bcrypt');
-const StripeAccountInfo = require('./StripeAccountInfo.Model');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_TEST_KEY);
+const softDelete = require('mongoosejs-soft-delete');
 const StripeService = require('../services/StripeService');
-let softDelete = require('mongoosejs-soft-delete');
 
 const stripeService = new StripeService(stripe);
 

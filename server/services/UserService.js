@@ -171,7 +171,7 @@ class UserService {
    * @returns {object} deleted wishlist
    */
   async softDeleteUser(id) {
-    let itemsDeleted = 0;
+    let itemsRemoved = 0;
     let user;
     try {
       user = await this.UserModel.findById(id)
@@ -184,7 +184,7 @@ class UserService {
           },
         })
         .populate({
-          path: 'alias',
+          path: 'aliases',
           model: 'Alias',
         })
         .populate({
@@ -193,32 +193,35 @@ class UserService {
         })
         .exec();
 
-      const now = new Date();
-      const softDelete = async (resource) => {
-        const res = resource;
-        res.deleted = true;
-        res.deletedAt = now;
-        await res.save();
-      };
+      // const now = new Date();
+      // const softDelete = async (resource) => {
+      //   const res = resource;
+      //   res.deleted = true;
+      //   res.deletedAt = now;
+      //   await res.save();
+      // };
 
-      const toDelete = [
+      const toRemove = [
         user,
-        user.wishlist[0],
-        user.alias[0],
+        user.wishlists[0],
+        user.aliases[0],
         user.stripeAccountInfo,
-        [...user.wishlists[0].wishlistItems],
+        ...user.wishlists[0].wishlistItems,
       ];
 
       const success = new Promise((res) => {
-        toDelete.forEach(async (item) => {
-          await softDelete(item);
-          itemsDeleted += 1;
-          if (itemsDeleted === toDelete.length) res(true);
+        toRemove.forEach(async (item) => {
+          const Model = item.constructor;
+          // Sample.removeMany({ _id: sampleId }, function (err, res) {});
+
+          await Model.removeOne({ _id: item._id }); // soft delete plugin does it's magic
+          itemsRemoved += 1;
+          if (itemsRemoved === toRemove.length) res(true);
         });
       });
       return success;
     } catch (err) {
-      throw new ApplicationError({ id, err }, `Couldn't delete user. Couldn't retrieve user.`);
+      throw new Error(`Couldn't soft delete user. Something went wrong ${err}`);
     }
   }
 }

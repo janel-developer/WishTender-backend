@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const softDelete = require('mongoosejs-soft-delete');
 const { ApplicationError } = require('../lib/Error');
 
 const stripeInfoSchema = new mongoose.Schema(
@@ -41,6 +42,7 @@ stripeInfoSchema.path('user').validate(async function (value) {
     return true;
   }
 }, 'Parent User non existent');
+stripeInfoSchema.plugin(softDelete);
 
 const StripeAccountInfo = mongoose.model('StripeAccountInfo', stripeInfoSchema);
 module.exports = StripeAccountInfo;
