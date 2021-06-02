@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt');
 const StripeAccountInfo = require('./StripeAccountInfo.Model');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_TEST_KEY);
 const StripeService = require('../services/StripeService');
+let softDelete = require('mongoosejs-soft-delete');
 
 const stripeService = new StripeService(stripe);
 
@@ -112,7 +113,7 @@ userSchema.pre('remove', async function (next) {
       const stripeAccountInfo = await StripeAccountInfoModel.findOne({ user: this._id });
       await StripeAccountInfoModel.deleteOne({ _id: this.stripeAccountInfo });
       const { stripeAccountId } = stripeAccountInfo;
-      // if (stripeAccountId) await stripeService.deleteAccount(stripeAccountId);
+      if (stripeAccountId) await stripeService.deleteAccount(stripeAccountId);
     }
     const WishlistModel = require('./Wishlist.Model');
     const wishlist = await WishlistModel.findOne({ user: this._id });
@@ -140,6 +141,7 @@ userSchema.pre('remove', async function (next) {
 userSchema.methods.comparePassword = async function comparePassword(candidate) {
   return bcrypt.compare(candidate, this.password);
 };
+userSchema.plugin(softDelete);
 
 /**
  * @class orderSchema

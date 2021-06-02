@@ -185,12 +185,23 @@ module.exports = () => {
     }
   );
 
+  // userRoutes.delete('/:id', authUserLoggedIn, throwIfNotAuthorized, async (req, res, next) => {
+  //   logger.log('silly', `deleting user by id`);
+  //   // add validations need to enter password and permentelty delete maybe have to email confirm
+  //   const { id } = req.params;
+  //   try {
+  //     await userService.hardDeleteUser(id);
+  //   } catch (err) {
+  //     return next(err);
+  //   }
+  //   return res.status(200).send();
+  // });
   userRoutes.delete('/:id', authUserLoggedIn, throwIfNotAuthorized, async (req, res, next) => {
     logger.log('silly', `deleting user by id`);
     // add validations need to enter password and permentelty delete maybe have to email confirm
     const { id } = req.params;
     try {
-      await userService.hardDeleteUser(id);
+      await userService.softDeleteUser(id);
     } catch (err) {
       return next(err);
     }

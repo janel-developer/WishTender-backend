@@ -162,6 +162,7 @@ class UserService {
 
     return user;
   }
+
   /**
    *  soft deletes a user
    *
@@ -170,16 +171,55 @@ class UserService {
    * @returns {object} deleted wishlist
    */
   async softDeleteUser(id) {
+    let itemsDeleted = 0;
     let user;
     try {
-      // user = await this.UserModel.findById(id);
+      user = await this.UserModel.findById(id)
+        .populate({
+          path: 'wishlists',
+          model: 'Wishlist',
+          populate: {
+            path: 'wishlistItems',
+            model: 'WishlistItem',
+          },
+        })
+        .populate({
+          path: 'alias',
+          model: 'Alias',
+        })
+        .populate({
+          path: 'stripeAccountInfo',
+          model: 'StripeAccountInfo',
+        })
+        .exec();
+
+      const now = new Date();
+      const softDelete = async (resource) => {
+        const res = resource;
+        res.deleted = true;
+        res.deletedAt = now;
+        await res.save();
+      };
+
+      const toDelete = [
+        user,
+        user.wishlist[0],
+        user.alias[0],
+        user.stripeAccountInfo,
+        [...user.wishlists[0].wishlistItems],
+      ];
+
+      const success = new Promise((res) => {
+        toDelete.forEach(async (item) => {
+          await softDelete(item);
+          itemsDeleted += 1;
+          if (itemsDeleted === toDelete.length) res(true);
+        });
+      });
+      return success;
     } catch (err) {
       throw new ApplicationError({ id, err }, `Couldn't delete user. Couldn't retrieve user.`);
     }
-
-    await user.remove();
-
-    return user;
   }
 }
 module.exports = UserService;

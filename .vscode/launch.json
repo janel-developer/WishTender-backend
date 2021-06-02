@@ -196,12 +196,12 @@
       "envFile": "${workspaceFolder}/.env"
     },
     {
-      "name": "account to test delete seeder",
+      "name": "testuserAWS",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "node",
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/server/seed/createUserToTestDelete.js",
+      "program": "${workspaceFolder}/server/seed/testuserAWS.js",
       "console": "integratedTerminal",
       "env": {
         "PORT": "4000",
