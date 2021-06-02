@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const { ApplicationError } = require('../lib/Error');
+const softDelete = require('mongoosejs-soft-delete');
+const mongoose_delete = require('mongoose-delete');
 
 const aliasSchema = new mongoose.Schema(
   {
@@ -39,18 +41,19 @@ const aliasSchema = new mongoose.Schema(
   { timestamps: { createdAt: 'created_at' } }
 );
 
-aliasSchema.pre('remove', async function (next) {
-  const UserModel = require('./User.Model');
-  const WishlistModel = require('./Wishlist.Model');
-  const user = await UserModel.findById(this.user);
-  if (user) {
-    user.aliases.pull(this._id);
-    await user.save();
-  }
-  const wishlists = await WishlistModel.find({ alias: this._id });
-  await wishlists.forEach((al) => al.remove());
-  next();
-});
+// in the future if there are miltiple aliases and a route to delete them.
+// aliasSchema.pre('remove', async function (next) {
+//   const UserModel = require('./User.Model');
+//   const WishlistModel = require('./Wishlist.Model');
+//   const user = await UserModel.findById(this.user);
+//   if (user) {
+//     user.aliases.pull(this._id);
+//     await user.save();
+//   }
+//   const wishlists = await WishlistModel.find({ alias: this._id });
+//   await wishlists.forEach((al) => al.remove());
+//   next();
+// });
 
 aliasSchema.pre('save', async function (next) {
   if (this.isModified('handle_lowercased')) {
@@ -89,6 +92,12 @@ aliasSchema.path('user').validate(async function (value) {
     throw new ApplicationError({}, `Can't validate User on Alias: ${error}`);
   }
 }, 'Parent User non existent');
+// aliasSchema.plugin(softDelete);
+aliasSchema.plugin(mongoose_delete, {
+  indexFields: ['deletedAt'],
+  overrideMethods: 'all',
+  validateBeforeDelete: false,
+});
 
 const Alias = mongoose.model('Alias', aliasSchema);
 module.exports = Alias;

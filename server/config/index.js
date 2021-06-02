@@ -3,7 +3,7 @@ const path = require('path');
 
 module.exports = {
   development: {
-    sitename: 'WishTender [Developmemt]',
+    sitename: 'WishTender [Development]',
     database: {
       dsn: process.env.DEVELOPMENT_DB_DSN,
     },

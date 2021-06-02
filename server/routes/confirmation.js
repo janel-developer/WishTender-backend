@@ -101,54 +101,5 @@ module.exports = () => {
     }
   });
 
-  // /*
-  //  * GET /:email/:token
-  //  *
-  //  * confirms email on user account
-  //  *
-  //  * res 201
-  //  */
-  // confirmationRoutes.get('/:email/:token', (req, res, next) => {
-  //   try {
-  //     Token.findOne({ token: req.params.token }, function (err, token) {
-  //       // token is not found into database i.e. token may have expired
-  //       if (!token) {
-  //         // return res.status(400).send({
-  //         //   msg:
-  //         //     'Your verification link may have expired. Please click on resend for verify your Email.',
-  //         //   });
-  //         return res.redirect(
-  //           301,
-  //           `http://localhost:3000/confirmation-status?email=${req.params.email}&error=expired`
-  //         );
-  //       }
-  //       // if token is found then check valid user
-
-  //       User.findOne({ _id: token.user, email: req.params.email }, function (err, user) {
-  //         // not valid user
-  //         if (!user) {
-  //           // res.status(400).send({ message: `Couldn't confirm email. User doesn't exist` });
-  //           return res.redirect(
-  //             301,
-  //             `http://localhost:3000/confirmation-status?email=${req.params.email}&error=nouser`
-  //           );
-  //         }
-  //         // user is already verified
-  //         if (!user.confirmed) {
-  //           // user already confirmed
-  //           user.confirmed = true;
-  //           user.save();
-  //         }
-
-  //         return res.redirect(
-  //           301,
-  //           `http://localhost:3000/confirmation-status?email=${req.params.email}`
-  //         );
-  //       });
-  //     });
-  //   } catch (error) {
-  //     return next(new ApplicationError({}, `Couldn't Confirm: ${error}`));
-  //   }
-  // });
   return confirmationRoutes;
 };

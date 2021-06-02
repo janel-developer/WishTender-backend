@@ -1,4 +1,7 @@
 const mongoose = require('mongoose');
+const softDelete = require('mongoosejs-soft-delete');
+const mongoose_delete = require('mongoose-delete');
+
 const { ApplicationError } = require('../lib/Error');
 
 const wishlistSchema = new mongoose.Schema(
@@ -44,20 +47,21 @@ const wishlistSchema = new mongoose.Schema(
   { timestamps: { createdAt: 'created_at' } }
 );
 
-wishlistSchema.pre('remove', async function (next) {
-  const AliasModel = require('./Alias.Model');
-  const WishlistItemModel = require('./WishlistItem.Model');
-  const alias = await AliasModel.findById(this.alias);
-  if (alias) {
-    alias.wishlists.pull(this._id);
-    await alias.save();
-  }
+// wishlistSchema.pre('remove', async function (next) {
+// in the future if there are multiple wishlist and theres a route to delete them:
+// const AliasModel = require('./Alias.Model');
+// const alias = await AliasModel.findById(this.alias);
+// if (alias) {
+//   alias.wishlists.pull(this._id);
+//   await alias.save();
+// }
+//   const WishlistItemModel = require('./WishlistItem.Model');
 
-  const items = await WishlistItemModel.find({ wishlist: this._id });
-  await items.forEach((it) => it.remove());
+//   const items = await WishlistItemModel.find({ wishlist: this._id });
+//   await items.forEach((it) => it.remove());
 
-  next();
-});
+//   next();
+// });
 
 wishlistSchema.path('alias').validate(async function (value) {
   const AliasModel = require('./Alias.Model');
@@ -83,6 +87,13 @@ wishlistSchema.path('user').validate(async function (value) {
     return true;
   }
 }, 'Parent User non existent');
+// wishlistSchema.plugin(softDelete);
+wishlistSchema.plugin(mongoose_delete, {
+  indexFields: ['deletedAt'],
+  overrideMethods: 'all',
+  validateBeforeDelete: false,
+});
+
 const Wishlist = mongoose.model('Wishlist', wishlistSchema);
 
 module.exports = Wishlist;

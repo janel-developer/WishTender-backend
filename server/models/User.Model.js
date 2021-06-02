@@ -2,20 +2,29 @@
 const mongoose = require('mongoose');
 const emailValidator = require('email-validator');
 const bcrypt = require('bcrypt');
-const StripeAccountInfo = require('./StripeAccountInfo.Model');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_TEST_KEY);
+const softDelete = require('mongoosejs-soft-delete');
+const mongoose_delete = require('mongoose-delete');
+
+const StripeService = require('../services/StripeService');
+
+const stripeService = new StripeService(stripe);
+
+const ImageService =
+  process.env.NODE_ENV === 'production' || process.env.REMOTE || process.env.AWS
+    ? require('../services/AWSImageService')
+    : require('../services/FSImageService');
+
+const profileImageService = new ImageService(`images/profileImages/`);
+const coverImageService = new ImageService(`images/coverImages/`);
+const itemImageService = new ImageService(`images/itemImages/`);
 
 const SALT_ROUNDS = 12;
 const { Schema } = mongoose;
 
 const userSchema = new Schema(
   {
-    // username: { //commented out because I don't think we ever use username
-    //   type: String,
-    //   require: true,
-    //   trim: true,
-    //   index: { unique: true },
-    //   minlength: 3,
-    // },
+    // deleted: { type: Boolean, default: false },
     fName: {
       type: String,
       trim: true,
@@ -91,19 +100,54 @@ userSchema.pre('save', async function preSave(next) {
 });
 
 userSchema.pre('remove', async function (next) {
-  const AliasModel = require('./Alias.Model');
+  try {
+    const AliasModel = require('./Alias.Model');
 
-  const aliases = await AliasModel.find({ user: this._id });
-  await aliases.forEach((al) => al.remove());
-  const StripeAccountInfoModel = require('./StripeAccountInfo.Model');
-  if (this.stripeAccountInfo) {
-    await StripeAccountInfoModel.deleteOne({ _id: this.stripeAccountInfo });
+    const alias = await AliasModel.findOne({ user: this._id });
+    if (alias) {
+      alias.deleteOne();
+      await profileImageService.delete(alias.profileImage);
+    }
+
+    const StripeAccountInfoModel = require('./StripeAccountInfo.Model');
+    if (this.stripeAccountInfo) {
+      const stripeAccountInfo = await StripeAccountInfoModel.findOne({ user: this._id });
+      await StripeAccountInfoModel.deleteOne({ _id: this.stripeAccountInfo });
+      const { stripeAccountId } = stripeAccountInfo;
+      if (stripeAccountId) await stripeService.deleteAccount(stripeAccountId);
+    }
+    const WishlistModel = require('./Wishlist.Model');
+    const wishlist = await WishlistModel.findOne({ user: this._id });
+    if (wishlist) await wishlist.deleteOne();
+    await coverImageService.delete(wishlist.coverImage);
+
+    const WishlistItemModel = require('./WishlistItem.Model');
+
+    const items = await WishlistItemModel.find({ user: this._id });
+    await new Promise((resolve) => {
+      let itemsUpdated = 0;
+      items.forEach(async (item) => {
+        await item.deleteOne();
+        if (!item.orders.length) await itemImageService.delete(item.itemImage);
+        itemsUpdated += 1;
+        if (itemsUpdated === items.length) resolve();
+      });
+    });
+    next();
+  } catch (err) {
+    throw new Error(`Problem removing user resources: ${err}`);
   }
 });
 
 userSchema.methods.comparePassword = async function comparePassword(candidate) {
   return bcrypt.compare(candidate, this.password);
 };
+// userSchema.plugin(softDelete);
+userSchema.plugin(mongoose_delete, {
+  indexFields: ['deletedAt'],
+  overrideMethods: 'all',
+  validateBeforeDelete: false,
+});
 
 /**
  * @class orderSchema
