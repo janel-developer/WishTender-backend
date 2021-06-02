@@ -116,7 +116,9 @@ module.exports = () => {
   });
   userRoutes.get('/p', async (req, res, next) => {
     try {
-      const l = UserModel.findByIdDeleted('60b6dbd320329b2952db39e8');
+      const l = UserModel.findByIdDeleted('60b6dbd320329b2952db39e8', function (err, doc) {
+        console.log(err || doc);
+      });
       console.log(l);
     } catch (error) {
       console.log(error);
