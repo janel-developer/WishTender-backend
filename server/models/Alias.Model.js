@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const { ApplicationError } = require('../lib/Error');
 const softDelete = require('mongoosejs-soft-delete');
+const mongoose_delete = require('mongoose-delete');
 
 const aliasSchema = new mongoose.Schema(
   {
@@ -91,7 +92,12 @@ aliasSchema.path('user').validate(async function (value) {
     throw new ApplicationError({}, `Can't validate User on Alias: ${error}`);
   }
 }, 'Parent User non existent');
-aliasSchema.plugin(softDelete);
+// aliasSchema.plugin(softDelete);
+aliasSchema.plugin(mongoose_delete, {
+  indexFields: ['deletedAt'],
+  overrideMethods: 'all',
+  validateBeforeDelete: false,
+});
 
 const Alias = mongoose.model('Alias', aliasSchema);
 module.exports = Alias;

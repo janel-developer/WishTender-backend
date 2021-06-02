@@ -1,4 +1,6 @@
 const softDelete = require('mongoosejs-soft-delete');
+const mongoose_delete = require('mongoose-delete');
+
 const mongoose = require('mongoose');
 const { ApplicationError } = require('../lib/Error');
 
@@ -83,7 +85,12 @@ itemSchema.path('user').validate(async function (value) {
     return true;
   }
 }, 'Parent User non existent');
-itemSchema.plugin(softDelete);
+// itemSchema.plugin(softDelete);
+itemSchema.plugin(mongoose_delete, {
+  indexFields: ['deletedAt'],
+  overrideMethods: 'all',
+  validateBeforeDelete: false,
+});
 
 const WishlistItem = mongoose.model('WishlistItem', itemSchema);
 module.exports = WishlistItem;

@@ -4,6 +4,8 @@ const emailValidator = require('email-validator');
 const bcrypt = require('bcrypt');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_TEST_KEY);
 const softDelete = require('mongoosejs-soft-delete');
+const mongoose_delete = require('mongoose-delete');
+
 const StripeService = require('../services/StripeService');
 
 const stripeService = new StripeService(stripe);
@@ -140,7 +142,12 @@ userSchema.pre('remove', async function (next) {
 userSchema.methods.comparePassword = async function comparePassword(candidate) {
   return bcrypt.compare(candidate, this.password);
 };
-userSchema.plugin(softDelete);
+// userSchema.plugin(softDelete);
+userSchema.plugin(mongoose_delete, {
+  indexFields: ['deletedAt'],
+  overrideMethods: 'all',
+  validateBeforeDelete: false,
+});
 
 /**
  * @class orderSchema

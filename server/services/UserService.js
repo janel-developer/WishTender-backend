@@ -171,57 +171,84 @@ class UserService {
    * @returns {object} deleted wishlist
    */
   async softDeleteUser(id) {
-    let itemsRemoved = 0;
+    const result = await this.toggleSoftDeleteUser(id, false);
+    return result;
+  }
+
+  /**
+   *  restores a soft deletes a user
+   *
+   *@param {string} id the wishlist item id
+   *
+   * @returns {object} deleted wishlist
+   */
+  async restoreUser(id) {
+    const result = await this.toggleSoftDeleteUser(id, true);
+    return result;
+  }
+
+  async toggleSoftDeleteUser(id, isRestore) {
+    let itemsChanged = 0;
     let user;
     try {
-      user = await this.UserModel.findById(id)
+      user = await this.UserModel.findOneWithDeleted({ _id: id })
         .populate({
           path: 'wishlists',
           model: 'Wishlist',
+          options: { withDeleted: true },
           populate: {
             path: 'wishlistItems',
             model: 'WishlistItem',
+            options: { withDeleted: true },
           },
         })
         .populate({
           path: 'aliases',
           model: 'Alias',
+          options: { withDeleted: true },
         })
         .populate({
           path: 'stripeAccountInfo',
           model: 'StripeAccountInfo',
+          options: { withDeleted: true },
         })
         .exec();
 
-      // const now = new Date();
-      // const softDelete = async (resource) => {
-      //   const res = resource;
-      //   res.deleted = true;
-      //   res.deletedAt = now;
-      //   await res.save();
-      // };
-
-      const toRemove = [
+      let toChange = [
         user,
-        user.wishlists[0],
         user.aliases[0],
-        user.stripeAccountInfo,
+        user.wishlists[0],
         ...user.wishlists[0].wishlistItems,
+        user.stripeAccountInfo,
       ];
+      toChange = toChange.filter((it) => (isRestore ? it.deleted : !it.deleted));
+      // eslint-disable-next-line no-restricted-syntax
+      for (const item of toChange) {
+        try {
+          if (isRestore) {
+            // eslint-disable-next-line no-await-in-loop
+            await item.restore(); // soft delete plug restores
+          } else {
+            // eslint-disable-next-line no-await-in-loop
+            await item.delete(); // soft delete plug restores
+          }
+          itemsChanged += 1;
+        } catch (err) {
+          throw new Error(
+            `Couldn't ${isRestore ? 'restore' : 'soft delete'} ${item.constructor.modelName} id:${
+              item._id
+            }. ${err}`
+          );
+        }
+      }
+      let success;
+      if (itemsChanged === toChange.length) success = true;
 
-      const success = new Promise((res) => {
-        toRemove.forEach(async (item) => {
-          const Model = item.constructor;
-          // Sample.removeMany({ _id: sampleId }, function (err, res) {});
-
-          await Model.removeOne({ _id: item._id }); // soft delete plugin does it's magic
-          itemsRemoved += 1;
-          if (itemsRemoved === toRemove.length) res(true);
-        });
-      });
       return success;
     } catch (err) {
-      throw new Error(`Couldn't soft delete user. Something went wrong ${err}`);
+      throw new Error(
+        `Couldn't ${isRestore ? 'restore' : 'soft delete'} user. Something went wrong ${err}`
+      );
     }
   }
 }
