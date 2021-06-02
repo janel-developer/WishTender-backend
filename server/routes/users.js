@@ -4,7 +4,7 @@ const UserModel = require('../models/User.Model');
 const UserService = require('../services/UserService');
 const AliasModel = require('../models/Alias.Model');
 const AliasService = require('../services/AliasService');
-const { body, validationResult, sanitize } = require('express-validator');
+const { body, param, validationResult, sanitize } = require('express-validator');
 const { onlyAllowInBodySanitizer } = require('./middlewares');
 
 const aliasService = new AliasService(AliasModel);
@@ -129,23 +129,6 @@ module.exports = () => {
     return res.json(user); // res.json(user) ?
   });
 
-  // don't think we ever use this
-  // userRoutes.put('/:id', authUserLoggedIn, throwIfNotAuthorized, async (req, res, next) => {
-  //   logger.log('silly', `updating user by id`);
-  //   const { id } = req.params;
-
-  //   const updates = req.body;
-  //   if (updates.password || updates._id)
-  //     return next(new ApplicationError({}, `No password or id updates allowed from this route.`));
-  //   let user;
-  //   try {
-  //     user = await userService.updateUser(id, updates);
-  //   } catch (err) {
-  //     return next(err);
-  //   }
-  //   return res.send(user);
-  // });
-
   userRoutes.patch(
     '/',
     onlyAllowInBodySanitizer(['password', 'email']),
@@ -196,17 +179,45 @@ module.exports = () => {
   //   }
   //   return res.status(200).send();
   // });
-  userRoutes.delete('/:id', authUserLoggedIn, throwIfNotAuthorized, async (req, res, next) => {
-    logger.log('silly', `deleting user by id`);
-    // add validations need to enter password and permentelty delete maybe have to email confirm
-    const { id } = req.params;
-    try {
-      await userService.softDeleteUser(id);
-    } catch (err) {
-      return next(err);
+  userRoutes.delete(
+    '/:id',
+    onlyAllowInBodySanitizer(['password', 'email']),
+    body('verificationPhrase', `You must type out 'permanently delete'.`).exists(),
+    body('password', 'Password must be included').exists(),
+    async (req, res, next) => {
+      await body('password', `Password invalid.`)
+        .custom(async (password) => {
+          const passwordOK = await req.user.comparePassword(password);
+          if (!passwordOK) {
+            logger.log(`silly`, `Invalid Password`);
+            throw new Error(`Password invalid.`);
+          }
+          return true;
+        })
+        .run(req);
+      next();
+    },
+    (req, res, next) => {
+      const errors = validationResult(req).array();
+      if (errors.length) {
+        return res.status(400).send({ message: 'Form validation errors', errors });
+      }
+      return next();
+    },
+    authUserLoggedIn,
+    throwIfNotAuthorized,
+    async (req, res, next) => {
+      logger.log('silly', `deleting user by id`);
+
+      const { id } = req.params;
+      try {
+        await userService.softDeleteUser(id);
+      } catch (err) {
+        return next(err);
+      }
+      return res.status(200).send();
     }
-    return res.status(200).send();
-  });
+  );
 
   return userRoutes;
 };
