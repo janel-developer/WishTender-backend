@@ -10,7 +10,7 @@ class ConfirmationEmail extends Email {
   constructor(to, emailActivationUrl) {
     const subject = `Please confirm your email`;
     const html = `Please confirm your email: <a href = "${
-      process.env.BASEURL + emailActivationUrl
+      process.env.API_BASEURL + emailActivationUrl
     }">Confirm</a>`;
     const email = process.env.CONFIRM_EMAIL;
     const from = `WishTender Wishlist <${email}>`;

@@ -10,7 +10,7 @@ class ResetPasswordEmail extends Email {
   constructor(to, passwordResetUrl) {
     const subject = `Password reset`;
     const html = `To reset your password go here: <a href = "${
-      process.env.BASEURL + passwordResetUrl
+      process.env.API_BASEURL + passwordResetUrl
     }">Confirm</a>`;
     const email = process.env.RESET_EMAIL;
     const from = `WishTender Wishlist <${email}>`;

@@ -22,9 +22,11 @@ const logger = require('./lib/logger');
 const routes = require('./routes');
 
 if (process.env.NODE_ENV === 'production') {
-  process.env.BASEURL = 'https://wishtender.com/';
+  process.env.FRONT_BASEURL = 'https://www.wishtender.com/';
+  process.env.API_BASEURL = 'https://wishtender.com/';
 } else {
-  process.env.BASEURL = 'http://localhost:4000';
+  process.env.FRONT_BASEURL = 'http://localhost:3000';
+  process.env.API_BASEURL = 'http://localhost:4000';
 }
 
 module.exports = (config) => {
