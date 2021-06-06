@@ -131,10 +131,11 @@ module.exports = () => {
 
   userRoutes.patch(
     '/',
+
     onlyAllowInBodySanitizer(['password', 'email']),
 
-    body('updates.email', `Password must be included to update email.`).custom(
-      ({ req }) => !!req.body.password
+    body('email', `Password must be included to update email.`).custom(
+      (email, { req }) => !!req.body.password
     ),
 
     async (req, res, next) => {
@@ -162,8 +163,8 @@ module.exports = () => {
     },
 
     async (req, res, next) => {
-      const { updates } = req.body;
-      await userService.updateUser(req.user._id, updates);
+      delete req.body.password;
+      await userService.updateUser(req.user._id, req.body);
       return res.status(200).send();
     }
   );
@@ -181,7 +182,7 @@ module.exports = () => {
   // });
   userRoutes.delete(
     '/:id',
-    onlyAllowInBodySanitizer(['password', 'email']),
+    onlyAllowInBodySanitizer(['password', 'verificationPhrase']),
     body('verificationPhrase', `You must type out 'permanently delete'.`).exists(),
     body('password', 'Password must be included').exists(),
     async (req, res, next) => {
