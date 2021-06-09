@@ -146,9 +146,9 @@ class UserService {
   /**
    * deletes a user
    *
-   *@param {string} id the wishlist item id
+   *@param {string} id the user id
    *
-   * @returns {object} deleted wishlist
+   * @returns {object} deleted user
    */
   async hardDeleteUser(id) {
     let user;

@@ -50,7 +50,12 @@ const itemImageService = new ImageService(`images/itemImages/`);
     confirmed: true,
     currency: 'USD',
   });
-  await user.save();
+  try {
+    await user.save();
+  } catch (err) {
+    console.log(err.message);
+    return;
+  }
   const alias = new Alias({
     aliasName: 'Dashie Bark-Huss',
     user: user._id,
@@ -80,7 +85,7 @@ const itemImageService = new ImageService(`images/itemImages/`);
   const stripeAccountInfo = await StripeAccountInfo({
     activated: true,
     user: user._id,
-    stripeAccountId: 'acct_1HfYkjB1MWXqcvcc',
+    stripeAccountId: 'acct_1InTZcPxNpAz2186',
     currency: 'USD',
   });
   user.stripeAccountInfo = stripeAccountInfo._id;

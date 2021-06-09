@@ -10,9 +10,6 @@ const { onlyAllowInBodySanitizer } = require('./middlewares');
 const aliasService = new AliasService(AliasModel);
 const logger = require('../lib/logger');
 const { ApplicationError } = require('../lib/Error');
-const auth = require('../lib/auth');
-const { reset } = require('nodemon');
-const { update } = require('../models/User.Model');
 
 const authUserLoggedIn = (req, res, next) => {
   if (req.user) {
@@ -114,6 +111,12 @@ module.exports = () => {
     logger.log('silly', `no user`);
     res.sendStatus(204);
   });
+  userRoutes.get('/hd', async (req, res, next) => {
+    const user = await UserModel.findOneWithDeleted({ _id: '60bd7714662a8352356e4c71' });
+    await user.remove();
+    // await userService.hardDeleteUser('60bd7714662a8352356e4c71');
+    res.sendStatus(204);
+  });
 
   userRoutes.get('/:id', async (req, res, next) => {
     logger.log('silly', `getting user by id`);
@@ -161,11 +164,12 @@ module.exports = () => {
       }
       return next();
     },
-
-    async (req, res, next) => {
-      delete req.body.password;
-      await userService.updateUser(req.user._id, req.body);
-      return res.status(200).send();
+    (req, res, next) => {
+      const errors = validationResult(req).array();
+      if (errors.length) {
+        return res.status(400).send({ errors });
+      }
+      return next();
     }
   );
 
@@ -182,8 +186,8 @@ module.exports = () => {
   // });
   userRoutes.delete(
     '/:id',
-    onlyAllowInBodySanitizer(['password', 'verificationPhrase']),
-    body('verificationPhrase', `You must type out 'permanently delete'.`).exists(),
+    onlyAllowInBodySanitizer(['password', 'phrase']),
+    body('phrase', `You must type out 'permanently delete'.`).exists(),
     body('password', 'Password must be included').exists(),
     async (req, res, next) => {
       await body('password', `Password invalid.`)
