@@ -1,6 +1,6 @@
 const Email = require('./Email');
 const Currency = require('../currency');
-const ExchangeRateAPI = require('../ExchangeRate-API');
+const ExchangeRateAPI = require('../ExchangeRate-Api');
 
 const exchangeRateAPI = new ExchangeRateAPI();
 const currency = new Currency(exchangeRateAPI);
