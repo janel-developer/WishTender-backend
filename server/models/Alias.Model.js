@@ -8,7 +8,8 @@ const aliasSchema = new mongoose.Schema(
     aliasName: String,
     handle: {
       type: String,
-      unique: true,
+      // unique: true,
+      index: { unique: true, partialFilterExpression: { deleted: false } },
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -26,7 +27,8 @@ const aliasSchema = new mongoose.Schema(
     profileImage: { type: String },
     handle_lowercased: {
       type: String,
-      unique: true,
+      // unique: true,
+      index: { unique: true, partialFilterExpression: { deleted: false } },
     },
     currency: { type: String, required: true },
     // country: { type: String, required: true },

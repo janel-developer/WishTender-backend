@@ -309,10 +309,11 @@ module.exports = () => {
       logger.log('silly', `checking prices are still current`);
 
       const aliasId = req.body.alias;
+
       const aliasCart = req.session.cart.aliasCarts[aliasId];
       // const result = await CartService.updateAliasCartPrices(aliasCart);
       const result = await CartService.updateAliasCart(aliasCart);
-      if (result.modified.itemModified.length) {
+      if (result.modified.itemsModified.length) {
         req.session.cart.aliasCarts[aliasId] = result.aliasCart;
         return res.status(409).send({
           cartsModified: [result.modified],

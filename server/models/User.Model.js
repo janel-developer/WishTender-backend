@@ -24,7 +24,7 @@ const { Schema } = mongoose;
 
 const userSchema = new Schema(
   {
-    // deleted: { type: Boolean, default: false },
+    deleted: { type: Boolean, default: false },
     fName: {
       type: String,
       trim: true,
@@ -35,12 +35,12 @@ const userSchema = new Schema(
     country: { type: String },
 
     email: {
-      unique: true,
+      // unique: true,
       type: String,
       required: true,
       trim: true,
       lowercase: true,
-      index: { unique: true },
+      index: { unique: true, partialFilterExpression: { deleted: false } },
       validate: {
         validator: emailValidator.validate,
         message: (props) => `${props.value} is not a valid email address.`,
@@ -103,7 +103,7 @@ userSchema.pre('remove', async function (next) {
   try {
     const AliasModel = require('./Alias.Model');
 
-    const alias = await AliasModel.findOne({ user: this._id });
+    const alias = await AliasModel.findOneWithDeleted({ user: this._id });
     if (alias) {
       alias.deleteOne();
       await profileImageService.delete(alias.profileImage);
@@ -111,28 +111,32 @@ userSchema.pre('remove', async function (next) {
 
     const StripeAccountInfoModel = require('./StripeAccountInfo.Model');
     if (this.stripeAccountInfo) {
-      const stripeAccountInfo = await StripeAccountInfoModel.findOne({ user: this._id });
+      const stripeAccountInfo = await StripeAccountInfoModel.findOneWithDeleted({ user: this._id });
       await StripeAccountInfoModel.deleteOne({ _id: this.stripeAccountInfo });
       const { stripeAccountId } = stripeAccountInfo;
       if (stripeAccountId) await stripeService.deleteAccount(stripeAccountId);
     }
     const WishlistModel = require('./Wishlist.Model');
-    const wishlist = await WishlistModel.findOne({ user: this._id });
-    if (wishlist) await wishlist.deleteOne();
-    await coverImageService.delete(wishlist.coverImage);
+    const wishlist = await WishlistModel.findOneWithDeleted({ user: this._id });
+    if (wishlist) {
+      await wishlist.deleteOne();
+      await coverImageService.delete(wishlist.coverImage);
+    }
 
     const WishlistItemModel = require('./WishlistItem.Model');
 
     const items = await WishlistItemModel.find({ user: this._id });
-    await new Promise((resolve) => {
-      let itemsUpdated = 0;
-      items.forEach(async (item) => {
-        await item.deleteOne();
-        if (!item.orders.length) await itemImageService.delete(item.itemImage);
-        itemsUpdated += 1;
-        if (itemsUpdated === items.length) resolve();
+    if (items.length) {
+      await new Promise((resolve) => {
+        let itemsUpdated = 0;
+        items.forEach(async (item) => {
+          await item.deleteOne();
+          if (!item.orders.length) await itemImageService.delete(item.itemImage);
+          itemsUpdated += 1;
+          if (itemsUpdated === items.length) resolve();
+        });
       });
-    });
+    }
     next();
   } catch (err) {
     throw new Error(`Problem removing user resources: ${err}`);
