@@ -99,7 +99,7 @@ module.exports = (config) => {
       store: new MongoStore({ mongooseConnection: mongoose.connection }),
       // proxy: true,
       cookie: {
-        maxAge: 1000, // this is the key;
+        maxAge: 7 * 24 * 60 * 60 * 1000, // this is the key;
         domain: getAcceptableDomain(req),
         // the REMOTE environment is a live environment but it is not necessarily production, ex a staging environment
         secure: !!(process.env.NODE_ENV === 'production' || process.env.REMOTE),
