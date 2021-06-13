@@ -125,8 +125,10 @@ module.exports = (config) => {
       // should match windowMs
       expireTimeMs: 15 * 60 * 1000,
       errorHandler: console.error.bind(null, 'rate-limit-mongo'),
+
       // see Configuration section for more options and details
     }),
+    message: 'Too many requests. Try again in 15 minutes.',
     max: 100,
     // should match expireTimeMs
     windowMs: 15 * 60 * 1000,
@@ -144,10 +146,10 @@ module.exports = (config) => {
     // console.log('req.cookies: ', req.cookies);
     // console.log('req.user: ', req.user);
 
-    // res.on('close', () => {
-    //   console.log('res.statusCode', res.statusCode);
-    //   console.log('res.statusMessage', res.statusMessage);
-    //   console.log('res.headers', res._headers);
+    // res.on('close', async () => {
+    // console.log('res.statusCode', res.statusCode);
+    // console.log('res.statusMessage', res.statusMessage);
+    // console.log('res.headers', res._headers);
     // });
     next();
   });

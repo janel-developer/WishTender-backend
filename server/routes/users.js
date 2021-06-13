@@ -41,8 +41,14 @@ module.exports = () => {
       // should match windowMs
       expireTimeMs: 15 * 60 * 1000,
       errorHandler: console.error.bind(null, 'rate-limit-mongo'),
+
       // see Configuration section for more options and details
     }),
+    message: 'Too many login attempts. Try again in 15 minutes.',
+    // message: {
+    //   status: 429,
+    //   error: 'You are doing that too much. Please try again in 10 minutes.',
+    // },
     max: 6,
     // should match expireTimeMs
     windowMs: 15 * 60 * 1000,
