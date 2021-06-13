@@ -1,10 +1,12 @@
 const express = require('express');
 const passport = require('passport');
+const RateMongoStore = require('rate-limit-mongo');
+const RateLimit = require('express-rate-limit');
+const { body, param, validationResult, sanitize } = require('express-validator');
 const UserModel = require('../models/User.Model');
 const UserService = require('../services/UserService');
 const AliasModel = require('../models/Alias.Model');
 const AliasService = require('../services/AliasService');
-const { body, param, validationResult, sanitize } = require('express-validator');
 const { onlyAllowInBodySanitizer } = require('./middlewares');
 
 const aliasService = new AliasService(AliasModel);
@@ -30,6 +32,21 @@ function throwIfNotAuthorized(req, res, next) {
 const userRoutes = express.Router();
 const userService = new UserService(UserModel);
 module.exports = () => {
+  const loginLimit = new RateLimit({
+    store: new RateMongoStore({
+      uri:
+        'mongodb+srv://dash:wish12345@wtdev.z6ucx.mongodb.net/myFirstDatabase?retryWrites=true&w=majority',
+      // user: 'mongouser',
+      // password: 'mongopassword',
+      // should match windowMs
+      expireTimeMs: 15 * 60 * 1000,
+      errorHandler: console.error.bind(null, 'rate-limit-mongo'),
+      // see Configuration section for more options and details
+    }),
+    max: 6,
+    // should match expireTimeMs
+    windowMs: 15 * 60 * 1000,
+  });
   /*
    * POST /login
    * {email: String, password: String}
@@ -40,6 +57,7 @@ module.exports = () => {
    */
   userRoutes.post(
     '/login',
+    loginLimit,
     passport.authenticate('local', {
       successRedirect: '/api/users/login?error=false',
       failureRedirect: '/api/users/login?error=true',

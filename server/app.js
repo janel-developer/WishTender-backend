@@ -115,6 +115,7 @@ module.exports = (config) => {
   app.use(auth.session);
 
   // --------------rate limiter------------
+
   const limiter = new RateLimit({
     store: new RateMongoStore({
       uri:
@@ -134,21 +135,6 @@ module.exports = (config) => {
   //  apply to all requests
   app.use(limiter);
 
-  // const loginLimit = new RateLimit({
-  //   store: new RateMongoStore({
-  //     uri: mongoose.connection,
-  //     // user: 'mongouser',
-  //     // password: 'mongopassword',
-  //     // should match windowMs
-  //     expireTimeMs: 15 * 60 * 1000,
-  //     errorHandler: console.error.bind(null, 'rate-limit-mongo'),
-  //     // see Configuration section for more options and details
-  //   }),
-  //   max: 100,
-  //   // should match expireTimeMs
-  //   windowMs: 15 * 60 * 1000,
-  // });
-
   // --------------------------------------
 
   app.use((req, res, next) => {
@@ -158,11 +144,11 @@ module.exports = (config) => {
     // console.log('req.cookies: ', req.cookies);
     // console.log('req.user: ', req.user);
 
-    res.on('close', () => {
-      // console.log('res.statusCode', res.statusCode);
-      // console.log('res.statusMessage', res.statusMessage);
-      // console.log('res.headers', res._headers);
-    });
+    // res.on('close', () => {
+    //   console.log('res.statusCode', res.statusCode);
+    //   console.log('res.statusMessage', res.statusMessage);
+    //   console.log('res.headers', res._headers);
+    // });
     next();
   });
   app.use(auth.setUser);
