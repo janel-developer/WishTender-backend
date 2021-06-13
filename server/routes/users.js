@@ -49,7 +49,7 @@ module.exports = () => {
     //   status: 429,
     //   error: 'You are doing that too much. Please try again in 10 minutes.',
     // },
-    max: 6,
+    max: 12,
     // should match expireTimeMs
     windowMs: 15 * 60 * 1000,
   });
