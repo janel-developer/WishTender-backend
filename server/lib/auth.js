@@ -24,7 +24,7 @@ passport.use(
         const passwordOK = await user.comparePassword(password);
         if (!passwordOK) {
           logger.log(`silly`, `Invalid Password`);
-          return done(null, false, { message: 'Invalid Password.' });
+          return done(null, false, { message: `Invalid Password` });
         }
         return done(null, user);
       } catch (err) {
