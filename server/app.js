@@ -4,10 +4,12 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const flash = require('connect-flash');
 const expressValidator = require('express-validator');
+const RateLimit = require('express-rate-limit');
+const RateMongoStore = require('rate-limit-mongo');
 const { getAcceptableDomain, isLocalhost, isPhoneDebugging } = require('./utils/utils');
 
 const session = require('express-session');
-const MongoStore = require('connect-mongo')(session);
+const SessionMongoStore = require('connect-mongo')(session);
 const cookieParser = require('cookie-parser');
 require('dotenv').config({ path: `${__dirname}/./../../.env` });
 const stripe = require('stripe')(
@@ -96,7 +98,7 @@ module.exports = (config) => {
       secret: process.env.SESSION_SECRET, // to do, make environment variable for production
       resave: true,
       saveUninitialized: false,
-      store: new MongoStore({ mongooseConnection: mongoose.connection }),
+      store: new SessionMongoStore({ mongooseConnection: mongoose.connection }),
       // proxy: true,
       cookie: {
         maxAge: 7 * 24 * 60 * 60 * 1000, // this is the key;
@@ -111,6 +113,43 @@ module.exports = (config) => {
 
   app.use(auth.initialize);
   app.use(auth.session);
+
+  // --------------rate limiter------------
+  const limiter = new RateLimit({
+    store: new RateMongoStore({
+      uri:
+        'mongodb+srv://dash:wish12345@wtdev.z6ucx.mongodb.net/myFirstDatabase?retryWrites=true&w=majority',
+      // user: 'mongouser',
+      // password: 'mongopassword',
+      // should match windowMs
+      expireTimeMs: 15 * 60 * 1000,
+      errorHandler: console.error.bind(null, 'rate-limit-mongo'),
+      // see Configuration section for more options and details
+    }),
+    max: 100,
+    // should match expireTimeMs
+    windowMs: 15 * 60 * 1000,
+  });
+
+  //  apply to all requests
+  app.use(limiter);
+
+  // const loginLimit = new RateLimit({
+  //   store: new RateMongoStore({
+  //     uri: mongoose.connection,
+  //     // user: 'mongouser',
+  //     // password: 'mongopassword',
+  //     // should match windowMs
+  //     expireTimeMs: 15 * 60 * 1000,
+  //     errorHandler: console.error.bind(null, 'rate-limit-mongo'),
+  //     // see Configuration section for more options and details
+  //   }),
+  //   max: 100,
+  //   // should match expireTimeMs
+  //   windowMs: 15 * 60 * 1000,
+  // });
+
+  // --------------------------------------
 
   app.use((req, res, next) => {
     req.session.p = 1;
