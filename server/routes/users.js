@@ -68,9 +68,12 @@ module.exports = () => {
     return res.status(401).send({ message: flashmsg });
   });
 
-  userRoutes.post('/logout', (req, res) => {
+  userRoutes.post('/logout', async (req, res) => {
     logger.log('silly', `logging out`);
+    req.session.destroy();
+    // req.session.cookie.expires = new Date().getTime();
     req.logout();
+
     return res.status(201).send();
   });
 

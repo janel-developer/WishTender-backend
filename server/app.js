@@ -93,13 +93,15 @@ module.exports = (config) => {
 
   app.use((req, res, next) =>
     session({
-      secret: 'very secret 12345', // to do, make environment variable for production
+      secret: process.env.SESSION_SECRET, // to do, make environment variable for production
       resave: true,
       saveUninitialized: false,
       store: new MongoStore({ mongooseConnection: mongoose.connection }),
       // proxy: true,
       cookie: {
+        maxAge: 7 * 24 * 60 * 60 * 1000, // this is the key;
         domain: getAcceptableDomain(req),
+        // the REMOTE environment is a live environment but it is not necessarily production, ex a staging environment
         secure: !!(process.env.NODE_ENV === 'production' || process.env.REMOTE),
         httpOnly: true,
         sameSite: process.env.NODE_ENV === 'production' || process.env.REMOTE ? 'none' : true,
