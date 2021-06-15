@@ -146,11 +146,11 @@ module.exports = (config) => {
     // console.log('req.cookies: ', req.cookies);
     // console.log('req.user: ', req.user);
 
-    res.on('close', async () => {
-      console.log('res.statusCode', res.statusCode);
-      console.log('res.statusMessage', res.statusMessage);
-      console.log('res.headers', res._headers);
-    });
+    // res.on('close', async () => {
+    //   console.log('res.statusCode', res.statusCode);
+    //   console.log('res.statusMessage', res.statusMessage);
+    //   console.log('res.headers', res._headers);
+    // });
     next();
   });
   app.use(auth.setUser);
