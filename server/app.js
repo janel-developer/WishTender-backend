@@ -22,6 +22,7 @@ const auth = require('./lib/auth');
 const handleError = require('./lib/handleError');
 const logger = require('./lib/logger');
 const routes = require('./routes');
+const { Router } = require('express');
 
 if (process.env.NODE_ENV === 'production') {
   process.env.FRONT_BASEURL = 'https://www.wishtender.com/';

@@ -1,4 +1,5 @@
 const express = require('express');
+const csrf = require('csurf');
 const wishRoutes = require('./wishes');
 const userRoutes = require('./users');
 const aliasRoutes = require('./aliases');
@@ -13,8 +14,15 @@ const confirmation = require('./confirmation');
 const exchange = require('./exchange');
 const resetPasswordRoutes = require('./resetPassword');
 
+const csrfProtection = csrf();
+
 const router = express.Router();
 module.exports = () => {
+  router.use(csrfProtection);
+  router.use('/x', (r, re, n) => {
+    re.send({ csrfToken: r.csrfToken() });
+  });
+
   router.use('/wishes', wishRoutes());
 
   router.use('/users', userRoutes());
