@@ -18,8 +18,9 @@ const csrfProtection = csrf();
 
 const router = express.Router();
 module.exports = () => {
-  router.use(csrfProtection);
-  router.use('/x', (r, re, n) => {
+  // router.use(csrfProtection);
+
+  router.post('/x', (r, re, n) => {
     re.send({ csrfToken: r.csrfToken() });
   });
 

@@ -2,6 +2,8 @@ const ConfirmationEmail = require('../lib/email/ConfirmationEmail');
 const { ApplicationError } = require('../lib/Error');
 const logger = require('../lib/logger');
 const Token = require('../models/Token.Model');
+const csrf = require('csurf');
+
 const ConfirmationEmailService = require('./ConfirmationEmailService');
 const confirmationEmailService = new ConfirmationEmailService();
 /**

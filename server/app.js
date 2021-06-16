@@ -3,26 +3,20 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const flash = require('connect-flash');
-const expressValidator = require('express-validator');
 const RateLimit = require('express-rate-limit');
 const RateMongoStore = require('rate-limit-mongo');
-const { getAcceptableDomain, isLocalhost, isPhoneDebugging } = require('./utils/utils');
+const { getAcceptableDomain, isPhoneDebugging } = require('./utils/utils');
 
 const session = require('express-session');
 const SessionMongoStore = require('connect-mongo')(session);
 const cookieParser = require('cookie-parser');
 require('dotenv').config({ path: `${__dirname}/./../../.env` });
-const stripe = require('stripe')(
-  process.env.NODE_END === 'production'
-    ? process.env.STRIPE_SECRET_KEY
-    : process.env.STRIPE_SECRET_TEST_KEY
-);
+
 const setLocaleCookie = require('./lib/setLocaleCookie');
 const auth = require('./lib/auth');
 const handleError = require('./lib/handleError');
 const logger = require('./lib/logger');
 const routes = require('./routes');
-const { Router } = require('express');
 
 if (process.env.NODE_ENV === 'production') {
   process.env.FRONT_BASEURL = 'https://www.wishtender.com/';
@@ -172,9 +166,6 @@ module.exports = (config) => {
     }
   });
 
-  app.get('/api/k', (req, res, next) => {
-    res.status(201).send({ user: 90 });
-  });
   app.use('/api', routes());
   app.set('views', __dirname + '/views');
   app.set('view engine', 'pug');

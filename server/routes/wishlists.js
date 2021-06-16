@@ -124,17 +124,19 @@ module.exports = () => {
       return res.sendStatus(200);
     }
   );
-  wishlistRoutes.delete('/:id', authUserOwnsWishlist, async (req, res, next) => {
-    logger.log('silly', `deleting wishlist by id`);
-    const { id } = req.params;
-    let wishlist;
-    try {
-      wishlist = await wishlistService.deleteWishlist(id);
-    } catch (err) {
-      return next(err);
-    }
-    return res.json(wishlist);
-  });
+
+  // this isn't used anywhere
+  //   wishlistRoutes.delete('/:id', authUserOwnsWishlist, async (req, res, next) => {
+  //     logger.log('silly', `deleting wishlist by id`);
+  //     const { id } = req.params;
+  //     let wishlist;
+  //     try {
+  //       wishlist = await wishlistService.deleteWishlist(id);
+  //     } catch (err) {
+  //       return next(err);
+  //     }
+  //     return res.json(wishlist);
+  //   });
 
   return wishlistRoutes;
 };
