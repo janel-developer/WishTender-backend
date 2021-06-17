@@ -1,22 +1,17 @@
 const express = require('express');
-const bodyParser = require('body-parser');
+// const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const flash = require('connect-flash');
-const expressValidator = require('express-validator');
 const RateLimit = require('express-rate-limit');
 const RateMongoStore = require('rate-limit-mongo');
-const { getAcceptableDomain, isLocalhost, isPhoneDebugging } = require('./utils/utils');
+const { getAcceptableDomain, isPhoneDebugging } = require('./utils/utils');
 
 const session = require('express-session');
 const SessionMongoStore = require('connect-mongo')(session);
 const cookieParser = require('cookie-parser');
 require('dotenv').config({ path: `${__dirname}/./../../.env` });
-const stripe = require('stripe')(
-  process.env.NODE_END === 'production'
-    ? process.env.STRIPE_SECRET_KEY
-    : process.env.STRIPE_SECRET_TEST_KEY
-);
+
 const setLocaleCookie = require('./lib/setLocaleCookie');
 const auth = require('./lib/auth');
 const handleError = require('./lib/handleError');
@@ -86,8 +81,9 @@ module.exports = (config) => {
   });
 
   app.use(express.static(`${__dirname}/public`));
-  app.use(bodyParser.json());
-  app.use(bodyParser.urlencoded({ extended: true }));
+  // app.use(bodyParser.json());
+  // app.use(bodyParser.urlencoded({ extended: true }));
+  app.use(express.json());
   app.use(cookieParser());
   app.use(setLocaleCookie);
 
@@ -146,11 +142,11 @@ module.exports = (config) => {
     // console.log('req.cookies: ', req.cookies);
     // console.log('req.user: ', req.user);
 
-    res.on('close', async () => {
-      console.log('res.statusCode', res.statusCode);
-      console.log('res.statusMessage', res.statusMessage);
-      console.log('res.headers', res._headers);
-    });
+    // res.on('close', async () => {
+    //   console.log('res.statusCode', res.statusCode);
+    //   console.log('res.statusMessage', res.statusMessage);
+    //   console.log('res.headers', res._headers);
+    // });
     next();
   });
   app.use(auth.setUser);
@@ -171,9 +167,6 @@ module.exports = (config) => {
     }
   });
 
-  app.get('/api/k', (req, res, next) => {
-    res.status(201).send({ user: 90 });
-  });
   app.use('/api', routes());
   app.set('views', __dirname + '/views');
   app.set('view engine', 'pug');

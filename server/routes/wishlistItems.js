@@ -1,4 +1,8 @@
 const express = require('express');
+const csrf = require('csurf');
+
+const csrfProtection = csrf();
+
 const passport = require('passport');
 const WishlistItemModel = require('../models/WishlistItem.Model');
 const WishlistItemService = require('../services/WishlistItemService');
@@ -64,6 +68,7 @@ async function throwIfNotAuthorizedResource(req, res, next) {
 module.exports = () => {
   wishlistItemRoutes.post(
     '/',
+    csrfProtection,
     throwIfNotAuthorizedResource,
     middlewares.onlyAllowInBodySanitizer([
       'itemName',
@@ -99,6 +104,7 @@ module.exports = () => {
 
   wishlistItemRoutes.patch(
     '/:id',
+    csrfProtection,
     middlewares.onlyAllowInBodySanitizer([
       'itemName',
       'imageCrop',

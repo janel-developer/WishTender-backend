@@ -1,7 +1,8 @@
 const express = require('express');
+const csrf = require('csurf');
+const csrfProtection = csrf();
+
 const passport = require('passport');
-const RateMongoStore = require('rate-limit-mongo');
-const RateLimit = require('express-rate-limit');
 const { RateLimiterMongo } = require('rate-limiter-flexible');
 const mongoose = require('mongoose');
 
@@ -157,13 +158,14 @@ module.exports = () => {
     }
   );
 
-  userRoutes.get('/current', async (req, res, next) => {
+  userRoutes.get('/current', csrfProtection, async (req, res, next) => {
     logger.log('silly', `getting current user`);
 
     let user;
     if (req.user) {
       user = req.user.toJSON();
       logger.log('silly', JSON.stringify(user));
+      user.csrfToken = req.csrfToken();
       return res.status(200).send(user);
     }
     logger.log('silly', `no user`);
