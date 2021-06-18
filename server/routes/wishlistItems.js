@@ -115,7 +115,14 @@ module.exports = () => {
     ]),
     // to do : validate currency
     throwIfNotAuthorizedResource,
+    (req, res, next) => {
+      next();
+    },
     middlewares.upload.single('image'),
+
+    (req, res, next) => {
+      next();
+    },
     (req, res, next) => {
       if (!Object.keys(req.body).length && !req.file) {
         return next(new ApplicationError({}, 'No data submitted.'));

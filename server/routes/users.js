@@ -53,26 +53,42 @@ module.exports = () => {
    *
    * authenticates user
    *
-   * res 200
+   * res redirect
    */
   userRoutes.post(
     '/login',
-    // loginLimit,
-    (req, res, next) => {
-      passport.authenticate('local', {
-        successRedirect: '/api/users/login?error=false',
-        failureRedirect: `/api/users/login?error=true&email=${req.body.email}`,
-        failureFlash: true,
-      })(req, res, next);
+    onlyAllowInBodySanitizer(['password', 'email']),
+
+    // login limits set in redirect
+    async (req, res, next) => {
+      passport.authenticate(
+        'local',
+        {
+          successRedirect: '/api/users/login?error=false',
+          failureRedirect: `/api/users/login?error=true&email=${req.body.email}`,
+          failureFlash: true,
+        },
+        async (err, account) => {
+          const msg = req.flash('error')[0];
+          const { email } = req.email;
+          if (email) {
+            const rlResUsername = await limiterConsecutiveFailsByUsername.get(email);
+            if (rlResUsername !== null && rlResUsername.consumedPoints > maxFails) {
+              const retrySecs = Math.round(rlResUsername.msBeforeNext / 1000) || 1;
+              res.set('Retry-After', String(retrySecs));
+              return res.status(429).send({
+                message: `Too many login attempts. Try again in ${Math.round(
+                  retrySecs / 60
+                )} minutes.`,
+              });
+            }
+          }
+          req.logIn(account, function () {
+            res.status(err ? 500 : 200).send(err ? err : account);
+          });
+        }
+      )(req, res, next);
     }
-    // (req, res, next) => {
-    //   // const flashMsg = req.flash('error');
-    //   // if (flashMsg.length) {
-    //   //   return res.status(401).send({ error: flashMsg });
-    //   // }
-    //   // return res.sendStatus(201);
-    //   next();
-    // }
   );
 
   userRoutes.get('/login', async (req, res) => {
