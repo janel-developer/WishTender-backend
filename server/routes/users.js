@@ -70,7 +70,7 @@ module.exports = () => {
         },
         async (err, account) => {
           const msg = req.flash('error')[0];
-          const { email } = req.email;
+          const { email } = req.body;
           if (email) {
             const rlResUsername = await limiterConsecutiveFailsByUsername.get(email);
             if (rlResUsername !== null && rlResUsername.consumedPoints > maxFails) {
@@ -83,8 +83,30 @@ module.exports = () => {
               });
             }
           }
-          req.logIn(account, function () {
-            res.status(err ? 500 : 200).send(err ? err : account);
+          if (msg) {
+            try {
+              if (email) await limiterConsecutiveFailsByUsername.consume(email);
+
+              return res.status(401).send({ message: msg });
+            } catch (rlRejected) {
+              if (rlRejected instanceof Error) {
+                throw rlRejected;
+              } else {
+                res.set('Retry-After', String(Math.round(rlRejected.msBeforeNext / 1000)) || 1);
+                return res.status(429).send({
+                  message: `Too many login attempts. Try again in ${Math.round(
+                    rlRejected.msBeforeNext / 1000 / 60
+                  )} minutes.`,
+                });
+              }
+            }
+          }
+          if (err) {
+            throw err;
+          }
+          req.logIn(account, async () => {
+            const alias = await aliasService.getAliasById(req.user.aliases[0]);
+            return res.status(200).send({ profile: alias.handle_lowercased });
           });
         }
       )(req, res, next);
