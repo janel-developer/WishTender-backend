@@ -1,5 +1,6 @@
 const express = require('express');
-const passport = require('passport');
+const { body, param, validationResult } = require('express-validator');
+
 const AliasModel = require('../models/Alias.Model');
 const AliasService = require('../services/AliasService');
 const logger = require('../lib/logger');
@@ -57,10 +58,38 @@ const defaultCurrencies = {
   US: 'usd',
 };
 
+const frontEndRoutes = [
+  '/betathankyou',
+  '/demo',
+  '/sign-up',
+  '/email',
+  '/wishlist-setup',
+  '/order',
+  '/login',
+  '/logout',
+  '/test',
+  '/cart',
+  '/request-password-reset',
+  '/reset-password',
+  '/connect-success',
+  '/wish-tracker',
+  '/confirmation-email',
+  '/confirm-email',
+  '/account-settings',
+  '/:alias',
+  '/',
+];
+const throwIfExpressValidatorError = (req, res, next) => {
+  const errors = validationResult(req).array();
+  if (errors.length) {
+    return res.status(400).send({ errors });
+  }
+  return next();
+};
 function authLoggedIn(req, res, next) {
   logger.log('silly', `authorizing logged in user exists...`);
   if (!req.user) {
-    return res.status(403).send(`No user logged`);
+    return res.status(401).send(`No user logged`);
   }
   return next();
 }
@@ -104,11 +133,27 @@ async function authUserHasNoAlias(req, res, next) {
   return next();
 }
 
+const authUserFromQuery = (req, res, next) => {
+  if (req.query.user) {
+    if (!req.user || req.query.user !== req.user._id.toString()) {
+      return res.status(403).send({
+        message: `You are not authorized to view this alias.`,
+      });
+    }
+  }
+  return next();
+};
+
 module.exports = () => {
   aliasRoutes.post(
     '/',
     middlewares.onlyAllowInBodySanitizer(['handle', 'country', 'aliasName']),
-
+    body('handle', "Your handle can only contain letters, numbers, '_', or '-'").matches(
+      /^[0-9A-Za-z_-]+$/,
+      'i'
+    ),
+    body('handle', 'This handle is not allowed').custom((handle) => frontEndRoutes.include(handle)),
+    throwIfExpressValidatorError,
     authLoggedIn,
     authUserHasNoAlias,
     authCountrySupported,
@@ -117,11 +162,9 @@ module.exports = () => {
       try {
         const currency = defaultCurrencies[req.body.country];
         const values = { ...req.body };
-        delete values.user;
         values.currency = currency.toUpperCase();
         let alias = await aliasService.addAlias(req.user._id, values);
         logger.log('silly', `alias created`);
-
         await wishlistService.addWishlist(alias._id, {
           user: req.user._id,
           wishlistName: `${alias.aliasName}'s Wishlist`,
@@ -134,24 +177,14 @@ module.exports = () => {
       }
     }
   );
-
   aliasRoutes.get(
     '/',
-    (req, res, next) => {
-      // we don't want people to be able to associate a user with an alias
-      if (req.query.user) {
-        if (!req.user || req.query.user !== req.user._id.toString()) {
-          return res.status(401).send({
-            message: `User must be signed in to get alias.`,
-          });
-        }
-      }
-      return next();
-    },
+    authLoggedIn,
+    // we don't want people to be able to associate a user with an alias that isn't theirs
+    authUserFromQuery,
     async (req, res, next) => {
       logger.log('silly', `getting alias by query params`);
       const { query } = req;
-
       let alias;
       try {
         alias = await aliasService.getAlias(query);
@@ -175,18 +208,18 @@ module.exports = () => {
       return res.status(200).send(aliasCopy);
     }
   );
-
   aliasRoutes.patch(
     '/:id',
-    (r, s, n) => {
-      console.log(r.params);
-      return n();
-    },
     middlewares.onlyAllowInBodySanitizer(['handle', 'aliasName']),
-    (r, s, n) => {
-      console.log(r.params);
-      return n();
-    },
+    body('handle', "Your handle can only contain letters, numbers, '_', or '-'")
+      .optional()
+      .matches(/^[0-9A-Za-z_-]+$/, 'i'),
+
+    body('handle', 'This handle is not allowed')
+      .optional()
+      .custom((handle) => frontEndRoutes.include(handle)),
+    throwIfExpressValidatorError,
+    authLoggedIn,
     authUserOwnsAlias,
     middlewares.upload.single('image'),
     middlewares.handleImage(imageService, { h: 300, w: 300 }),
@@ -221,6 +254,5 @@ module.exports = () => {
   //   }
   //   return res.json(alias);
   // });
-
   return aliasRoutes;
 };
