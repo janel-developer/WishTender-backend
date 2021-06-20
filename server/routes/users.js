@@ -66,8 +66,6 @@ module.exports = () => {
       }
       return next();
     },
-
-    // login limits set in redirect
     async (req, res, next) => {
       passport.authenticate(
         'local',
@@ -142,6 +140,13 @@ module.exports = () => {
 
     body('email', `No email is included.`).exists(),
     body('password', `No password is included.`).exists(),
+    (req, res, next) => {
+      const errors = validationResult(req).array();
+      if (errors.length) {
+        return res.status(400).send({ errors });
+      }
+      return next();
+    },
     async (req, res, next) => {
       logger.log('silly', `registering user`);
       let user;
