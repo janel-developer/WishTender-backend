@@ -1,10 +1,14 @@
 const express = require('express');
 // const bodyParser = require('body-parser');
 const cors = require('cors');
+const helmet = require('helmet');
+
 const mongoose = require('mongoose');
 const flash = require('connect-flash');
 const RateLimit = require('express-rate-limit');
 const RateMongoStore = require('rate-limit-mongo');
+const mongoSanitize = require('express-mongo-sanitize');
+
 const { getAcceptableDomain, isPhoneDebugging } = require('./utils/utils');
 
 const session = require('express-session');
@@ -83,9 +87,12 @@ module.exports = (config) => {
   app.use(express.static(`${__dirname}/public`));
   // app.use(bodyParser.json());
   // app.use(bodyParser.urlencoded({ extended: true }));
-  app.use(express.json());
+  app.use(express.json({ limit: '10kb' }));
   app.use(cookieParser());
   app.use(setLocaleCookie);
+
+  app.use(mongoSanitize());
+  app.use(helmet());
 
   // Use the session middleware
 
@@ -116,17 +123,12 @@ module.exports = (config) => {
     store: new RateMongoStore({
       uri:
         'mongodb+srv://dash:wish12345@wtdev.z6ucx.mongodb.net/myFirstDatabase?retryWrites=true&w=majority',
-      // user: 'mongouser',
-      // password: 'mongopassword',
-      // should match windowMs
+
       expireTimeMs: 15 * 60 * 1000,
       errorHandler: console.error.bind(null, 'rate-limit-mongo'),
-
-      // see Configuration section for more options and details
     }),
     message: 'Too many requests. Try again in 15 minutes.',
     max: 100,
-    // should match expireTimeMs
     windowMs: 15 * 60 * 1000,
   });
 

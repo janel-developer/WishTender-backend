@@ -58,6 +58,14 @@ module.exports = () => {
   userRoutes.post(
     '/login',
     onlyAllowInBodySanitizer(['password', 'email']),
+    body('order.buyerInfo.email', `Invalid email.`).isEmail(),
+    (req, res, next) => {
+      const errors = validationResult(req).array();
+      if (errors.length) {
+        return res.status(400).send({ errors });
+      }
+      return next();
+    },
 
     // login limits set in redirect
     async (req, res, next) => {
@@ -93,6 +101,14 @@ module.exports = () => {
                 throw rlRejected;
               } else {
                 res.set('Retry-After', String(Math.round(rlRejected.msBeforeNext / 1000)) || 1);
+                logger.log(
+                  'warn',
+                  `rate limited logins IP ${
+                    (req.headers['x-forwarded-for'] &&
+                      req.headers['x-forwarded-for'].split(',').shift()) ||
+                    (req.socket && req.socket.remoteAddress)
+                  }`
+                );
                 return res.status(429).send({
                   message: `Too many login attempts. Try again in ${Math.round(
                     rlRejected.msBeforeNext / 1000 / 60
@@ -113,61 +129,10 @@ module.exports = () => {
     }
   );
 
-  userRoutes.get('/login', async (req, res) => {
-    logger.log('silly', `sending login response`);
-
-    const msg = req.flash('error')[0];
-    const { email } = req.query;
-    if (email) {
-      const rlResUsername = await limiterConsecutiveFailsByUsername.get(email);
-      if (rlResUsername !== null && rlResUsername.consumedPoints > maxFails) {
-        const retrySecs = Math.round(rlResUsername.msBeforeNext / 1000) || 1;
-        res.set('Retry-After', String(retrySecs));
-        return res.status(429).send({
-          message: `Too many login attempts. Try again in ${Math.round(retrySecs / 60)} minutes.`,
-        });
-      }
-    }
-
-    if (req.query.error === 'true') {
-      try {
-        if (email) await limiterConsecutiveFailsByUsername.consume(email);
-
-        return res.status(401).send({ message: msg });
-      } catch (rlRejected) {
-        if (rlRejected instanceof Error) {
-          throw rlRejected;
-        } else {
-          res.set('Retry-After', String(Math.round(rlRejected.msBeforeNext / 1000)) || 1);
-          return res.status(429).send({
-            message: `Too many login attempts. Try again in ${Math.round(
-              rlRejected.msBeforeNext / 1000 / 60
-            )} minutes.`,
-          });
-        }
-      }
-    }
-
-    // if (rlResUsername !== null && rlResUsername.consumedPoints > 0) {
-    //   // Reset on successful authorisation
-    //   await limiterConsecutiveFailsByUsername.delete(username);
-    // }
-
-    if (req.query.error === 'false') {
-      if (!req.user.aliases[0]) {
-        res.status(200).send({ profile: null });
-      }
-      const alias = await aliasService.getAliasById(req.user.aliases[0]);
-      return res.status(200).send({ profile: alias.handle_lowercased });
-    }
-  });
-
   userRoutes.post('/logout', async (req, res) => {
     logger.log('silly', `logging out`);
     req.session.destroy();
-    // req.session.cookie.expires = new Date().getTime();
     req.logout();
-
     return res.status(201).send();
   });
 
@@ -196,44 +161,48 @@ module.exports = () => {
     }
   );
 
+  // csrfProtection to send csrf token
+
   userRoutes.get('/current', csrfProtection, async (req, res, next) => {
     logger.log('silly', `getting current user`);
 
     let user;
     if (req.user) {
       user = req.user.toJSON();
-      logger.log('silly', JSON.stringify(user));
+      // logger.log('silly', JSON.stringify(user));
       user.csrfToken = req.csrfToken();
       return res.status(200).send(user);
     }
-    logger.log('silly', `no user`);
-    res.sendStatus(204);
-  });
-  userRoutes.get('/hd', async (req, res, next) => {
-    const user = await UserModel.findOneWithDeleted({ _id: '60bd7714662a8352356e4c71' });
-    await user.remove();
-    // await userService.hardDeleteUser('60bd7714662a8352356e4c71');
+    // logger.log('silly', `no user`);
     res.sendStatus(204);
   });
 
-  userRoutes.get('/:id', async (req, res, next) => {
-    logger.log('silly', `getting user by id`);
+  // userRoutes.get('/hardDelete', async (req, res, next) => {
+  //   const user = await UserModel.findOneWithDeleted({ _id: '60bd7714662a8352356e4c71' });
+  //   await user.remove();
+  //   // await userService.hardDeleteUser('60bd7714662a8352356e4c71');
+  //   res.sendStatus(204);
+  // });
 
-    const { id } = req.params;
-    let user;
-    try {
-      user = await userService.getUser(id);
-    } catch (err) {
-      return next(err);
-    }
+  // userRoutes.get('/:id', async (req, res, next) => {
+  //   logger.log('silly', `getting user by id`);
 
-    return res.json(user); // res.json(user) ?
-  });
+  //   const { id } = req.params;
+  //   let user;
+  //   try {
+  //     user = await userService.getUser(id);
+  //   } catch (err) {
+  //     return next(err);
+  //   }
+
+  //   return res.json(user); // res.json(user) ?
+  // });
 
   userRoutes.patch(
     '/',
 
     onlyAllowInBodySanitizer(['password', 'email']),
+    body('order.buyerInfo.email', `Invalid email.`).isEmail(),
 
     body('email', `Password must be included to update email.`).custom(
       (email, { req }) => !!req.body.password
@@ -255,6 +224,7 @@ module.exports = () => {
         .run(req);
       next();
     },
+
     (req, res, next) => {
       const errors = validationResult(req).array();
       if (errors.length) {
@@ -262,12 +232,10 @@ module.exports = () => {
       }
       return next();
     },
-    (req, res, next) => {
-      const errors = validationResult(req).array();
-      if (errors.length) {
-        return res.status(400).send({ errors });
-      }
-      return next();
+    async (req, res, next) => {
+      delete req.body.password;
+      await userService.updateUser(req.user._id, req.body);
+      return res.status(200).send();
     }
   );
 
