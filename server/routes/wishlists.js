@@ -104,7 +104,6 @@ module.exports = () => {
     authUserOwnsWishlist,
     middlewares.onlyAllowInBodySanitizer(['wishlistMessage', 'wishlistName']),
     body('wishlistMessage', `Must not exceed 160 characters.`).isLength({ max: 160 }),
-
     body('wishlistName', `Must not exceed 50 characters.`).isLength({ max: 50 }),
     middlewares.throwIfExpressValidatorError,
     middlewares.upload.single('image'),

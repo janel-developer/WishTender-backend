@@ -18,12 +18,6 @@ const csrfProtection = csrf();
 
 const router = express.Router();
 module.exports = () => {
-  // router.use(csrfProtection);
-
-  router.post('/x', (r, re, n) => {
-    re.send({ csrfToken: r.csrfToken() });
-  });
-
   router.use('/wishes', wishRoutes());
 
   router.use('/users', userRoutes());

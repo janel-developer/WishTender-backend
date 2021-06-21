@@ -204,7 +204,7 @@ class WishlistItemService {
   }
 
   /**
-   * deletes a wishlist item entirely
+   * soft deletes a wishlist item entirely
    *
    *@param {string} id the wishlist item id
    *
@@ -218,7 +218,11 @@ class WishlistItemService {
       throw new ApplicationError({ id, err }, `Couldn't delete wishlist item. Item not found.`);
     }
     try {
-      await item.remove();
+      // // hard
+      // if (!item.orders.length) await item.remove();
+      // // soft
+      // else
+      await item.delete();
     } catch (err) {
       console.log(err);
       throw new ApplicationError({ id, err }, `Couldn't delete wishlist item.${err}`);
