@@ -111,7 +111,7 @@ function authUser(req, res, next) {
   return next();
 }
 
-async function authUserOwnsAlias(req, res, next) {
+async function authUserOwnsAliasInParam(req, res, next) {
   logger.log('silly', `authorizing user owns resource...`);
 
   // should authorize that user of alias is req.user
@@ -220,7 +220,7 @@ module.exports = () => {
       .custom((handle) => frontEndRoutes.include(handle)),
     throwIfExpressValidatorError,
     authLoggedIn,
-    authUserOwnsAlias,
+    authUserOwnsAliasInParam,
     middlewares.upload.single('image'),
     middlewares.handleImage(imageService, { h: 300, w: 300 }),
     async (req, res, next) => {
