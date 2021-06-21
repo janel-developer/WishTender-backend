@@ -1,5 +1,7 @@
 const express = require('express');
 const passport = require('passport');
+const { body, param, validationResult } = require('express-validator');
+
 const WishlistModel = require('../models/Wishlist.Model');
 const WishlistService = require('../services/WishlistService');
 const AliasModel = require('../models/Alias.Model');
@@ -63,7 +65,7 @@ async function authUserOwnsWishlist(req, res, next) {
 module.exports = () => {
   // ----
   // The `wishlistRoutes.post('/'` route is not necessary yet. Wishlists cannot be created on
-  // their own in the first release of WishTender. Instead one default wishlist is
+  // their own in the first release of WishTender. Instead, one default wishlist is
   // created when the account us set up.
   // -----
   // wishlistRoutes.post('/', throwIfNotAuthorizedResource, async (req, res, next) => {
@@ -98,8 +100,13 @@ module.exports = () => {
 
   wishlistRoutes.patch(
     '/:id',
+    authUserLoggedIn,
     authUserOwnsWishlist,
     middlewares.onlyAllowInBodySanitizer(['wishlistMessage', 'wishlistName']),
+    body('wishlistMessage', `Must not exceed 160 characters.`).isLength({ max: 160 }),
+
+    body('wishlistName', `Must not exceed 50 characters.`).isLength({ max: 50 }),
+    middlewares.throwIfExpressValidatorError,
     middlewares.upload.single('image'),
     middlewares.handleImage(imageService, { h: 180, w: 600 }),
     async (req, res, next) => {

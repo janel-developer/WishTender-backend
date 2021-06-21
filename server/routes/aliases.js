@@ -79,13 +79,7 @@ const frontEndRoutes = [
   '/:alias',
   '/',
 ];
-const throwIfExpressValidatorError = (req, res, next) => {
-  const errors = validationResult(req).array();
-  if (errors.length) {
-    return res.status(400).send({ errors });
-  }
-  return next();
-};
+
 function authLoggedIn(req, res, next) {
   logger.log('silly', `authorizing logged in user exists...`);
   if (!req.user) {
@@ -153,7 +147,7 @@ module.exports = () => {
       'i'
     ),
     body('handle', 'This handle is not allowed').custom((handle) => frontEndRoutes.include(handle)),
-    throwIfExpressValidatorError,
+    middlewares.throwIfExpressValidatorError,
     authLoggedIn,
     authUserHasNoAlias,
     authCountrySupported,
@@ -218,7 +212,7 @@ module.exports = () => {
     body('handle', 'This handle is not allowed')
       .optional()
       .custom((handle) => frontEndRoutes.include(handle)),
-    throwIfExpressValidatorError,
+    middlewares.throwIfExpressValidatorError,
     authLoggedIn,
     authUserOwnsAliasInParam,
     middlewares.upload.single('image'),

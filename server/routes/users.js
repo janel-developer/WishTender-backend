@@ -11,7 +11,7 @@ const UserModel = require('../models/User.Model');
 const UserService = require('../services/UserService');
 const AliasModel = require('../models/Alias.Model');
 const AliasService = require('../services/AliasService');
-const { onlyAllowInBodySanitizer } = require('./middlewares');
+const { onlyAllowInBodySanitizer, throwIfExpressValidatorError } = require('./middlewares');
 
 const aliasService = new AliasService(AliasModel);
 const logger = require('../lib/logger');
@@ -34,13 +34,6 @@ function throwIfNotAuthorized(req, res, next) {
   return next();
 }
 
-const throwIfExpressValidatorError = (req, res, next) => {
-  const errors = validationResult(req).array();
-  if (errors.length) {
-    return res.status(400).send({ errors });
-  }
-  return next();
-};
 const userRoutes = express.Router();
 const userService = new UserService(UserModel);
 module.exports = () => {
@@ -65,8 +58,10 @@ module.exports = () => {
    */
   userRoutes.post(
     '/login',
+
     onlyAllowInBodySanitizer(['password', 'email']),
-    body('order.buyerInfo.email', `Invalid email.`).isEmail(),
+
+    body('email', `Invalid email.`).isEmail(),
     throwIfExpressValidatorError,
     async (req, res, next) => {
       passport.authenticate(
