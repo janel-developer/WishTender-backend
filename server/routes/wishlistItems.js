@@ -24,6 +24,13 @@ const wishlistItemRoutes = express.Router();
 const wishlistItemService = new WishlistItemService(WishlistItemModel);
 const wishlistService = new WishlistService(WishlistModel);
 
+function authLoggedIn(req, res, next) {
+  if (!req.user) {
+    return res.status(401).send();
+  }
+  return next();
+}
+
 async function throwIfNotAuthorizedResource(req, res, next) {
   // change this to check that wishlist is in user wishlist array
   logger.log('silly', `authorizing user owns resource...`);
@@ -68,6 +75,7 @@ async function throwIfNotAuthorizedResource(req, res, next) {
 module.exports = () => {
   wishlistItemRoutes.post(
     '/',
+    authLoggedIn,
     csrfProtection,
     throwIfNotAuthorizedResource,
     middlewares.onlyAllowInBodySanitizer([
@@ -78,7 +86,7 @@ module.exports = () => {
       'url',
       'wishlist',
     ]),
-    // to do validate currency
+    middlewares.throwIfExpressValidatorError,
     middlewares.cropImage({ h: 300, w: 300 }),
     middlewares.handleImage(imageService, { h: 300, w: 300 }),
     async (req, res, next) => {
@@ -104,25 +112,11 @@ module.exports = () => {
 
   wishlistItemRoutes.patch(
     '/:id',
+    authLoggedIn,
     csrfProtection,
-    middlewares.onlyAllowInBodySanitizer([
-      'itemName',
-      'imageCrop',
-      'price',
-      'currency', // currency is not patched... why is this here?
-      'url',
-      'image',
-    ]),
-    // to do : validate currency
+    middlewares.onlyAllowInBodySanitizer(['itemName', 'imageCrop', 'price', 'url', 'image']),
     throwIfNotAuthorizedResource,
-    (req, res, next) => {
-      next();
-    },
     middlewares.upload.single('image'),
-
-    (req, res, next) => {
-      next();
-    },
     (req, res, next) => {
       if (!Object.keys(req.body).length && !req.file) {
         return next(new ApplicationError({}, 'No data submitted.'));
@@ -130,13 +124,7 @@ module.exports = () => {
       return next();
     },
     [check('price', 'Price must be integer').optional().isInt()],
-    (req, res, next) => {
-      const errors = validationResult(req).array();
-      if (errors.length) {
-        return next(new ApplicationError({}, JSON.stringify(errors)));
-      }
-      return next();
-    },
+    middlewares.throwIfExpressValidatorError,
     middlewares.handleImage(imageService, { h: 300, w: 300 }),
 
     async (req, res, next) => {
@@ -161,18 +149,24 @@ module.exports = () => {
     }
   );
 
-  wishlistItemRoutes.delete('/:id', throwIfNotAuthorizedResource, async (req, res, next) => {
-    logger.log('silly', `deleting wishlist item by id`);
-    const { id } = req.params;
-    let wishlistItem;
-    try {
-      wishlistItem = await wishlistItemService.deleteWishlistItem(id);
-      if (!wishlistItem.orders.length) await imageService.delete(wishlistItem.itemImage);
-    } catch (err) {
-      return next(err);
+  wishlistItemRoutes.delete(
+    '/:id',
+    authLoggedIn,
+    throwIfNotAuthorizedResource,
+    async (req, res, next) => {
+      logger.log('silly', `deleting wishlist item by id`);
+      const { id } = req.params;
+      try {
+        // soft delete
+        await wishlistItemService.deleteWishlistItem(id);
+        // not deleting rn, just doing soft deletes
+        // if (!wishlistItem.orders.length) await imageService.delete(wishlistItem.itemImage);
+      } catch (err) {
+        return next(err);
+      }
+      return res.sendStatus(204);
     }
-    return res.sendStatus(204);
-  });
+  );
 
   return wishlistItemRoutes;
 };

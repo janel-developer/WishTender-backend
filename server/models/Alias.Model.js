@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
-const { ApplicationError } = require('../lib/Error');
-const softDelete = require('mongoosejs-soft-delete');
 const mongoose_delete = require('mongoose-delete');
+const { ApplicationError } = require('../lib/Error');
 
 const aliasSchema = new mongoose.Schema(
   {
