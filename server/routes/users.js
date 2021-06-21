@@ -33,6 +33,14 @@ function throwIfNotAuthorized(req, res, next) {
   }
   return next();
 }
+
+const throwIfExpressValidatorError = (req, res, next) => {
+  const errors = validationResult(req).array();
+  if (errors.length) {
+    return res.status(400).send({ errors });
+  }
+  return next();
+};
 const userRoutes = express.Router();
 const userService = new UserService(UserModel);
 module.exports = () => {
@@ -59,13 +67,7 @@ module.exports = () => {
     '/login',
     onlyAllowInBodySanitizer(['password', 'email']),
     body('order.buyerInfo.email', `Invalid email.`).isEmail(),
-    (req, res, next) => {
-      const errors = validationResult(req).array();
-      if (errors.length) {
-        return res.status(400).send({ errors });
-      }
-      return next();
-    },
+    throwIfExpressValidatorError,
     async (req, res, next) => {
       passport.authenticate(
         'local',
@@ -140,13 +142,7 @@ module.exports = () => {
 
     body('email', `No email is included.`).exists(),
     body('password', `No password is included.`).exists(),
-    (req, res, next) => {
-      const errors = validationResult(req).array();
-      if (errors.length) {
-        return res.status(400).send({ errors });
-      }
-      return next();
-    },
+    throwIfExpressValidatorError,
     async (req, res, next) => {
       logger.log('silly', `registering user`);
       let user;
@@ -230,13 +226,8 @@ module.exports = () => {
       next();
     },
 
-    (req, res, next) => {
-      const errors = validationResult(req).array();
-      if (errors.length) {
-        return res.status(400).send({ errors });
-      }
-      return next();
-    },
+    throwIfExpressValidatorError,
+    authUserLoggedIn,
     async (req, res, next) => {
       delete req.body.password;
       await userService.updateUser(req.user._id, req.body);
@@ -273,13 +264,7 @@ module.exports = () => {
         .run(req);
       next();
     },
-    (req, res, next) => {
-      const errors = validationResult(req).array();
-      if (errors.length) {
-        return res.status(400).send({ message: 'Form validation errors', errors });
-      }
-      return next();
-    },
+    throwIfExpressValidatorError,
     authUserLoggedIn,
     throwIfNotAuthorized,
     async (req, res, next) => {
