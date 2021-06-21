@@ -1,6 +1,7 @@
 const express = require('express');
 const { ObjectId } = require('mongoose').Types;
 const ItemModel = require('../models/WishlistItem.Model');
+const { throwIfExpressValidatorError } = require('./middlewares');
 
 const logger = require('../lib/logger');
 const {
@@ -18,13 +19,7 @@ module.exports = () => {
   cartRoutes.patch(
     '/add-to-cart',
     body('itemId', `No item id included.`).exists(),
-    (req, res, next) => {
-      const errors = validationResult(req).array();
-      if (errors.length) {
-        return res.status(400).send({ message: 'Form validation errors', errors });
-      }
-      return next();
-    },
+    throwIfExpressValidatorError,
     async (req, res, next) => {
       const { itemId } = req.body;
       if (!ObjectId.isValid(itemId)) return res.status(400).send({ message: `Item id not valid.` });
@@ -56,7 +51,7 @@ module.exports = () => {
         const cart = await addToCart(itemId, currentCart);
         req.session.cart = cart;
         logger.log('silly', `Cart in session updated: ${JSON.stringify(req.session.cart)}`);
-        res.status(201).json(req.session.cart);
+        return res.status(201).json(req.session.cart);
       } catch (error) {
         if (error.info.status === 500) return next(error);
         return res.status(error.info.status).send({ message: error.message });
@@ -70,17 +65,11 @@ module.exports = () => {
       return next();
     },
     body('itemId', `No item id included.`).exists(),
-    (req, res, next) => {
-      const errors = validationResult(req).array();
-      if (errors.length) {
-        return res.status(400).send({ message: 'Form validation errors', errors });
-      }
-      return next();
-    },
+    throwIfExpressValidatorError,
     async (req, res, next) => {
       logger.log('silly', `removing item from cart...`);
-      const itemId = req.body.itemId;
-      const aliasId = req.body.aliasId;
+      const { itemId } = req.body;
+      const { aliasId } = req.body;
       const currentCart = req.session.cart;
       const cart = removeItem(currentCart, itemId, aliasId);
       req.session.cart = { aliasCarts: cart.aliasCarts };
@@ -95,17 +84,11 @@ module.exports = () => {
       return next();
     },
     body('itemId', `No item id included.`).exists(),
-    (req, res, next) => {
-      const errors = validationResult(req).array();
-      if (errors.length) {
-        return res.status(400).send({ message: 'Form validation errors', errors });
-      }
-      return next();
-    },
+    throwIfExpressValidatorError,
     async (req, res, next) => {
       logger.log('silly', `reducing item by one from cart...`);
-      const itemId = req.body.itemId;
-      const aliasId = req.body.aliasId;
+      const { itemId } = req.body;
+      const { aliasId } = req.body;
       const currentCart = req.session.cart;
       const cart = await reduceByOne(currentCart, itemId, aliasId);
       req.session.cart = { aliasCarts: cart.aliasCarts };
