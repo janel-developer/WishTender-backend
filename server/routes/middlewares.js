@@ -1,5 +1,5 @@
 const multer = require('multer');
-const { sanitize, sanitizeBody } = require('express-validator');
+const { sanitize, sanitizeBody, validationResult } = require('express-validator');
 const { createCroppedImage } = require('../lib/canvas');
 
 const upload = multer({
@@ -39,3 +39,10 @@ module.exports.onlyAllowInBodySanitizer = (allow) =>
       return value;
     }
   });
+module.exports.throwIfExpressValidatorError = (req, res, next) => {
+  const errors = validationResult(req).array();
+  if (errors.length) {
+    return res.status(400).send({ errors });
+  }
+  return next();
+};
