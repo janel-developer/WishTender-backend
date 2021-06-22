@@ -1,6 +1,7 @@
 const multer = require('multer');
 const { sanitize, sanitizeBody, validationResult } = require('express-validator');
 const { createCroppedImage } = require('../lib/canvas');
+const logger = require('../lib/logger');
 
 const upload = multer({
   limits: {
@@ -43,6 +44,13 @@ module.exports.throwIfExpressValidatorError = (req, res, next) => {
   const errors = validationResult(req).array();
   if (errors.length) {
     return res.status(400).send({ message: 'Form validation errors', errors });
+  }
+  return next();
+};
+module.exports.authLoggedIn = (req, res, next) => {
+  logger.log('silly', `authorizing logged in user exists...`);
+  if (!req.user) {
+    return res.status(401).send(`No user logged`);
   }
   return next();
 };

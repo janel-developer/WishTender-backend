@@ -6,6 +6,7 @@ const AliasService = require('../services/AliasService');
 const logger = require('../lib/logger');
 const { ApplicationError } = require('../lib/Error');
 const middlewares = require('./middlewares');
+const { authLoggedIn } = require('./middlewares');
 const ImageService =
   process.env.NODE_ENV === 'production' || process.env.REMOTE || process.env.AWS
     ? require('../services/AWSImageService')
@@ -80,13 +81,6 @@ const frontEndRoutes = [
   '/',
 ];
 
-function authLoggedIn(req, res, next) {
-  logger.log('silly', `authorizing logged in user exists...`);
-  if (!req.user) {
-    return res.status(401).send(`No user logged`);
-  }
-  return next();
-}
 function authCountrySupported(req, res, next) {
   logger.log('silly', `checking that country is supported...`);
   if (defaultCurrencies[req.body.country] !== undefined) return next();
