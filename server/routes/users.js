@@ -38,8 +38,8 @@ const userRoutes = express.Router();
 const userService = new UserService(UserModel);
 module.exports = () => {
   // ---rate limiter flexible--------
-  const maxFails = 2;
-  const limiterConsecutiveFailsByUsername = new RateLimiterMongo({
+  const maxFails = 5;
+  const limiterConsecutiveFailsByEmail = new RateLimiterMongo({
     storeClient: mongoose.connection,
     keyPrefix: 'login_fail_consecutive_username',
     points: maxFails,
@@ -75,7 +75,7 @@ module.exports = () => {
           const msg = req.flash('error')[0];
           const { email } = req.body;
           if (email) {
-            const rlResUsername = await limiterConsecutiveFailsByUsername.get(email);
+            const rlResUsername = await limiterConsecutiveFailsByEmail.get(email);
             if (rlResUsername !== null && rlResUsername.consumedPoints > maxFails) {
               const retrySecs = Math.round(rlResUsername.msBeforeNext / 1000) || 1;
               res.set('Retry-After', String(retrySecs));
@@ -88,7 +88,7 @@ module.exports = () => {
           }
           if (msg) {
             try {
-              if (email) await limiterConsecutiveFailsByUsername.consume(email);
+              if (email) await limiterConsecutiveFailsByEmail.consume(email);
 
               return res.status(401).send({ message: msg });
             } catch (rlRejected) {
