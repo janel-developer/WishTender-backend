@@ -6,12 +6,12 @@ const stripe = require('stripe')(
 );
 
 const mongoose = require('mongoose');
-
 const { Schema } = mongoose;
 const SessionSchema = new Schema({ session: String, _id: String }, { strict: false });
 const Session = mongoose.model('sessions', SessionSchema, 'sessions');
+const middlewares = require('./middlewares');
 
-const { body, cookie, validationResult } = require('express-validator');
+const { body, cookie } = require('express-validator');
 const express = require('express');
 const { ObjectId } = require('mongoose').Types;
 const logger = require('../lib/logger');
@@ -19,59 +19,58 @@ const StripeService = require('../services/StripeService');
 const CartService = require('../services/CartService');
 const CheckoutService = require('../services/CheckoutService');
 const { ApplicationError } = require('../lib/Error');
-const { currencyInfo, unitToStandard } = require('../lib/currencyFormatHelpers');
+const { unitToStandard } = require('../lib/currencyFormatHelpers');
 const ReceiptEmail = require('../lib/email/ReceiptEmail');
 const TenderReceivedEmail = require('../lib/email/TenderReceivedEmail');
+
 const checkoutRoutes = express.Router();
 
-const stripeService = new StripeService(stripe);
 const OrderService = require('../services/OrderService');
 const OrderModel = require('../models/Order.Model');
 const AliasModel = require('../models/Alias.Model');
-const { validate } = require('email-validator');
 
 const ExchangeRatesApiInterface = require('../lib/ExchangeRate-Api');
-const { ConsoleTransportOptions } = require('winston/lib/winston/transports');
-const { json } = require('express');
+
 const WishlistItem = require('../models/WishlistItem.Model');
-const WishlistItemService = require('../services/WishlistItemService');
-const orders = require('./orders');
-const wishlistItemService = new WishlistItemService(WishlistItem);
+
 const ratesApi = new ExchangeRatesApiInterface();
 
 const orderService = new OrderService(OrderModel);
+
+const authOrderNotPaidFor = async (req, res, next) => {
+  // eslint-disable-next-line camelcase
+  const { session_id } = req.query;
+  const sess = await stripe.checkout.sessions.retrieve(session_id, {
+    expand: ['payment_intent.charges.data'],
+  });
+  if (sess.payment_status === 'paid')
+    return res.status(409).send('This order was already paid for.');
+
+  return next();
+};
+const authOrderPaidFor = async (req, res, next) => {
+  const sess = await stripe.checkout.sessions.retrieve(req.query.session_id, {
+    expand: ['payment_intent.charges.data'],
+  });
+  if (sess.payment_status !== 'paid') return res.status(409).send("This order wasn't paid for");
+  req.stripeExpandedSession = sess;
+  return next();
+};
 
 module.exports = () => {
   checkoutRoutes.get(
     // this is the route that stripe send users too after a success. I'm not sure if it is incorrect because it is a get and gets are supposed to be "safe" but this is changing the database.
     '/success',
-    async (req, res, next) => {
-      const sess = await stripe.checkout.sessions.retrieve(req.query.session_id, {
-        expand: ['payment_intent.charges.data'],
-      });
-      if (sess.payment_status !== 'paid') return res.status(401).send("This order wasn't paid for");
-      req.stripeExpandedSession = sess;
-      return next();
-    },
+    authOrderPaidFor,
     async (req, res, next) => {
       const chargeId = req.stripeExpandedSession.payment_intent.charges.data[0].id;
-      const charge = await stripe.charges.retrieve(
-        chargeId,
-        {
-          expand: [
-            'balance_transaction',
-            'transfer.balance_transaction',
-            'transfer.destination_payment.balance_transaction',
-          ],
-        }
-        // { stripeAccount: 'acct_1Heou2LKojKNEaYI' }
-      );
-
-      const threeBalance = [
-        charge.balance_transaction,
-        charge.transfer.balance_transaction,
-        charge.transfer.destination_payment.balance_transaction,
-      ];
+      const charge = await stripe.charges.retrieve(chargeId, {
+        expand: [
+          'balance_transaction',
+          'transfer.balance_transaction',
+          'transfer.destination_payment.balance_transaction',
+        ],
+      });
 
       const toPlatform = {
         from: { amount: charge.amount, currency: charge.currency.toUpperCase() },
@@ -89,7 +88,9 @@ module.exports = () => {
         exchangeRate: charge.transfer.destination_payment.balance_transaction.exchange_rate,
       };
 
+      // eslint-disable-next-line camelcase
       const { session_id, alias_id } = req.query;
+
       let alias;
 
       // update user account fee due
@@ -218,16 +219,17 @@ module.exports = () => {
         }
         await session.save();
       }
-      res.redirect(
+      return res.redirect(
         301,
         `http://localhost:3000/order?success=true&session_id=${session_id}&aliasHandle=${alias.handle}`
       );
     }
   );
-  checkoutRoutes.get('/canceled', async (req, res, next) => {
+  checkoutRoutes.get('/canceled', authOrderNotPaidFor, async (req, res, next) => {
+    // eslint-disable-next-line camelcase
     const { session_id } = req.query;
     await orderService.deleteOrder({ processorPaymentID: session_id });
-    res.redirect(301, `http://localhost:3000/cart`);
+    return res.redirect(301, `http://localhost:3000/cart`);
   });
   checkoutRoutes.post(
     '/',
@@ -297,13 +299,7 @@ module.exports = () => {
       next();
     },
 
-    (req, res, next) => {
-      const errors = validationResult(req).array();
-      if (errors.length) {
-        return res.status(400).send({ errors });
-      }
-      return next();
-    },
+    middlewares.throwIfExpressValidatorError,
     async (req, res, next) => {
       // check price updates
       logger.log('silly', `checking prices are still current`);
@@ -338,7 +334,7 @@ module.exports = () => {
       orderObject.alias = req.body.alias;
       try {
         const checkoutSession = await CheckoutService.checkout(aliasCart, currency, orderObject);
-        res.status(201).send({ checkoutSessionId: checkoutSession.id });
+        return res.status(201).send({ checkoutSessionId: checkoutSession.id });
       } catch (err) {
         next(err);
       }
