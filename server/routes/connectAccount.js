@@ -27,14 +27,10 @@ const itemService = new WishlistItemService(WishlistItem);
 const connectRoutes = express.Router();
 
 const stripeService = new StripeService(stripe);
+const middlewares = require('./middlewares');
 
 // auth middleware functions====================
-const authUserLoggedIn = async (req, res, next) => {
-  if (req.user) {
-    return next();
-  }
-  return res.status(401).send({ message: 'No user logged in' });
-};
+
 const authUserConfirmed = async (req, res, next) => {
   if (req.user.confirmed) {
     return next();
@@ -55,13 +51,50 @@ const authCountrySet = async (req, res, next) => {
   return res.status(400).send({ message: `User country must be set.` });
 };
 
-const authStripeAccountInfoExists = async (req, res, next) => {
+const validateStripeAccountInfoExists = async (req, res, next) => {
   if (req.user.stripeAccountInfo) {
     return next();
   }
   return res.status(409).send({
     message: 'No stripe account object associated with the user. Use POST /createConnect',
   });
+};
+
+const handleUnfinishedPrevReq = async (req, res, next) => {
+  if (!req.user.stripeAccountInfo) {
+    // no stripeAccountInfo ID, go to the next function to set up stripeaccountinfo
+    return next();
+  }
+  // check if activated and get onboardlink
+
+  req.stripeAccountInfo = await stripeAccountInfoService.getAccountByUser(req.user._id);
+
+  // no actual stripeAccountInfo, go to the next function to set up stripeaccountinfo
+  if (!req.stripeAccountInfo) return next();
+
+  req.stripeAccount = await stripeService.retrieveAccount(req.stripeAccountInfo.stripeAccountId);
+
+  // no actual stripeAccount, go to the next function to set up stripeaccount
+  if (!req.stripeAccount) {
+    next();
+  }
+
+  if (req.stripeAccount.capabilities.transfers === 'active') {
+    return res.status(409).send({ message: 'This account has already been activated.' });
+  }
+  const country = req.user.county;
+  if (country === req.stripeAccountInfo.country) {
+    const onboardLink = await stripeService.createAccountLink(
+      req.stripeAccountInfo.stripeAccountId
+    );
+    return res.status(200).send({ onboardLink });
+  }
+  // clean up if failed
+  await stripeService.deleteAccount(req.stripeAccountInfo.stripeAccountId);
+  await req.stripeAccountInfo.remove();
+  delete req.user.stripeAccountInfo;
+  await req.user.save();
+  return next();
 };
 
 const authStripeAccountTransfersActive = async (req, res, next) => {
@@ -79,7 +112,7 @@ const authStripeAccountTransfersActive = async (req, res, next) => {
     );
 };
 
-const authAccountInfoNotActivated = (req, res, next) => {
+const validateAccountInfoNotActivated = (req, res, next) => {
   if (!req.stripeAccountInfo.activated) {
     return next();
   }
@@ -99,42 +132,10 @@ module.exports = () => {
    */
   connectRoutes.post(
     '/createConnect',
-    authUserLoggedIn,
+    middlewares.authLoggedIn,
     authUserConfirmed,
     authCountrySet,
-    async (req, res, next) => {
-      if (!req.user.stripeAccountInfo) {
-        // go to the next function to set up stripeaccountinfo
-        return next();
-      }
-      // check if activated and get onboardlink
-
-      req.stripeAccountInfo = await stripeAccountInfoService.getAccountByUser(req.user._id);
-      if (!req.stripeAccountInfo) return next();
-      req.stripeAccount = await stripeService.retrieveAccount(
-        req.stripeAccountInfo.stripeAccountId
-      );
-      if (!req.stripeAccountInfo) {
-        next();
-      }
-
-      if (req.stripeAccount.capabilities.transfers === 'active') {
-        return res.status(409).send({ message: 'This account has already been activated.' });
-      }
-      const country = req.user.county;
-      if (country === req.stripeAccountInfo.country) {
-        const onboardLink = await stripeService.createAccountLink(
-          req.stripeAccountInfo.stripeAccountId
-        );
-        res.status(200).send({ onboardLink });
-      } else {
-        await stripeService.deleteAccount(req.stripeAccountInfo.stripeAccountId);
-        await req.stripeAccountInfo.remove();
-        return next();
-      }
-
-      // return res.status(409).send({ message: 'Stripe Account Info already set up.' });
-    },
+    handleUnfinishedPrevReq,
     authCountrySupported,
     async (req, res, next) => {
       const { country } = req.user;
@@ -165,7 +166,7 @@ module.exports = () => {
         req.user.stripeAccountInfo = req.stripeAccountInfo._id;
         await req.user.save();
         const onboardLink = await stripeService.createAccountLink(account.id);
-        res.status(200).send({ onboardLink });
+        return res.status(200).send({ onboardLink });
       } catch (err) {
         try {
           if (req.stripeAccountInfo) req.stripeAccountInfo.remove();
@@ -174,12 +175,12 @@ module.exports = () => {
             await req.user.stripeAccountInfo;
           }
           if (account) await stripeService.deleteAccount(account.id);
-          next(new ApplicationError({}, `Couldn't create Connect account:${err}`));
+          return next(new ApplicationError({}, `Couldn't create Connect account:${err}`));
         } catch (err2) {
-          next(
+          return next(
             new ApplicationError(
-              {},
-              `Couldn't create Connect account:${err}. Couldn't delete StripeAccountInfo and/or Stripe account object: ${err}`
+              { err, err2 },
+              `Couldn't create Connect account. Couldn't delete StripeAccountInfo and/or Stripe account object.`
             )
           );
         }
@@ -214,10 +215,10 @@ module.exports = () => {
    */
   connectRoutes.patch(
     '/activateConnect',
-    authUserLoggedIn,
-    authStripeAccountInfoExists,
+    middlewares.authLoggedIn,
+    validateStripeAccountInfoExists,
     authStripeAccountTransfersActive,
-    authAccountInfoNotActivated,
+    validateAccountInfoNotActivated,
     async (req, res, next) => {
       try {
         req.stripeAccountInfo.activated = true;
@@ -243,40 +244,40 @@ module.exports = () => {
   //   async (req, res, next) => res.status(201).send()
   // );
 
-  /*
-   * Get /currentAccount
-   *
-   * • retrieves connect account info and stripe account info
-   *
-   */
-  connectRoutes.get('/currentAccount', authUserLoggedIn, async (req, res, next) => {
-    try {
-      const respond = () => {
-        if (req.stripeAccount) {
-          req.stripeAccount = {
-            transfer_capability: req.stripeAccount.capabilities.transfers,
-            country: req.stripeAccount.country,
-            default_currency: req.stripeAccount.default_currency,
-          };
-        }
-        res.status(200).send({
-          stripeAccountInfo: req.stripeAccountInfo || null,
-          stripeAccount: req.stripeAccount || null,
-        });
-      };
-      if (!req.user.stripeAccountInfo) {
-        return respond();
-      }
-      req.stripeAccountInfo = await stripeAccountInfoService.getAccountByUser(req.user._id);
-      if (!req.stripeAccountInfo) return respond();
-      req.stripeAccount = await stripeService.retrieveAccount(
-        req.stripeAccountInfo.stripeAccountId
-      );
-      return respond();
-    } catch (err) {
-      return next(new ApplicationError({}, `Couldn't get Stripe Account: ${err}`));
-    }
-  });
+  // /*
+  //  * Get /currentAccount
+  //  *
+  //  * • retrieves connect account info and stripe account info
+  //  *
+  //  */
+  // connectRoutes.get('/currentAccount', middlewares.authLoggedIn, async (req, res, next) => {
+  //   try {
+  //     const respond = () => {
+  //       if (req.stripeAccount) {
+  //         req.stripeAccount = {
+  //           transfer_capability: req.stripeAccount.capabilities.transfers,
+  //           country: req.stripeAccount.country,
+  //           default_currency: req.stripeAccount.default_currency,
+  //         };
+  //       }
+  //       return res.status(200).send({
+  //         stripeAccountInfo: req.stripeAccountInfo || null,
+  //         stripeAccount: req.stripeAccount || null,
+  //       });
+  //     };
+  //     if (!req.user.stripeAccountInfo) {
+  //       return respond();
+  //     }
+  //     req.stripeAccountInfo = await stripeAccountInfoService.getAccountByUser(req.user._id);
+  //     if (!req.stripeAccountInfo) return respond();
+  //     req.stripeAccount = await stripeService.retrieveAccount(
+  //       req.stripeAccountInfo.stripeAccountId
+  //     );
+  //     return respond();
+  //   } catch (err) {
+  //     return next(new ApplicationError({}, `Couldn't get Stripe Account: ${err}`));
+  //   }
+  // });
 
   /*
    * PATCH /correctCurrency
@@ -286,46 +287,46 @@ module.exports = () => {
    *
    */
 
-  connectRoutes.patch(
-    '/correctCurrency',
-    authUserLoggedIn,
-    // authStripeAccountInfoExists,
-    // authStripeAccountTransfersActive,
-    // authAccountInfoNotActivated,
-    // async (req, res, next) => {
-    //   req.stripeAccountInfo = await stripeAccountInfoService.getAccountByUser(req.user._id);
-    //   if (!req.stripeAccountInfo.currency) {
-    //     return res.status(406).send({
-    //       message: `Items currency couldn't be corrected. The associated stripe account info has no currency set.`,
-    //     });
-    //   }
-    //   return next();
-    // },
+  // connectRoutes.patch(
+  //   '/correctCurrency',
+  //   authUserLoggedIn,
+  //   // authStripeAccountInfoExists,
+  //   // authStripeAccountTransfersActive,
+  //   // authAccountInfoNotActivated,
+  //   // async (req, res, next) => {
+  //   //   req.stripeAccountInfo = await stripeAccountInfoService.getAccountByUser(req.user._id);
+  //   //   if (!req.stripeAccountInfo.currency) {
+  //   //     return res.status(406).send({
+  //   //       message: `Items currency couldn't be corrected. The associated stripe account info has no currency set.`,
+  //   //     });
+  //   //   }
+  //   //   return next();
+  //   // },
 
-    async (req, res, next) => {
-      try {
-        await itemService.correctCurrency(
-          req.user.aliases[0],
-          req.body.currency,
-          req.body.changeValue
-        );
-        const wrongCurrencyItems = await itemService.wishlistItemsNotCurrency(
-          req.user.aliases[0],
-          req.body.currency
-        );
-        if (wrongCurrencyItems.length) {
-          throw new ApplicationError(
-            {},
-            `Tried to correct but there are still items of the wrong currency.`
-          );
-        } else {
-          return res.status(201).send();
-        }
-      } catch (err) {
-        return next(new ApplicationError({}, `Couldn't correct currency: ${err}`));
-      }
-    }
-  );
+  //   async (req, res, next) => {
+  //     try {
+  //       await itemService.correctCurrency(
+  //         req.user.aliases[0],
+  //         req.body.currency,
+  //         req.body.changeValue
+  //       );
+  //       const wrongCurrencyItems = await itemService.wishlistItemsNotCurrency(
+  //         req.user.aliases[0],
+  //         req.body.currency
+  //       );
+  //       if (wrongCurrencyItems.length) {
+  //         throw new ApplicationError(
+  //           {},
+  //           `Tried to correct but there are still items of the wrong currency.`
+  //         );
+  //       } else {
+  //         return res.status(201).send();
+  //       }
+  //     } catch (err) {
+  //       return next(new ApplicationError({}, `Couldn't correct currency: ${err}`));
+  //     }
+  //   }
+  // );
 
   /*
    * GET /refreshConnectLink
@@ -336,8 +337,8 @@ module.exports = () => {
    */
   connectRoutes.get(
     '/refreshConnectLink',
-    authUserLoggedIn,
-    authStripeAccountInfoExists,
+    middlewares.authLoggedIn,
+    validateStripeAccountInfoExists,
     async (req, res, next) => {
       req.stripeAccountInfo = await stripeAccountInfoService.getAccountByUser(req.user._id);
       if (req.stripeAccountInfo.activated) {

@@ -1,16 +1,67 @@
-const passport = require('passport');
+const { RateLimiterMongo } = require('rate-limiter-flexible');
+const mongoose = require('mongoose');
 const { body, param, validationResult, sanitize } = require('express-validator');
 
+const express = require('express');
 const Token = require('../models/Token.Model');
 const User = require('../models/User.Model');
-const express = require('express');
 const ResetPasswordEmailService = require('../services/ResetPasswordEmailService');
 require('dotenv').config();
+
+const { throwIfExpressValidatorError } = require('./middlewares');
 
 const resetPasswordEmailService = new ResetPasswordEmailService();
 const resetPasswordRoutes = express.Router();
 const logger = require('../lib/logger');
 const { ApplicationError } = require('../lib/Error');
+// ---rate limiter flexible--------
+
+const resetRateLimit = async (req, res, next) => {
+  // ---rate limiter flexible--------
+
+  const maxSends = 2;
+  const limiterPasswordResetsByEmail = new RateLimiterMongo({
+    storeClient: mongoose.connection,
+    keyPrefix: 'Password_resets',
+    points: maxSends,
+    duration: 60 * 60 * 3, // Store number for three hours since first fail
+    blockDuration: 60 * 15, // Block for 15 minutes
+  });
+  const { email } = req.body || req.user;
+  const rlResUsername = await limiterPasswordResetsByEmail.get(email);
+  if (rlResUsername !== null && rlResUsername.consumedPoints > maxSends) {
+    const retrySecs = Math.round(rlResUsername.msBeforeNext / 1000) || 1;
+    res.set('Retry-After', String(retrySecs));
+    return res.status(429).send({
+      message: `Too many password reset attempts. Try again in ${Math.round(
+        retrySecs / 60
+      )} minutes.`,
+    });
+  }
+  try {
+    await limiterPasswordResetsByEmail.consume(email);
+  } catch (rlRejected) {
+    if (rlRejected instanceof Error) {
+      throw rlRejected;
+    } else {
+      res.set('Retry-After', String(Math.round(rlRejected.msBeforeNext / 1000)) || 1);
+      logger.log(
+        'warn',
+        `rate limited confirmation resends IP ${
+          (req.headers['x-forwarded-for'] && req.headers['x-forwarded-for'].split(',').shift()) ||
+          (req.socket && req.socket.remoteAddress)
+        }`
+      );
+      return res.status(429).send({
+        message: `Too many password resets sent. Try again in ${Math.round(
+          rlRejected.msBeforeNext / 1000 / 60
+        )} minutes.`,
+      });
+    }
+  }
+  return next();
+};
+// ---------------------------------
 
 module.exports = () => {
   // post and not patch because we're creating a new token
@@ -23,6 +74,7 @@ module.exports = () => {
       }
       next();
     },
+
     async (req, res, next) => {
       if (req.body.email) {
         try {
@@ -35,6 +87,10 @@ module.exports = () => {
           throw new ApplicationError({}, `Couldn't get user:${error}`);
         }
       }
+    },
+    resetRateLimit,
+
+    async (req, res, next) => {
       try {
         await resetPasswordEmailService.send(req.selectedUser || req.user);
       } catch (error) {
@@ -68,13 +124,7 @@ module.exports = () => {
   resetPasswordRoutes.patch(
     '/',
     body('password', 'Must be at least 8 characters long.').isLength({ min: 8 }),
-    (req, res, next) => {
-      const errors = validationResult(req).array();
-      if (errors.length) {
-        return res.status(400).send({ errors });
-      }
-      return next();
-    },
+    throwIfExpressValidatorError,
 
     async (req, res, next) => {
       try {
@@ -91,8 +141,7 @@ module.exports = () => {
         const user = await User.findOne({ _id: tkn.user, email });
         // not valid user
         if (!user) {
-          res.status(404).send({ message: `Couldn't reset password. User doesn't exist` });
-          return next();
+          return res.status(404).send({ message: `Couldn't reset password. User doesn't exist` });
         }
 
         // reset password
@@ -109,7 +158,7 @@ module.exports = () => {
           });
         }
 
-        res.status(200).send();
+        return res.status(200).send();
       } catch (error) {
         return next(new ApplicationError({}, `Couldn't Confirm: ${error}`));
       }

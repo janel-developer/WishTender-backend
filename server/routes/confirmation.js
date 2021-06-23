@@ -1,9 +1,11 @@
 const { RateLimiterMongo } = require('rate-limiter-flexible');
 const mongoose = require('mongoose');
+const express = require('express');
 const Token = require('../models/Token.Model');
 const User = require('../models/User.Model');
-const express = require('express');
+
 const ConfirmationEmailService = require('../services/ConfirmationEmailService');
+
 const confirmationEmailService = new ConfirmationEmailService();
 const confirmationRoutes = express.Router();
 const logger = require('../lib/logger');
@@ -26,21 +28,20 @@ async function authNotConfirmed(req, res, next) {
   }
 }
 
-// ---rate limiter flexible--------
-const maxSends = 2;
-const limiterConsecutiveResendsByEmail = new RateLimiterMongo({
-  storeClient: mongoose.connection,
-  keyPrefix: 'confirmation_resends_consecutive_email',
-  points: maxSends,
-  duration: 60 * 60 * 3, // Store number for three hours since first fail
-  blockDuration: 60 * 15, // Block for 15 minutes
-});
-
 const resendRateLimit = async (req, res, next) => {
+  // ---rate limiter flexible--------
+  const maxSends = 2;
+  const limiterConsecutiveResendsByEmail = new RateLimiterMongo({
+    storeClient: mongoose.connection,
+    keyPrefix: 'confirmation_resends_consecutive_email',
+    points: maxSends,
+    duration: 60 * 60 * 3, // Store number for three hours since first fail
+    blockDuration: 60 * 15, // Block for 15 minutes
+  });
   const { email } = req.body;
   if (email) {
     const rlResUsername = await limiterConsecutiveResendsByEmail.get(email);
-    if (rlResUsername !== null && rlResUsername.consumedPoints > maxFails) {
+    if (rlResUsername !== null && rlResUsername.consumedPoints > maxSends) {
       const retrySecs = Math.round(rlResUsername.msBeforeNext / 1000) || 1;
       res.set('Retry-After', String(retrySecs));
       return res.status(429).send({
@@ -70,7 +71,9 @@ const resendRateLimit = async (req, res, next) => {
         });
       }
     }
+    return next();
   }
+  return next();
 };
 // ---------------------------------
 module.exports = () => {
