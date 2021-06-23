@@ -177,8 +177,6 @@ module.exports = () => {
   exchangeRateRoutes.route('/').get(async (req, res, next) => {
     const { base, symbols } = req.query;
     const rate = await ratesApi.getExchangeRate(base, symbols);
-    // res.status(200).json({ rate });
-
     res.status(200).json({ rate });
   });
 
