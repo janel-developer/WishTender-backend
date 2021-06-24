@@ -10,8 +10,8 @@ const Users = require('../models/User.Model');
   const results = await Users.findWithDeleted({});
   //   console.log(results);
   results.forEach(async (user) => {
-    user.email = cryptEmail.encrypt(user.email);
-
-    await user.save();
+    // console.log(user.email);
+    // user.email = cryptEmail.encrypt(user.email);
+    // await user.save();
   });
 })();

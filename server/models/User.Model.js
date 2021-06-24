@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_TEST_KEY);
 const softDelete = require('mongoosejs-soft-delete');
 const mongoose_delete = require('mongoose-delete');
-
+const cryptEmail = require('../lib/cryptEmail');
 const StripeService = require('../services/StripeService');
 
 const stripeService = new StripeService(stripe);
@@ -21,7 +21,8 @@ const itemImageService = new ImageService(`images/itemImages/`);
 
 const SALT_ROUNDS = 12;
 const { Schema } = mongoose;
-
+const normalizeAndEncrypt = (v) => cryptEmail.encrypt(v.toLowerCase);
+const decrypt = (v) => cryptEmail.defs(v);
 const userSchema = new Schema(
   {
     deleted: { type: Boolean, default: false },
@@ -39,6 +40,8 @@ const userSchema = new Schema(
       type: String,
       required: true,
       trim: true,
+      set: normalizeAndEncrypt,
+      get: decrypt,
       // no lowercase since encrypted
       // lowercase: true,
       // partialFilterExpression addresses this https://github.com/dsanel/mongoose-delete/issues/86

@@ -55,6 +55,8 @@ const encrypt = (str, key = k, n = 126, decrypt = false) => {
 };
 const defs = (str, key = k, n = 126) => {
   if (!(typeof key === 'number' && key % 1 === 0) || !(typeof key === 'number' && key % 1 === 0)) {
+    console.log(typeof key);
+    console.log(`keyeye${Object.keys(key)}`);
     throw new Error('Invalid parameters');
   }
 
