@@ -39,12 +39,15 @@ const userSchema = new Schema(
       type: String,
       required: true,
       trim: true,
-      lowercase: true,
+      // no lowercase since encrypted
+      // lowercase: true,
+      // partialFilterExpression addresses this https://github.com/dsanel/mongoose-delete/issues/86
       index: { unique: true, partialFilterExpression: { deleted: false } },
-      validate: {
-        validator: emailValidator.validate,
-        message: (props) => `${props.value} is not a valid email address.`,
-      },
+      // removed below because encrypted
+      // validate: {
+      //   validator: emailValidator.validate,
+      //   message: (props) => `${props.value} is not a valid email address.`,
+      // },
     },
     password: {
       type: String,
