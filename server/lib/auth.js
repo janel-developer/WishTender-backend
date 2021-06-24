@@ -2,6 +2,7 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const UserModel = require('../models/User.Model');
 const logger = require('./logger');
+const cryptEmail = require('./cryptEmail');
 
 passport.use(
   new LocalStrategy(
