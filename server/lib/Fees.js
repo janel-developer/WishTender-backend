@@ -1,3 +1,4 @@
+const { ApplicationError } = require('./Error');
 /**
  * Creates Fees object
  * @param {Int} giftPriceTotal price in pennies ($1 would be 100)
@@ -57,7 +58,12 @@ function Fees(
   this.total = this.wishersTender + this.stripeTotalFee + this.appFee;
   this.balanced = this.total - this.charge < Math.abs(1);
   if (!this.balanced || !this.stripeFeesBalanced)
-    throw new Error(`fees aren't balanced, refactor this function`);
+    throw new ApplicationError(
+      {
+        err: new Error(`Function needs to be refactored: Fees aren't balanced`),
+      },
+      `Internal error calculating fees.`
+    );
   return this;
 }
 

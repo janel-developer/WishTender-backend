@@ -36,10 +36,9 @@ class WishlistItemService {
     } catch (err) {
       throw new ApplicationError(
         {
-          wishlistItemValues,
           err,
         },
-        `Unable to add wishlistItem, wishlistId not found: ${err.name}:${err.message}`
+        `Internal error when adding wishlist item.`
       );
     }
 
@@ -51,10 +50,9 @@ class WishlistItemService {
     } catch (err) {
       throw new ApplicationError(
         {
-          wishlistItemValues,
           err,
         },
-        `Unable to add wishlistItem: ${err.name}: ${err.message}`
+        `Internal error adding wishlist item.`
       );
     }
     if (!wishlist.wishlistItems) wishlist.wishlistItems = [];
@@ -76,9 +74,8 @@ class WishlistItemService {
       wishlistItems = await this.WishlistItemModel.find({ _id: { $in: ids } });
     } catch (err) {
       throw new ApplicationError(
-        { wishlistIds: ids, err },
-        `Unable to get wishlist items: ${err.name}:${err.message}.
-        WishlistIds: ${ids}`
+        { err },
+        `Unable to get wishlist items because of an internal error.`
       );
     }
     return wishlistItems;
@@ -99,7 +96,10 @@ class WishlistItemService {
         currency: { $ne: currency },
       });
     } catch (err) {
-      throw new ApplicationError({}, `Unable to get wishlist items: ${err}.`);
+      throw new ApplicationError(
+        { err },
+        `Unable to get wishlist items because of an internal error.`
+      );
     }
     return wishlistItems;
   }
@@ -134,8 +134,11 @@ class WishlistItemService {
             item.currency = currency;
             try {
               await item.save();
-            } catch (error) {
-              throw new ApplicationError({}, `Couldn't update item currency:${console.error}`);
+            } catch (err) {
+              throw new ApplicationError(
+                { err },
+                `Couldn't update item currency because an internal error.}`
+              );
             }
             itemsUpdated += 1;
             if (itemsUpdated === wishlistItems.length) {
@@ -154,7 +157,10 @@ class WishlistItemService {
         );
       }
     } catch (err) {
-      throw new ApplicationError({}, `Unable to update currencies: ${err}.`);
+      throw new ApplicationError(
+        { err },
+        `Unable to update currencies because of an internal error.`
+      );
     }
   }
 
@@ -170,7 +176,7 @@ class WishlistItemService {
     try {
       wishlistItem = await this.WishlistItemModel.findById(id);
     } catch (err) {
-      throw new ApplicationError({ id, err }, `WishlistItem not found.`);
+      throw new ApplicationError({ err }, `WishlistItem not found because of an internal error.`);
     }
 
     return wishlistItem;
@@ -199,7 +205,7 @@ class WishlistItemService {
       }
       return;
     } catch (err) {
-      throw new ApplicationError({}, `Problem updating Wishlist Item.${err}`);
+      throw new ApplicationError({ err }, `Internal error updating Wishlist Item.`);
     }
   }
 
@@ -215,7 +221,10 @@ class WishlistItemService {
     try {
       item = await this.WishlistItemModel.findById(id);
     } catch (err) {
-      throw new ApplicationError({ id, err }, `Couldn't delete wishlist item. Item not found.`);
+      throw new ApplicationError(
+        { err },
+        `Couldn't delete wishlist item. Internal error when finding item.`
+      );
     }
     try {
       // // hard
@@ -225,7 +234,10 @@ class WishlistItemService {
       await item.delete();
     } catch (err) {
       console.log(err);
-      throw new ApplicationError({ id, err }, `Couldn't delete wishlist item.${err}`);
+      throw new ApplicationError(
+        { err },
+        `Couldn't delete wishlist item because of an internal error.`
+      );
     }
 
     return item;

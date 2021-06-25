@@ -123,7 +123,8 @@ module.exports = () => {
         logger.log('silly', `wishlist could not be updated ${err}`);
         return next(
           new ApplicationError(
-            { err, body: req.body }`wishlist could not be updated ${req.body}: ${err}`
+            { err },
+            `Wishlist could not be updated because of an internal error.`
           )
         );
       }

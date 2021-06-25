@@ -22,7 +22,10 @@ module.exports = () => {
       const loginLink = await stripeService.createLoginLink(account.stripeAccountId);
       res.redirect(302, loginLink);
     } catch (err) {
-      throw new ApplicationError({ err }, `Couldn't get login link for stripe account.`);
+      throw new ApplicationError(
+        { err },
+        `Couldn't get login link for stripe account because of an internal error.`
+      );
     }
   });
   return stripeRoutes;

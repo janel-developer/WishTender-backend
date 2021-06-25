@@ -35,20 +35,22 @@ class UserService {
       if (err.code === 11000) {
         resMsg = 'The email you used is already registered';
       }
-
-      throw new ApplicationError( // custom error object that takes an info object and a message
+      // this seems more of a 400 error. ok for now. should be in validations.
+      throw new ApplicationError(
         {
-          user,
           err,
           resMsg,
         },
-        `Unable to create user: ${err.name}: ${err.message}`
+        `Internal error trying to create user.`
       );
     }
     try {
       await confirmationEmailService.send(newUser);
-    } catch (error) {
-      throw new ApplicationError({}, `Couldn't send confirmation email:${error}`);
+    } catch (err) {
+      throw new ApplicationError(
+        { err },
+        `Couldn't send confirmation email because of an internal error.`
+      );
     }
 
     return newUser;
@@ -65,10 +67,7 @@ class UserService {
     try {
       user = await this.UserModel.findById(id);
     } catch (err) {
-      throw new ApplicationError(
-        { userId: id, err },
-        `Unable to get user: ${err.name}:${err.message}.`
-      );
+      throw new ApplicationError({ err }, `Internal error getting user.`);
     }
     return user;
   }
@@ -88,7 +87,7 @@ class UserService {
     if (output.nModified) {
       updatedUser = await this.getUser(id);
     } else {
-      throw new ApplicationError({ id, updates }, 'User not updated.');
+      throw new Error('User not updated.');
     }
     return updatedUser;
   }
@@ -107,8 +106,8 @@ class UserService {
       user = await this.UserModel.findById(userId);
     } catch (err) {
       throw new ApplicationError(
-        { userId, alias, err },
-        `Can't add alias. Unable to find user: ${err.name}:${err.message}.`
+        { err },
+        `Can't add alias. Unable to find user because of an internal error.`
       );
     }
     user.aliases.push(alias);
@@ -132,10 +131,7 @@ class UserService {
     try {
       user = await this.UserModel.findById(userId);
     } catch (err) {
-      throw new ApplicationError(
-        { userId, aliasId, err },
-        `Can't delete alias: ${err.name}:${err.message}.`
-      );
+      throw new ApplicationError({ err }, `Can't delete alias because of an internal error.`);
     }
     console.log('alid', aliasId);
     const alias = user.aliases.find((a) => a._id.toString() === aliasId.toString());
@@ -157,7 +153,7 @@ class UserService {
     try {
       user = await this.UserModel.findById(id);
     } catch (err) {
-      throw new ApplicationError({ id, err }, `Couldn't delete user. Couldn't retrieve user.`);
+      throw new ApplicationError({ err }, `Couldn't delete user. Internal error retrieving user.`);
     }
 
     await user.remove();
@@ -236,10 +232,11 @@ class UserService {
           }
           itemsChanged += 1;
         } catch (err) {
-          throw new Error(
-            `Couldn't ${isRestore ? 'restore' : 'soft delete'} ${item.constructor.modelName} id:${
-              item._id
-            }. ${err}`
+          throw new ApplicationError(
+            { err },
+            `Internal error when trying to ${isRestore ? 'restore' : 'soft delete'} ${
+              item.constructor.modelName
+            } id:${item._id}.`
           );
         }
       }

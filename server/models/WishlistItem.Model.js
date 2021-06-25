@@ -65,9 +65,8 @@ itemSchema.path('wishlist').validate(async function (value) {
   const WishlistModel = require('./Wishlist.Model');
   const wishlist = await WishlistModel.findOne({ _id: value });
   if (!wishlist) {
-    throw new ApplicationError(
-      { wishlist: value },
-      `Invalid WishlistItem "wishlist" property. No wishlist found with id: ${value}`
+    throw new Error(
+      `Invalid WishlistItem schema "wishlist" property. No wishlist found with id: ${value}`
     );
   } else {
     return true;
@@ -77,10 +76,7 @@ itemSchema.path('user').validate(async function (value) {
   const UserModel = require('./User.Model');
   const user = await UserModel.findOne({ _id: value });
   if (!user) {
-    throw new ApplicationError(
-      { user: value },
-      `Invalid WishlistItem "user" property. No user found with id: ${value}`
-    );
+    throw new Error(`Invalid WishlistItem "user" property. No user found with id: ${value}`);
   } else {
     return true;
   }

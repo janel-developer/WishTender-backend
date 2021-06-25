@@ -83,8 +83,11 @@ module.exports = () => {
             logger.log('silly', `Invalid email`);
             res.status(400).send({ message: 'No user found with email address.' });
           }
-        } catch (error) {
-          throw new ApplicationError({}, `Couldn't get user:${error}`);
+        } catch (err) {
+          throw new ApplicationError(
+            { err },
+            `Couldn't send reset password because of an internal error when trying to find user.`
+          );
         }
       }
     },
@@ -93,8 +96,11 @@ module.exports = () => {
     async (req, res, next) => {
       try {
         await resetPasswordEmailService.send(req.selectedUser || req.user);
-      } catch (error) {
-        throw new ApplicationError({}, `Couldn't send reset password email:${error}`);
+      } catch (err) {
+        throw new ApplicationError(
+          { err },
+          `Couldn't send reset password email because of an internal error.`
+        );
       }
       res.status(201).send();
     }
@@ -159,8 +165,10 @@ module.exports = () => {
         }
 
         return res.status(200).send();
-      } catch (error) {
-        return next(new ApplicationError({}, `Couldn't Confirm: ${error}`));
+      } catch (err) {
+        return next(
+          new ApplicationError({ err }, `Couldn't reset password because of an internal error.`)
+        );
       }
     }
   );

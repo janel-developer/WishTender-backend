@@ -30,18 +30,15 @@ class AliasService {
     try {
       user = await UserModel.findById(userId);
     } catch (err) {
-      throw new ApplicationError(
-        { userId, aliasValues, err },
-        `Not able to add alias. User Id not found. ${err.message}`
-      );
+      throw new ApplicationError({ err }, `Not able to add alias. Internal error finding user.`);
     }
 
     try {
       newAlias = await this.AliasModel.create(alias);
     } catch (err) {
       throw new ApplicationError(
-        { userId, alias, err },
-        `Not able to add alias. Alias not able to be created. ${err.message}`
+        { err },
+        `Not able to add alias. Alias not able to be created because of an internal error.`
       );
     }
 
@@ -64,7 +61,7 @@ class AliasService {
     try {
       alias = await this.AliasModel.findById(id);
     } catch (err) {
-      throw new ApplicationError({ id, err }, `Alias not found.`);
+      throw new ApplicationError({ err }, `Internal error when trying to find alias.`);
     }
 
     return alias;
@@ -98,7 +95,7 @@ class AliasService {
         })
         .exec();
     } catch (err) {
-      throw new ApplicationError({ query, err }, `Alias not found.`);
+      throw new ApplicationError({ err }, `Internal error when trying to find alias.`);
     }
     return alias;
   }
@@ -127,7 +124,7 @@ class AliasService {
       }
       return;
     } catch (err) {
-      throw new ApplicationError({ id, updates }, `Alias not updated.${err}`);
+      throw new ApplicationError({ err }, `Alias not updated because of an internal error.`);
     }
   }
 
@@ -143,7 +140,10 @@ class AliasService {
     try {
       alias = await this.AliasModel.findById(id);
     } catch (err) {
-      throw new ApplicationError({ id, err }, `Couldn't delete alias. Alias not found.`);
+      throw new ApplicationError(
+        { err },
+        `Couldn't delete alias. Internal error when trying to find alias.`
+      );
     }
     await alias.remove();
     return alias;

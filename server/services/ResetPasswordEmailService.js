@@ -21,7 +21,7 @@ class ResetPasswordEmailService {
       token = await Token.create({ user: user._id });
       console.log();
     } catch (err) {
-      throw new ApplicationError({}, `Unable to create token: ${err.name}: ${err.message}`);
+      throw new ApplicationError({ err }, `Unable to create token. Internal error.`);
     }
 
     const resetPasswordEmail = new this.ResetPasswordEmail(

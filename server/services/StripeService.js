@@ -160,10 +160,10 @@ class StripeService {
         success_url: `http://localhost:4000/api/checkout/success?true&session_id={CHECKOUT_SESSION_ID}&alias_id=${aliasId}`, // should clear cart and add order to database
         cancel_url: `http://localhost:4000/api/checkout/canceled?session_id={CHECKOUT_SESSION_ID}`,
       });
-    } catch (error) {
+    } catch (err) {
       throw new ApplicationError(
-        { lineItems, wishersTender, account },
-        `Couldn't create Stripe checkout session ${error}`
+        { err },
+        `Couldn't create Stripe checkout session because of an internal error.`
       );
     }
     return session;
@@ -261,8 +261,8 @@ class StripeService {
         idempotencyKey: uuidv4(),
       });
       return info.url;
-    } catch (error) {
-      throw new ApplicationError({}, `Couldn't create onboard link:${error}`);
+    } catch (err) {
+      throw new ApplicationError({ err }, `Internal error when trying to create onboard link`);
     }
   }
 
@@ -315,7 +315,7 @@ class StripeService {
     try {
       await this.stripe.accounts.del(id);
     } catch (err) {
-      throw new ApplicationError(`Couldn't delete account ${err}`);
+      throw new ApplicationError({ err }, `Couldn't delete account because of an internal error.`);
     }
   }
 
@@ -328,7 +328,10 @@ class StripeService {
       const account = await this.stripe.accounts.retrieve(id);
       return account;
     } catch (err) {
-      throw new ApplicationError(`Couldn't retrieve account ${err}`);
+      throw new ApplicationError(
+        { err },
+        `Couldn't retrieve account because of an internal error.`
+      );
     }
   }
 }

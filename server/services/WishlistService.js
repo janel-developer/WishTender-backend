@@ -33,8 +33,8 @@ class WishlistService {
       alias = await AliasModel.findById(aliasId);
     } catch (err) {
       throw new ApplicationError(
-        { aliasId, wishlistValues },
-        `Not able to add wishlist. Alias not found. ${err.message}`
+        { err },
+        `Not able to add wishlist. Alias not found because of an internal error.`
       );
     }
     let user;
@@ -42,16 +42,16 @@ class WishlistService {
       user = await UserModel.findById(alias.user);
     } catch (err) {
       throw new ApplicationError(
-        { aliasId, wishlistValues },
-        `Not able to add wishlist. User not found. ${err.message}`
+        { err },
+        `Not able to add wishlist. User not found because of an internal error.`
       );
     }
     try {
       newWishlist = await this.WishlistModel.create(wishlist);
     } catch (err) {
       throw new ApplicationError(
-        { aliasId, wishlist, err },
-        `Not able to add wishlist. Wishlist not able to be created. ${err.message}`
+        { err },
+        `Not able to add wishlist. Wishlist not able to be created because of an internal error.`
       );
     }
 
@@ -76,7 +76,7 @@ class WishlistService {
       wishlist = await this.WishlistModel.findOne({ _id: id }).populate('wishlistItems').exec();
       console.log('d');
     } catch (err) {
-      throw new ApplicationError({ id, err }, `Wishlist not found.`);
+      throw new ApplicationError({ err }, `Wishlist not found because of an internal error.`);
     }
 
     return wishlist;
@@ -106,7 +106,7 @@ class WishlistService {
       }
       return;
     } catch (err) {
-      throw new ApplicationError({}, `Problem updating Wishlist.${err}`);
+      throw new ApplicationError({ err }, `Internal error updating Wishlist.`);
     }
   }
 
@@ -122,7 +122,10 @@ class WishlistService {
     try {
       wishlist = await this.WishlistModel.findById(id);
     } catch (err) {
-      throw new ApplicationError({ id, err }, `Couldn't delete wishlist. Wishlist not found.`);
+      throw new ApplicationError(
+        { err },
+        `Couldn't delete wishlist. Wishlist not found. Internal error.`
+      );
     }
     await wishlist.remove();
     return wishlist;

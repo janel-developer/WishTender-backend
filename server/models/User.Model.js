@@ -7,7 +7,7 @@ const softDelete = require('mongoosejs-soft-delete');
 const mongoose_delete = require('mongoose-delete');
 const cryptEmail = require('../lib/cryptEmail');
 const StripeService = require('../services/StripeService');
-
+const { ApplicationError } = require('../lib/Error');
 const stripeService = new StripeService(stripe);
 
 const ImageService =
@@ -145,7 +145,7 @@ userSchema.pre('remove', async function (next) {
     }
     next();
   } catch (err) {
-    throw new Error(`Problem removing user resources: ${err}`);
+    throw new ApplicationError({ err }, `Internal error when removing user resources.`);
   }
 });
 
