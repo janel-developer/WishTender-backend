@@ -82,15 +82,15 @@ aliasSchema.path('user').validate(async function (value) {
     const user = await UserModel.findOne({ _id: value });
     const all = await UserModel.find();
     if (!user) {
-      throw new ApplicationError(
-        { user: value },
-        `Invalid Alias "user" property. No user found with id: ${value}`
-      );
+      throw new Error(`Invalid Alias "user" property. No user found with id: ${value}`);
     } else {
       return true;
     }
-  } catch (error) {
-    throw new ApplicationError({}, `Can't validate User on Alias: ${error}`);
+  } catch (err) {
+    throw new ApplicationError(
+      { err },
+      `Can't validate "user" property on Alias because of an internal error.`
+    );
   }
 }, 'Parent User non existent');
 // aliasSchema.plugin(softDelete);

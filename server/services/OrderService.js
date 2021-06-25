@@ -25,7 +25,7 @@ class OrderService {
     try {
       newOrder = await this.OrderModel.create(order);
     } catch (err) {
-      throw new ApplicationError({}, `Not able to add order. ${err.message}`);
+      throw new ApplicationError({ err }, `Internal error when trying to add order.`);
     }
 
     return newOrder;
@@ -42,7 +42,7 @@ class OrderService {
     try {
       orders = await this.OrderModel.update(query, updates);
     } catch (err) {
-      throw new ApplicationError({}, `Couldn't update order. ${err}`);
+      throw new ApplicationError({ err }, `Internal error when trying to update order.`);
     }
 
     return orders;
@@ -58,7 +58,7 @@ class OrderService {
     try {
       orders = await this.OrderModel.deleteOne(query);
     } catch (err) {
-      throw new ApplicationError({}, `Couldn't delete order. ${err}`);
+      throw new ApplicationError({ err }, `Internal error when trying to delete order.`);
     }
 
     return orders;
@@ -76,7 +76,7 @@ class OrderService {
     try {
       orders = await this.OrderModel.find({ alias: aliasId });
     } catch (err) {
-      throw new ApplicationError({ aliasId, err }, `Orders not found. ${err}`);
+      throw new ApplicationError({ err }, `Internal error when trying to find order.`);
     }
 
     return orders;
@@ -94,7 +94,7 @@ class OrderService {
     try {
       orders = await this.OrderModel.find({ alias: aliasId, paid: true });
     } catch (err) {
-      throw new ApplicationError({ aliasId, err }, `Orders not found. ${err}`);
+      throw new ApplicationError({ err }, `Internal error when trying to find order.`);
     }
 
     return orders;
@@ -112,7 +112,7 @@ class OrderService {
     try {
       orders = await this.OrderModel.find({ alias: aliasId, paid: true, seen: false });
     } catch (err) {
-      throw new ApplicationError({ aliasId, err }, `Orders not found. ${err}`);
+      throw new ApplicationError({ err }, `Internal error when trying to find orders.`);
     }
 
     return orders;
@@ -129,7 +129,7 @@ class OrderService {
     try {
       orders = await this.OrderModel.findOne(query);
     } catch (err) {
-      throw new ApplicationError({}, `Orders not found. ${err}`);
+      throw new ApplicationError({ err }, `Internal error when trying to find order.`);
     }
 
     return orders;

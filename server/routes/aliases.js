@@ -224,7 +224,7 @@ module.exports = () => {
         }
         logger.log('silly', `alias could not be updated`);
         return next(
-          new ApplicationError({ err, body: req.body }, `alias could not be updated: ${err}`)
+          new ApplicationError({ err }, `Alias could not be updated because of an internal error.`)
         );
       }
       return res.sendStatus(200);

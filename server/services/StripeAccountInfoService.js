@@ -26,7 +26,7 @@ class StripeAccountInfoService {
         user: userId,
       });
     } catch (err) {
-      throw new ApplicationError({ userId, err }, `Stripe Express Account Info not found. ${err}`);
+      throw new ApplicationError({ err }, `Internal error finding Stripe Account Info.`);
     }
     return account.accountFees.accountFeeDueDue < Date.now();
   }
@@ -39,7 +39,10 @@ class StripeAccountInfoService {
         user: userId,
       });
     } catch (err) {
-      throw new ApplicationError({ userId, err }, `Stripe Express Account Info not found. ${err}`);
+      throw new ApplicationError(
+        { err },
+        `Internal error when trying to find Stripe Express Account Info.`
+      );
     }
     return account;
   }
@@ -50,7 +53,10 @@ class StripeAccountInfoService {
     try {
       account = await this.StripeAccountInfoModel.create(accountInfo);
     } catch (err) {
-      throw new ApplicationError({}, `Stripe Express Account Info not created. ${err}`);
+      throw new ApplicationError(
+        { err },
+        `Stripe Express Account Info not created. Internal error.`
+      );
     }
     return account;
   }
@@ -62,7 +68,10 @@ class StripeAccountInfoService {
       });
       return;
     } catch (err) {
-      throw new ApplicationError({}, `Stripe Express Account Info could not be deleted. ${err}`);
+      throw new ApplicationError(
+        { err },
+        `Stripe Express Account Info could not be deleted because of an internal error.`
+      );
     }
   }
 }

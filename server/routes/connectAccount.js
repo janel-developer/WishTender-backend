@@ -175,12 +175,17 @@ module.exports = () => {
             await req.user.stripeAccountInfo;
           }
           if (account) await stripeService.deleteAccount(account.id);
-          return next(new ApplicationError({}, `Couldn't create Connect account:${err}`));
+          return next(
+            new ApplicationError(
+              { err },
+              `Couldn't create connect account because of an internal error.`
+            )
+          );
         } catch (err2) {
           return next(
             new ApplicationError(
               { err, err2 },
-              `Couldn't create Connect account. Couldn't delete StripeAccountInfo and/or Stripe account object.`
+              `Couldn't create connect account. Then couldn't delete StripeAccountInfo and/or Stripe account object because of an internal error.`
             )
           );
         }
@@ -225,7 +230,12 @@ module.exports = () => {
         await req.stripeAccountInfo.save();
         return res.status(200).send();
       } catch (err) {
-        return next(new ApplicationError({}, `Couldn't activate Stripe Account Info: ${err}`));
+        return next(
+          new ApplicationError(
+            { err },
+            `Couldn't activate Stripe Account Info because of an internal error.`
+          )
+        );
       }
     }
   );
@@ -353,7 +363,12 @@ module.exports = () => {
         );
         res.redirect(302, onboardLink);
       } catch (err) {
-        next(new ApplicationError({}, `Could not create onboarding link: ${err}.`));
+        next(
+          new ApplicationError(
+            { err },
+            `Could not create onboarding link because of an internal error.`
+          )
+        );
       }
     }
   );

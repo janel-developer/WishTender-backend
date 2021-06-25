@@ -21,7 +21,7 @@ class ConfirmationEmailService {
       token = await Token.create({ user: user._id });
       console.log();
     } catch (err) {
-      throw new ApplicationError({}, `Unable to create email token: ${err.name}: ${err.message}`);
+      throw new ApplicationError({ err }, `Internal error when trying to create email token.`);
     }
 
     const confirmationEmail = new this.ConfirmationEmail(

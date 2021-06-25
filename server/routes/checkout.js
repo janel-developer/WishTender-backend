@@ -192,7 +192,12 @@ module.exports = () => {
             console.log(info);
           }
         } catch (err) {
-          return next(new ApplicationError({}, `Couldn't send receipt to tender ${err}`));
+          return next(
+            new ApplicationError(
+              { err },
+              `Couldn't send receipt to tender because of an internal error.`
+            )
+          );
         }
 
         // send notification email to notify wisher
@@ -204,7 +209,12 @@ module.exports = () => {
             console.log(info);
           }
         } catch (err) {
-          return next(new ApplicationError({}, `Couldn't send notification to  wisher ${err}`));
+          return next(
+            new ApplicationError(
+              { err },
+              `Couldn't send notification to wisher because of an internal error.`
+            )
+          );
         }
       }
       const session = await Session.findOne({ _id: order.session });

@@ -21,9 +21,12 @@ async function authNotConfirmed(req, res, next) {
     }
     req.userToBeConfirmed = user;
     return next();
-  } catch (error) {
+  } catch (err) {
     return next(
-      new ApplicationError({}, `Couldn't authorize that user is not confirmed: ${error}`)
+      new ApplicationError(
+        { err },
+        `Couldn't authorize that user is not confirmed because of an internal error.`
+      )
     );
   }
 }
@@ -91,8 +94,10 @@ module.exports = () => {
     try {
       await confirmationEmailService.send(req.userToBeConfirmed);
       return res.status(200).send();
-    } catch (error) {
-      return next(new ApplicationError({}, `Couldn't send email: ${error}`));
+    } catch (err) {
+      return next(
+        new ApplicationError({ err }, `Couldn't send email because of an internal error.`)
+      );
     }
   });
 
@@ -144,8 +149,10 @@ module.exports = () => {
           return res.status(200).send();
         });
       });
-    } catch (error) {
-      return next(new ApplicationError({ error }, `Couldn't confirm email.`));
+    } catch (err) {
+      return next(
+        new ApplicationError({ err }, `Couldn't confirm email because of an internal error.`)
+      );
     }
   });
 

@@ -31,12 +31,9 @@ function authLoggedIn(req, res, next) {
   return next();
 }
 
-async function throwIfNotAuthorizedResource(req, res, next) {
+async function authUserOwnsWishlistItem(req, res, next) {
   // change this to check that wishlist is in user wishlist array
   logger.log('silly', `authorizing user owns resource...`);
-  if (!req.user) {
-    return next(new ApplicationError({}, `Not Authorized.`));
-  }
   if (req.method === 'POST') {
     // need get wish list to get user id or get alis to get wishlist id
     let wishlist;
@@ -60,7 +57,9 @@ async function throwIfNotAuthorizedResource(req, res, next) {
       next(err);
     }
     if (!wishlistItem)
-      return next(new ApplicationError({}, `No wishlist item found. id: ${req.params.id}`));
+      return res.status(400).send({
+        message: `No wishlist item with id: ${req.params.id}`,
+      });
     // should authorize that user of wishlistItem is req.user
     if (wishlistItem.user.toString() !== req.user._id.toString()) {
       return res.status(403).send({
@@ -77,7 +76,7 @@ module.exports = () => {
     '/',
     authLoggedIn,
     csrfProtection,
-    throwIfNotAuthorizedResource,
+    authUserOwnsWishlistItem,
     middlewares.onlyAllowInBodySanitizer([
       'itemName',
       'imageCrop',
@@ -104,7 +103,10 @@ module.exports = () => {
         }
         logger.log('silly', `wishlist item could not be added`);
         return next(
-          new ApplicationError({ err, body: req.body }, `wishlist item could not be added: ${err}`)
+          new ApplicationError(
+            { err },
+            `Wishlist item could not be added because of an internal error.`
+          )
         );
       }
     }
@@ -115,11 +117,13 @@ module.exports = () => {
     authLoggedIn,
     csrfProtection,
     middlewares.onlyAllowInBodySanitizer(['itemName', 'imageCrop', 'price', 'url', 'image']),
-    throwIfNotAuthorizedResource,
+    authUserOwnsWishlistItem,
     middlewares.upload.single('image'),
     (req, res, next) => {
       if (!Object.keys(req.body).length && !req.file) {
-        return next(new ApplicationError({}, 'No data submitted.'));
+        return res.status(400).send({
+          message: `No data submitted.`,
+        });
       }
       return next();
     },
@@ -140,8 +144,8 @@ module.exports = () => {
         logger.log('silly', `wishlist item could not be updated ${err}`);
         return next(
           new ApplicationError(
-            { err, body: req.body },
-            `wishlist item could not be updated ${req.body}: ${err}`
+            { err },
+            `wishlist item could not be updated because of an internal error.`
           )
         );
       }
@@ -152,7 +156,7 @@ module.exports = () => {
   wishlistItemRoutes.delete(
     '/:id',
     authLoggedIn,
-    throwIfNotAuthorizedResource,
+    authUserOwnsWishlistItem,
     async (req, res, next) => {
       logger.log('silly', `deleting wishlist item by id`);
       const { id } = req.params;

@@ -36,9 +36,8 @@ stripeInfoSchema.path('user').validate(async function (value) {
   const UserModel = require('./User.Model');
   const user = await UserModel.findOne({ _id: value });
   if (!user) {
-    throw new ApplicationError(
-      { user: value },
-      `Invalid Stripe Account Information "user" property. No user found with id: ${value}`
+    throw new Error(
+      `Invalid "user" property for  Stripe Account Information schema. No user found with id: ${value}`
     );
   } else {
     return true;

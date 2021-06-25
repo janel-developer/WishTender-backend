@@ -67,10 +67,7 @@ wishlistSchema.path('alias').validate(async function (value) {
   const AliasModel = require('./Alias.Model');
   const alias = await AliasModel.findOne({ _id: value });
   if (!alias) {
-    throw new ApplicationError(
-      { alias: value },
-      `Invalid Wishlist "alias" property. No alias found with id: ${value}`
-    );
+    throw new Error(`Invalid Wishlist document "alias" property. No alias found with id: ${value}`);
   } else {
     return true;
   }
@@ -79,10 +76,7 @@ wishlistSchema.path('user').validate(async function (value) {
   const UserModel = require('./User.Model');
   const user = await UserModel.findOne({ _id: value });
   if (!user) {
-    throw new ApplicationError(
-      { user: value },
-      `Invalid Wishlist "user" property. No user found with id: ${value}`
-    );
+    throw new Error(`Invalid Wishlist schema "user" property. No user found with id: ${value}`);
   } else {
     return true;
   }

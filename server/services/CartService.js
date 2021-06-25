@@ -22,9 +22,10 @@ const addToCart = async (itemId, currentCart) => {
       })
       .exec();
   } catch (err) {
-    throw new ApplicationError({ itemId, status: 500 }, `Error getting WishlistItem: ${err}`);
+    throw new ApplicationError({ err }, `Internal error getting WishlistItem.`);
   }
-  if (!item) throw new ApplicationError({ status: 404 }, `Item doesn't exist`);
+  // shouldn't we validate this before and send 400? also the {status: 400} part isn't utilized atm.
+  if (!item) throw new ApplicationError({ status: 400 }, `Item doesn't exist`);
 
   cart.add(item);
   return cart;
@@ -48,10 +49,7 @@ const updateAliasCartPrices = async (aliasCart) => {
       try {
         itemInfo = await WishlistItem.findById(itemId);
       } catch (err) {
-        throw new ApplicationError(
-          { itemId },
-          `Wishlist Item not found when updating cart prices: ${itemId}`
-        );
+        throw new ApplicationError({ err }, `Internal error when trying to find wishlist item.`);
       }
       if (!itemInfo) {
         delete aliasCartCopy.items[itemId];
@@ -108,8 +106,8 @@ const updateAliasCart = async (aliasCart) => {
         itemInfo = await WishlistItem.findById(itemId);
       } catch (err) {
         throw new ApplicationError(
-          { itemId },
-          `Wishlist Item not found when updating cart prices: ${itemId}`
+          { err },
+          `Internal error when trying to find wishlist item to update cart prices.`
         );
       }
       const old = aliasCartCopy.items[itemId].item;

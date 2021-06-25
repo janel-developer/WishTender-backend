@@ -26,7 +26,7 @@ const authUserOwnsOrder = (errorMessage) => async (req, res, next) => {
     if (req.user.aliases[0].toString() !== req.order.alias.toString())
       return res.status(403).send("User doesn't have permission.");
   } catch (err) {
-    return next(new ApplicationError({ err }, `errorMessage`));
+    return next(new ApplicationError({ err }, `Internal error authorizing user owns order.`));
   }
   return next();
 };
@@ -133,7 +133,9 @@ module.exports = () => {
           await req.order.save();
         }
       } catch (err) {
-        return next(new ApplicationError({ err }, `Couldn't reply to tender`));
+        return next(
+          new ApplicationError({ err }, `Couldn't reply to tender because of an internal error.`)
+        );
       }
       return res.status(200).send({ messageSent: message });
     }

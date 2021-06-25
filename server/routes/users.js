@@ -23,13 +23,10 @@ const authUserLoggedIn = (req, res, next) => {
   }
   res.status(401).send({ message: 'No user logged in' });
 };
-function throwIfNotAuthorized(req, res, next) {
+function authUserIsParamUser(req, res, next) {
   logger.log('silly', `authorizing...`);
   if (req.user._id != req.params.id) {
-    throw new ApplicationError(
-      { currentUser: req.user._id, owner: req.param.id },
-      `Not Authorized ${req.user._id} ${req.params.id} `
-    );
+    return res.status(403).send({ message: `User doesn't own resource.` });
   }
   return next();
 }
@@ -261,7 +258,7 @@ module.exports = () => {
     },
     throwIfExpressValidatorError,
     authUserLoggedIn,
-    throwIfNotAuthorized,
+    authUserIsParamUser,
     async (req, res, next) => {
       logger.log('silly', `deleting user by id`);
 
