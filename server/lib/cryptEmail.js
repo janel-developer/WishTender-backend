@@ -33,7 +33,9 @@ const code = (charArray, key, n) => {
 };
 const encrypt = (str, key = k, n = 126, decrypt = false) => {
   if (!(typeof key === 'number' && key % 1 === 0) || !(typeof key === 'number' && key % 1 === 0)) {
-    throw new Error('Invalid parameters');
+    console.log(typeof key);
+    console.log(`encr keyeye${Object.keys(key)}`);
+    throw new Error('Invalid parameters when encrypt email.');
   }
   let chars = str.toString().split('');
 
@@ -56,8 +58,8 @@ const encrypt = (str, key = k, n = 126, decrypt = false) => {
 const defs = (str, key = k, n = 126) => {
   if (!(typeof key === 'number' && key % 1 === 0) || !(typeof key === 'number' && key % 1 === 0)) {
     console.log(typeof key);
-    console.log(`keyeye${Object.keys(key)}`);
-    throw new Error('Invalid parameters');
+    console.log(`defs keyeye${Object.keys(key)}`);
+    throw new Error('Invalid parameters when defs email.');
   }
 
   return encrypt(str.toString(), n - key, n, true);
