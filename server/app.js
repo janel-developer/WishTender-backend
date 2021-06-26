@@ -44,6 +44,7 @@ module.exports = (config) => {
     'https://staging.wishtender.com',
   ];
   if (process.env.NODE_ENV !== 'production') origins.push('http://localhost:3000');
+  console.log('allowed origins', origins);
   app.use((req, res, next) => {
     logger.log('silly', `${req.method}: ${req.path}`);
 
