@@ -21,7 +21,7 @@ const itemImageService = new ImageService(`images/itemImages/`);
 
 const SALT_ROUNDS = 12;
 const { Schema } = mongoose;
-const normalizeAndEncrypt = (v) => cryptEmail.encrypt(v.toLowerCase);
+const normalizeAndEncrypt = (v) => cryptEmail.encrypt(v.toLowerCase());
 const decrypt = (v) => cryptEmail.defs(v);
 const userSchema = new Schema(
   {
@@ -82,10 +82,14 @@ const userSchema = new Schema(
   },
   {
     toJSON: {
+      getters: true,
+      setters: true,
       transform(doc, ret) {
         delete ret.password;
       },
     },
+    toObject: { getters: true, setters: true },
+    runSettersOnQuery: true,
   },
   {
     timestamps: { createdAt: 'created_at' },

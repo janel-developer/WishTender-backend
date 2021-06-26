@@ -195,7 +195,7 @@ module.exports = () => {
     '/',
 
     onlyAllowInBodySanitizer(['password', 'email']),
-    body('order.buyerInfo.email', `Invalid email.`).isEmail(),
+    body('email', `Invalid email.`).isEmail(),
 
     body('email', `Password must be included to update email.`).custom(
       (email, { req }) => !!req.body.password

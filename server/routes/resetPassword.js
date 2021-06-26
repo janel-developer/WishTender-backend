@@ -81,7 +81,7 @@ module.exports = () => {
           req.selectedUser = await User.findOne({ email: req.body.email });
           if (!req.selectedUser) {
             logger.log('silly', `Invalid email`);
-            res.status(400).send({ message: 'No user found with email address.' });
+            return res.status(400).send({ message: 'No user found with email address.' });
           }
         } catch (err) {
           throw new ApplicationError(
@@ -90,6 +90,7 @@ module.exports = () => {
           );
         }
       }
+      return next();
     },
     resetRateLimit,
 
