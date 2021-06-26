@@ -1,7 +1,15 @@
 const AWS = require('aws-sdk');
 const logger = require('../logger');
 
-const BUCKET_NAME = process.env.NODE_ENV === 'test' ? 'wishtender-test' : 'wishtender';
+let BUCKET_NAME;
+
+if (process.env.NODE_ENV === 'production') {
+  BUCKET_NAME = 'wishtender';
+} else if (process.env.NODE_ENV === 'develop') {
+  BUCKET_NAME = 'wishtender-dev';
+} else {
+  BUCKET_NAME = 'wishtender-test';
+}
 const IAM_USER_KEY =
   process.env.NODE_ENV === 'test'
     ? process.env.AWS_TEST_ACCESS_KEY_ID

@@ -60,25 +60,23 @@ const defaultCurrencies = {
 };
 
 const frontEndRoutes = [
-  '/betathankyou',
-  '/demo',
-  '/sign-up',
-  '/email',
-  '/wishlist-setup',
-  '/order',
-  '/login',
-  '/logout',
-  '/test',
-  '/cart',
-  '/request-password-reset',
-  '/reset-password',
-  '/connect-success',
-  '/wish-tracker',
-  '/confirmation-email',
-  '/confirm-email',
-  '/account-settings',
-  '/:alias',
-  '/',
+  'betathankyou',
+  'demo',
+  'sign-up',
+  'email',
+  'wishlist-setup',
+  'order',
+  'login',
+  'logout',
+  'test',
+  'cart',
+  'request-password-reset',
+  'reset-password',
+  'connect-success',
+  'wish-tracker',
+  'confirmation-email',
+  'confirm-email',
+  'account-settings',
 ];
 
 function authCountrySupported(req, res, next) {
@@ -140,7 +138,9 @@ module.exports = () => {
       /^[0-9A-Za-z_-]+$/,
       'i'
     ),
-    body('handle', 'This handle is not allowed').custom((handle) => frontEndRoutes.include(handle)),
+    body('handle', 'This handle is not allowed').custom(
+      (handle) => !frontEndRoutes.includes(handle)
+    ),
     middlewares.throwIfExpressValidatorError,
     authLoggedIn,
     authUserHasNoAlias,
@@ -205,7 +205,7 @@ module.exports = () => {
 
     body('handle', 'This handle is not allowed')
       .optional()
-      .custom((handle) => frontEndRoutes.include(handle)),
+      .custom((handle) => !frontEndRoutes.includes(handle)),
     middlewares.throwIfExpressValidatorError,
     authLoggedIn,
     authUserOwnsAliasInParam,
