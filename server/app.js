@@ -55,7 +55,8 @@ module.exports = (config) => {
         if (!origin) return callback(null, true);
         if (isPhoneDebugging(req)) origins.push(origin);
         if (origins.indexOf(origin) === -1) {
-          console.log(origin);
+          console.log('origin----', origin);
+          console.log('origins----', origin);
           const msg =
             'The CORS policy for this site does not allow access from the specified Origin.';
           return callback(new Error(msg), false);
