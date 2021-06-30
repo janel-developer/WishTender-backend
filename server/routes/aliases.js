@@ -133,6 +133,7 @@ const authUserFromQuery = (req, res, next) => {
 module.exports = () => {
   aliasRoutes.post(
     '/',
+
     middlewares.onlyAllowInBodySanitizer(['handle', 'country', 'aliasName']),
     body('handle', "Your handle can only contain letters, numbers, '_', or '-'").matches(
       /^[0-9A-Za-z_-]+$/,
