@@ -157,8 +157,8 @@ class StripeService {
         // mode: 'setup',
         // setup_intent_data: { on_behalf_of: account },
         // ?session_id={CHECKOUT_SESSION_ID} means the redirect will have the session ID set as a query param
-        success_url: `http://localhost:4000/api/checkout/success?true&session_id={CHECKOUT_SESSION_ID}&alias_id=${aliasId}`, // should clear cart and add order to database
-        cancel_url: `http://localhost:4000/api/checkout/canceled?session_id={CHECKOUT_SESSION_ID}`,
+        success_url: `${process.env.API_BASEURL}/api/checkout/success?true&session_id={CHECKOUT_SESSION_ID}&alias_id=${aliasId}`, // should clear cart and add order to database
+        cancel_url: `${process.env.API_BASEURL}/api/checkout/canceled?session_id={CHECKOUT_SESSION_ID}`,
       });
     } catch (err) {
       throw new ApplicationError(
@@ -246,11 +246,11 @@ class StripeService {
         // your server to create a new account link using this API,
         // with the same parameters, and redirect the user to the
         // new account link.
-        refresh_url: `http://localhost:4000/api/refreshConnectLink`,
+        refresh_url: `${process.env.API_BASEURL}/api/refreshConnectLink`,
 
         // The URL that the user will be redirected to upon leaving or
         // completing the linked flow.
-        return_url: `http://localhost:3000/connect-success`,
+        return_url: `${process.env.FRONT_BASEURL}/connect-success`,
 
         // account_onboarding for first time.
         // account_update for when the user updates their account:
@@ -274,7 +274,7 @@ class StripeService {
     const link = await this.stripe.accounts.createLoginLink(
       accountId,
       {
-        redirect_url: 'http://localhost:3000/wish-tracker',
+        redirect_url: `${process.env.FRONT_BASEURL}/wish-tracker`,
       },
       { idempotencyKey: uuidv4() } // correct?
     );

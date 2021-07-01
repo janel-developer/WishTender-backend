@@ -231,7 +231,7 @@ module.exports = () => {
       }
       return res.redirect(
         301,
-        `http://localhost:3000/order?success=true&session_id=${session_id}&aliasHandle=${alias.handle}`
+        `${process.env.FRONT_BASEURL}/order?success=true&session_id=${session_id}&aliasHandle=${alias.handle}`
       );
     }
   );
@@ -239,7 +239,7 @@ module.exports = () => {
     // eslint-disable-next-line camelcase
     const { session_id } = req.query;
     await orderService.deleteOrder({ processorPaymentID: session_id });
-    return res.redirect(301, `http://localhost:3000/cart`);
+    return res.redirect(301, `${process.env.FRONT_BASEURL}/cart`);
   });
   checkoutRoutes.post(
     '/',
