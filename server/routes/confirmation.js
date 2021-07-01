@@ -144,6 +144,15 @@ module.exports = () => {
           if (!user.confirmed) {
             user.confirmed = true;
             user.save();
+            // login incase confirmed on another browser
+            if (!req.user) {
+              req.login(user, (error) => {
+                if (error) {
+                  return next(err);
+                }
+                logger.log('silly', `user logged in`);
+              });
+            }
           }
 
           return res.status(200).send();
