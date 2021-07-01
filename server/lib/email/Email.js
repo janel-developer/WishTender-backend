@@ -31,7 +31,10 @@ class Email {
 
   get transporter() {
     let transporter;
-    if (process.env.NODE_ENV === 'production') {
+    if (
+      process.env.NODE_ENV === 'production' ||
+      (process.env.NODE_ENV === 'development' && process.env.REMOTE === 'true')
+    ) {
       logger.log('debug', 'email sending through zoho');
       logger.log('debug', `Message: ${this.html}`);
       transporter = nodemailer.createTransport({
