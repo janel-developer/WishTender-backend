@@ -26,9 +26,16 @@ class AWSImageService extends ImageService {
   }
 
   filepathToStore(filename) {
-    return `https://wishtender${
-      process.env.NODE_ENV === 'test' ? '-test' : ''
-    }.s3.amazonaws.com/${this.filepath(filename)}`;
+    let bucketEnding;
+
+    if (process.env.NODE_ENV === 'production') {
+      bucketEnding = '';
+    } else if (process.env.NODE_ENV === 'development') {
+      bucketEnding = '-dev';
+    } else {
+      bucketEnding = '-test';
+    }
+    return `https://wishtender${bucketEnding}.s3.amazonaws.com/${this.filepath(filename)}`;
   }
 }
 

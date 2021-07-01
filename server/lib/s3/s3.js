@@ -5,7 +5,7 @@ let BUCKET_NAME;
 
 if (process.env.NODE_ENV === 'production') {
   BUCKET_NAME = 'wishtender';
-} else if (process.env.NODE_ENV === 'develop') {
+} else if (process.env.NODE_ENV === 'development') {
   BUCKET_NAME = 'wishtender-dev';
 } else {
   BUCKET_NAME = 'wishtender-test';

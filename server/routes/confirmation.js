@@ -112,7 +112,7 @@ module.exports = () => {
     logger.log('silly', 'Forwarding to confirm email form');
     res.redirect(
       302,
-      `http://localhost:3000/confirm-email?email=${req.params.email}&token=${req.params.token}`
+      `${process.env.FRONT_BASEURL}/confirm-email?email=${req.params.email}&token=${req.params.token}`
     );
   });
   /*

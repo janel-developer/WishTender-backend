@@ -133,6 +133,7 @@ const authUserFromQuery = (req, res, next) => {
 module.exports = () => {
   aliasRoutes.post(
     '/',
+
     middlewares.onlyAllowInBodySanitizer(['handle', 'country', 'aliasName']),
     body('handle', "Your handle can only contain letters, numbers, '_', or '-'").matches(
       /^[0-9A-Za-z_-]+$/,
@@ -167,9 +168,9 @@ module.exports = () => {
   );
   aliasRoutes.get(
     '/',
-    authLoggedIn,
+    // authLoggedIn,
     // we don't want people to be able to associate a user with an alias that isn't theirs
-    authUserFromQuery,
+    // authUserFromQuery,
     async (req, res, next) => {
       logger.log('silly', `getting alias by query params`);
       const { query } = req;

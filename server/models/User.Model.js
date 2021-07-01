@@ -92,10 +92,11 @@ const userSchema = new Schema(
     runSettersOnQuery: true,
   },
   {
-    timestamps: { createdAt: 'created_at' },
+    // timestamps: { createdAt: 'created_at' },
   }
 );
 
+userSchema.set('timestamps', true);
 userSchema.pre('save', async function preSave(next) {
   const user = this;
   if (!user.isModified('password')) return next();

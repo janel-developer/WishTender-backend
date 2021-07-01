@@ -21,10 +21,15 @@ const auth = require('./lib/auth');
 const handleError = require('./lib/handleError');
 const logger = require('./lib/logger');
 const routes = require('./routes');
+const { testEmail } = require('./lib/testemail');
 
 if (process.env.NODE_ENV === 'production') {
-  process.env.FRONT_BASEURL = 'https://www.wishtender.com/';
-  process.env.API_BASEURL = 'https://wishtender.com/';
+  process.env.FRONT_BASEURL = 'https://www.wishtender.com';
+  process.env.API_BASEURL = 'https://api.wishtender.com';
+} else if (process.env.NODE_ENV === 'development' && process.env.REMOTE === 'true') {
+  // staging environment is set up this way ^
+  process.env.FRONT_BASEURL = 'https://staging.wishtender.com';
+  process.env.API_BASEURL = 'https://api-staging.wishtender.com';
 } else {
   process.env.FRONT_BASEURL = 'http://localhost:3000';
   process.env.API_BASEURL = 'http://localhost:4000';
@@ -44,6 +49,7 @@ module.exports = (config) => {
     'https://staging.wishtender.com',
   ];
   if (process.env.NODE_ENV !== 'production') origins.push('http://localhost:3000');
+  console.log('allowed origins', origins);
   app.use((req, res, next) => {
     logger.log('silly', `${req.method}: ${req.path}`);
 
@@ -55,6 +61,8 @@ module.exports = (config) => {
         if (!origin) return callback(null, true);
         if (isPhoneDebugging(req)) origins.push(origin);
         if (origins.indexOf(origin) === -1) {
+          console.log('origin----', origin);
+          console.log('origins----', origin);
           const msg =
             'The CORS policy for this site does not allow access from the specified Origin.';
           return callback(new Error(msg), false);

@@ -123,7 +123,7 @@ module.exports = () => {
         const thankYouEmail = new ThankYouEmail(
           tenderEmail,
           alias.aliasName,
-          `http://localhost:4000/${alias.handle}`,
+          `${process.env.API_BASEURL}/${alias.handle}`,
           message
         );
 
