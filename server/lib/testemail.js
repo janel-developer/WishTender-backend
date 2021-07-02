@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer');
 const ReceiptEmail = require('./email/ReceiptEmail');
+const { ApplicationError } = require('./Error');
 const logger = require('./logger');
 
 class Email2 {
@@ -82,18 +83,19 @@ class Email2 {
   }
 }
 
-module.exports.testEmail = async () => {
+module.exports.testEmail = async (req, res, next) => {
   //   const email = new Email2(process.env.CONFIRM_EMAIL, process.env.CONFIRM_PASSWORD);
   //   const email = new Email2(process.env.THANKYOU_EMAIL, process.env.THANKYOU_PASSWORD);
-  const email = new Email2(process.env.RECEIPT_EMAIL, process.env.RECEIPT_PASSWORD);
+  const email = new Email2(process.env.RECEIPT_EMAIL, 'koko');
   try {
-    const receiptEmail = new ReceiptEmail({});
-    const info = await receiptEmail.sendSync().then((inf) => inf);
+    const info = await email.sendSync().then((inf) => inf);
     if (info) {
       console.log(info);
     }
   } catch (err) {
-    console.log(err);
+    return next(
+      new ApplicationError({ err }, `Couldn't send receipt to tender because of an internal error.`)
+    );
   }
   //   email.send();
 };

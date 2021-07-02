@@ -104,10 +104,8 @@ module.exports = (config) => {
 
   // Use the session middleware
 
-  app.use((req, res, next) => {
-    const domain = getAcceptableDomain(req);
-    console.log('domain: ', domain);
-    return session({
+  app.use((req, res, next) =>
+    session({
       secret: process.env.SESSION_SECRET, // to do, make environment variable for production
       resave: true,
       saveUninitialized: false,
@@ -115,14 +113,14 @@ module.exports = (config) => {
       // proxy: true,
       cookie: {
         maxAge: 7 * 24 * 60 * 60 * 1000, // this is the key;
-        domain,
+        domain: getAcceptableDomain(req),
         // the REMOTE environment is a live environment but it is not necessarily production, ex a staging environment
         secure: !!(process.env.NODE_ENV === 'production' || process.env.REMOTE),
         httpOnly: true,
         sameSite: process.env.NODE_ENV === 'production' || process.env.REMOTE ? 'none' : true,
       },
-    })(req, res, next);
-  });
+    })(req, res, next)
+  );
 
   app.use((req, res, next) => {
     console.log('sessionID: ', req.sessionID);
@@ -151,21 +149,21 @@ module.exports = (config) => {
 
   // --------------------------------------
 
-  app.use((req, res, next) => {
-    req.session.p = 1;
-    // console.log('req.headers: ', req.headers);
-    // console.log('req.body: ', req.body);
-    // console.log('req.cookies: ', req.cookies);
-    // console.log('req.user: ', req.user);
+  // app.use((req, res, next) => {
+  // req.session.p = 1;
+  // console.log('req.headers: ', req.headers);
+  // console.log('req.body: ', req.body);
+  // console.log('req.cookies: ', req.cookies);
+  // console.log('req.user: ', req.user);
 
-    res.on('close', async () => {
-      // console.log('res.statusCode', res.statusCode);
-      // console.log('res.statusMessage', res.statusMessage);
-      // console.log('res.headers', res._headers);
-      console.log('set-cookie', res._headers['set-cookie']);
-    });
-    next();
-  });
+  // res.on('close', async () => {
+  // console.log('res.statusCode', res.statusCode);
+  // console.log('res.statusMessage', res.statusMessage);
+  // console.log('res.headers', res._headers);
+  // console.log('set-cookie', res._headers['set-cookie']);
+  // });
+  // next();
+  // });
   app.use(auth.setUser);
 
   app.use(flash());
@@ -183,7 +181,7 @@ module.exports = (config) => {
       return next(err);
     }
   });
-  app.get('/s', testEmail);
+  // app.get('/s', testEmail);
   app.use('/api', routes());
   app.set('views', __dirname + '/views');
   app.set('view engine', 'pug');
