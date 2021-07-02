@@ -180,7 +180,7 @@ module.exports = () => {
       } catch (err) {
         return next(err);
       }
-      logger.log('silly', `alias found: ${alias}`);
+      // logger.log('silly', `alias found: ${alias}`);
       if (!alias) return res.sendStatus(204);
       const aliasCopy = alias.toJSON();
       aliasCopy.activated = alias.user.stripeAccountInfo
