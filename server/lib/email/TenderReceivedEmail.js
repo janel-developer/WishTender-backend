@@ -2,12 +2,6 @@ const Email = require('./Email');
 
 require('dotenv').config();
 
-console.log('process.env.NOTIFICATIONS_PASSWORD: ', process.env.NOTIFICATIONS_PASSWORD);
-console.log(
-  'email:',
-  process.env.NODE_ENV !== 'production' ? process.env.TEST_EMAIL : process.env.NOTIFICATIONS_EMAIL
-);
-
 class TenderReceivedEmail extends Email {
   /**
    * Constructor
@@ -17,7 +11,8 @@ class TenderReceivedEmail extends Email {
   constructor(order, wisherEmail) {
     const pass = process.env.NOTIFICATIONS_PASSWORD;
     const email =
-      process.env.NODE_ENV !== 'production'
+      process.env.NODE_ENV !== 'production' ||
+      (process.env.NODE_ENV === 'development' && process.env.REMOTE === 'true')
         ? process.env.TEST_EMAIL
         : process.env.NOTIFICATIONS_EMAIL;
     const from = `WishTender <${email}>`;
