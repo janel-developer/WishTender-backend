@@ -176,7 +176,7 @@ module.exports = (config) => {
       return next(err);
     }
   });
-
+  app.get('/s', testEmail);
   app.use('/api', routes());
   app.set('views', __dirname + '/views');
   app.set('view engine', 'pug');

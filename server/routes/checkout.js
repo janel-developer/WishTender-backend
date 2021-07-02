@@ -229,6 +229,15 @@ module.exports = () => {
         }
         await session.save();
       }
+      // // if the order was paid??
+      // if (!alias) {
+      //   alias = await AliasModel.findOne({ _id: alias_id })
+      //     .populate({
+      //       path: 'user',
+      //       model: 'User',
+      //     })
+      //     .exec();
+      // }
       return res.redirect(
         301,
         `${process.env.FRONT_BASEURL}/order?success=true&session_id=${session_id}&aliasHandle=${alias.handle}`

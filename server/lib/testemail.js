@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const ReceiptEmail = require('./email/ReceiptEmail');
 const logger = require('./logger');
 
 class Email2 {
@@ -84,7 +85,15 @@ class Email2 {
 module.exports.testEmail = async () => {
   //   const email = new Email2(process.env.CONFIRM_EMAIL, process.env.CONFIRM_PASSWORD);
   //   const email = new Email2(process.env.THANKYOU_EMAIL, process.env.THANKYOU_PASSWORD);
-  const email = new Email2(process.env.RECEIPT_EMAIL, process.env.CONFIRM_PASSWORD);
-
-  email.send();
+  const email = new Email2(process.env.RECEIPT_EMAIL, process.env.RECEIPT_PASSWORD);
+  try {
+    const receiptEmail = new ReceiptEmail({});
+    const info = await receiptEmail.sendSync().then((inf) => inf);
+    if (info) {
+      console.log(info);
+    }
+  } catch (err) {
+    console.log(err);
+  }
+  //   email.send();
 };
