@@ -136,12 +136,12 @@ module.exports = (config) => {
       uri:
         'mongodb+srv://dash:wish12345@wtdev.z6ucx.mongodb.net/myFirstDatabase?retryWrites=true&w=majority',
 
-      expireTimeMs: 15 * 60 * 1000,
+      expireTimeMs: 5 * 60 * 1000,
       errorHandler: console.error.bind(null, 'rate-limit-mongo'),
     }),
     message: 'Too many requests. Try again in 15 minutes.',
     max: 100,
-    windowMs: 15 * 60 * 1000,
+    windowMs: 5 * 60 * 1000,
   });
 
   //  apply to all requests
