@@ -14,7 +14,7 @@ class ThankYouEmail extends Email {
     const email = process.env.THANKYOU_EMAIL;
     const from = `WishTender Wishlist <${email}>`;
     const subject = `Thank You from ${aliasName}`;
-    const html = `<h1> Thank you message from <a href = '${aliasUrl}'>${aliasName}</a>: 
+    const html = `<h1> You received a "Thank You" message from <a href = '${aliasUrl}'>${aliasName}</a>for your gift. Replies to this message will send to WishTender support. Thank you message: 
     <p>${thankYouMessage}</p>
     `;
     super(email, pass, from, to, subject, html);
