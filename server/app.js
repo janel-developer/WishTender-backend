@@ -140,7 +140,7 @@ module.exports = (config) => {
       errorHandler: console.error.bind(null, 'rate-limit-mongo'),
     }),
     message: 'Too many requests. Try again in 15 minutes.',
-    max: 100,
+    max: 500,
     windowMs: 5 * 60 * 1000,
   });
 
