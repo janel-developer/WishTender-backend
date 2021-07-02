@@ -124,6 +124,10 @@ module.exports = (config) => {
     })(req, res, next);
   });
 
+  app.use((req, res, next) => {
+    console.log('sessionID: ', req.sessionID);
+    next();
+  });
   app.use(auth.initialize);
   app.use(auth.session);
 
@@ -154,11 +158,12 @@ module.exports = (config) => {
     // console.log('req.cookies: ', req.cookies);
     // console.log('req.user: ', req.user);
 
-    // res.on('close', async () => {
-    //   console.log('res.statusCode', res.statusCode);
-    //   console.log('res.statusMessage', res.statusMessage);
-    //   console.log('res.headers', res._headers);
-    // });
+    res.on('close', async () => {
+      // console.log('res.statusCode', res.statusCode);
+      // console.log('res.statusMessage', res.statusMessage);
+      // console.log('res.headers', res._headers);
+      console.log('set-cookie', res._headers['set-cookie']);
+    });
     next();
   });
   app.use(auth.setUser);
