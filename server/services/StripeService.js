@@ -118,6 +118,35 @@ class StripeService {
   }
 
   /**
+   * Create LineItems Simplified
+   * @param {Object} aliasCart
+   * @param {Int} stripeFee
+   * @param {Int} appFee
+   * @param {String} currency = 'USD'
+   */
+  static createLineItemsSimplified(aliasCart, appFee, currency = 'USD') {
+    const lineItems = [];
+    const itemArray = Object.values(aliasCart.items);
+    itemArray.forEach((item) =>
+      lineItems.push({
+        name: `WishTender for ${item.item.itemName}`,
+        images: ['https://i.ibb.co/1nBVsqw/gift.png'],
+        quantity: item.qty,
+        currency,
+        amount: item.item.price, // item.price is item.item.price * item.qty
+      })
+    );
+    lineItems.push({
+      name: `WishTender Fee`,
+      images: ['https://i.ibb.co/5vQDJFJ/wishtender.png'],
+      quantity: 1,
+      currency,
+      amount: appFee,
+    });
+    return lineItems;
+  }
+
+  /**
    * Create stripe session
    * @param {Int} lineItems
    * @param {Int} wishersTender
@@ -177,7 +206,6 @@ class StripeService {
    */
   async checkoutCart(aliasCart, presentmentCurrency, usToPresRate, decimalMultiplierUsToPres) {
     // get alias stripe account
-    console.log('jijiiijijijijij');
     const alias = await this.AliasModel.findOne({ _id: aliasCart.alias._id })
       .populate({
         path: 'user',
@@ -191,34 +219,42 @@ class StripeService {
 
     // Get the stripe account info
     const { stripeAccountInfo } = alias.user;
-    // see if stripe account is due for $2 fee
-    const isAccountFeeDue = this.StripeAccountInfoService.isAccountFeeDue(stripeAccountInfo);
-    // calculate fees
-    const fees = new this.Fees(
-      aliasCart.totalPrice,
-      process.env.APPFEE,
-      isAccountFeeDue,
-      presentmentCurrency !== 'USD',
-      stripeAccountInfo.currency !== 'USD',
-      usToPresRate,
-      decimalMultiplierUsToPres
-    );
-    // create line items
-    const lineItems = StripeService.createLineItems(
+
+    // ----- removing the nonsense I did
+    // // see if stripe account is due for $2 fee
+    // const isAccountFeeDue = this.StripeAccountInfoService.isAccountFeeDue(stripeAccountInfo);
+    // // calculate fees
+    // const fees = new this.Fees(
+    //   aliasCart.totalPrice,
+    //   process.env.APPFEE,
+    //   isAccountFeeDue,
+    //   presentmentCurrency !== 'USD',
+    //   stripeAccountInfo.currency !== 'USD',
+    //   usToPresRate,
+    //   decimalMultiplierUsToPres
+    // );
+    // // create line items
+    // const lineItems = StripeService.createLineItems(
+    //   aliasCart,
+    //   fees.stripeTotalFee,
+    //   fees.appFee,
+    //   presentmentCurrency
+    // );
+    //---------------
+    const lineItemsSimple = StripeService.createLineItemsSimplified(
       aliasCart,
-      fees.stripeTotalFee,
-      fees.appFee,
+      Math.round(aliasCart.totalPrice * 0.1),
       presentmentCurrency
     );
     // create stripe sesstion
     const checkoutSession = await this.createStripeSession(
-      lineItems,
+      lineItemsSimple,
       aliasCart.totalPrice,
       stripeAccountInfo.stripeAccountId,
       aliasCart.alias._id
     );
 
-    return { checkoutSession, fees };
+    return checkoutSession;
   }
 
   /**
