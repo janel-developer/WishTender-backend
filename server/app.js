@@ -104,8 +104,10 @@ module.exports = (config) => {
 
   // Use the session middleware
 
-  app.use((req, res, next) =>
-    session({
+  app.use((req, res, next) => {
+    const domain = getAcceptableDomain(req);
+    console.log('domain: ', domain);
+    return session({
       secret: process.env.SESSION_SECRET, // to do, make environment variable for production
       resave: true,
       saveUninitialized: false,
@@ -113,14 +115,14 @@ module.exports = (config) => {
       // proxy: true,
       cookie: {
         maxAge: 7 * 24 * 60 * 60 * 1000, // this is the key;
-        domain: getAcceptableDomain(req),
+        domain,
         // the REMOTE environment is a live environment but it is not necessarily production, ex a staging environment
         secure: !!(process.env.NODE_ENV === 'production' || process.env.REMOTE),
         httpOnly: true,
         sameSite: process.env.NODE_ENV === 'production' || process.env.REMOTE ? 'none' : true,
       },
-    })(req, res, next)
-  );
+    })(req, res, next);
+  });
 
   app.use(auth.initialize);
   app.use(auth.session);
