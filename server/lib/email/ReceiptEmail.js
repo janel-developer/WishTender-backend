@@ -7,16 +7,6 @@ const currency = new Currency(exchangeRateAPI);
 
 require('dotenv').config();
 
-console.log('pw');
-console.log(process.env.RECEIPT_PASSWORD);
-console.log('email');
-console.log(
-  process.env.NODE_ENV === 'production' ||
-    (process.env.NODE_ENV === 'development' && process.env.REMOTE === 'true')
-    ? process.env.RECEIPT_EMAIL
-    : process.env.TEST_EMAIL
-);
-
 class ReceiptEmail extends Email {
   /**
    * Constructor
