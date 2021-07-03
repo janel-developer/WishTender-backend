@@ -28,11 +28,9 @@ class TenderReceivedEmail extends Email {
     const subject = `You Received a WishTender from ${order.buyerInfo.fromLine}!`;
     const html = `<h1> New WishTender!</h1><p>You received a WishTender for ${
       order.cart.totalQty
-    } item${order.cart.totalQty > 1 ? "'s" : ''}: ${Object.values(order.cart.items)
-      .map((x) => x.item.itemName)
-      .join(', ')}  <a href = 'https://${
+    } from ${order.buyerInfo.fromLine}!<a href = 'https://${
       process.env.NODE_ENV === 'production' ? 'www' : 'staging'
-    }.wishtender.com/wish-tracker'>Manage wishes</a>.</p>`;
+    }.wishtender.com/wish-tracker'>View granted wishes</a>.</p>`;
 
     super(email, pass, from, wisherEmail, subject, html);
   }
