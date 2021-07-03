@@ -30,7 +30,7 @@ class TenderReceivedEmail extends Email {
       order.cart.totalQty
     } from ${order.buyerInfo.fromLine}!<a href = 'https://${
       process.env.NODE_ENV === 'production' ? 'www' : 'staging'
-    }.wishtender.com/wish-tracker'>View granted wishes</a>.</p>`;
+    }.wishtender.com/wish-tracker'> View granted wishes</a>.</p>`;
 
     super(email, pass, from, wisherEmail, subject, html);
   }
