@@ -1,14 +1,16 @@
-const StripeService = require('../services/StripeService');
-const StripeAccountInfoService = require('../services/StripeAccountInfoService');
-const StripeAccountInfo = require('../models/StripeAccountInfo.Model');
-const stripeAccountInfoService = new StripeAccountInfoService(StripeAccountInfo);
+const express = require('express');
 const stripe = require('stripe')(
-  process.env.NODE_END === 'production'
+  process.env.NODE_ENV === 'production'
     ? process.env.STRIPE_SECRET_KEY
     : process.env.STRIPE_SECRET_TEST_KEY
 );
-const express = require('express');
-const logger = require('../lib/logger');
+
+console.log();
+const StripeService = require('../services/StripeService');
+const StripeAccountInfoService = require('../services/StripeAccountInfoService');
+const StripeAccountInfo = require('../models/StripeAccountInfo.Model');
+
+const stripeAccountInfoService = new StripeAccountInfoService(StripeAccountInfo);
 const middlewares = require('./middlewares');
 const { ApplicationError } = require('../lib/Error');
 
