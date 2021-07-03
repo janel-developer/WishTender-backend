@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const emailValidator = require('email-validator');
 const bcrypt = require('bcrypt');
 const stripe = require('stripe')(
-  process.env.NODE_END === 'production'
+  process.env.NODE_ENV === 'production'
     ? process.env.STRIPE_SECRET_KEY
     : process.env.STRIPE_SECRET_TEST_KEY
 );

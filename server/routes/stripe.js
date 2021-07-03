@@ -5,7 +5,6 @@ const stripe = require('stripe')(
     : process.env.STRIPE_SECRET_TEST_KEY
 );
 
-console.log();
 const StripeService = require('../services/StripeService');
 const StripeAccountInfoService = require('../services/StripeAccountInfoService');
 const StripeAccountInfo = require('../models/StripeAccountInfo.Model');
