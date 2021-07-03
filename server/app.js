@@ -122,6 +122,10 @@ module.exports = (config) => {
     })(req, res, next)
   );
 
+  app.use((req, res, next) => {
+    console.log('sessionID: ', req.sessionID);
+    next();
+  });
   app.use(auth.initialize);
   app.use(auth.session);
 
@@ -132,12 +136,12 @@ module.exports = (config) => {
       uri:
         'mongodb+srv://dash:wish12345@wtdev.z6ucx.mongodb.net/myFirstDatabase?retryWrites=true&w=majority',
 
-      expireTimeMs: 15 * 60 * 1000,
+      expireTimeMs: 5 * 60 * 1000,
       errorHandler: console.error.bind(null, 'rate-limit-mongo'),
     }),
     message: 'Too many requests. Try again in 15 minutes.',
-    max: 100,
-    windowMs: 15 * 60 * 1000,
+    max: 500,
+    windowMs: 5 * 60 * 1000,
   });
 
   //  apply to all requests
@@ -145,20 +149,21 @@ module.exports = (config) => {
 
   // --------------------------------------
 
-  app.use((req, res, next) => {
-    req.session.p = 1;
-    // console.log('req.headers: ', req.headers);
-    // console.log('req.body: ', req.body);
-    // console.log('req.cookies: ', req.cookies);
-    // console.log('req.user: ', req.user);
+  // app.use((req, res, next) => {
+  // req.session.p = 1;
+  // console.log('req.headers: ', req.headers);
+  // console.log('req.body: ', req.body);
+  // console.log('req.cookies: ', req.cookies);
+  // console.log('req.user: ', req.user);
 
-    // res.on('close', async () => {
-    //   console.log('res.statusCode', res.statusCode);
-    //   console.log('res.statusMessage', res.statusMessage);
-    //   console.log('res.headers', res._headers);
-    // });
-    next();
-  });
+  // res.on('close', async () => {
+  // console.log('res.statusCode', res.statusCode);
+  // console.log('res.statusMessage', res.statusMessage);
+  // console.log('res.headers', res._headers);
+  // console.log('set-cookie', res._headers['set-cookie']);
+  // });
+  // next();
+  // });
   app.use(auth.setUser);
 
   app.use(flash());
@@ -176,7 +181,7 @@ module.exports = (config) => {
       return next(err);
     }
   });
-
+  // app.get('/s', testEmail);
   app.use('/api', routes());
   app.set('views', __dirname + '/views');
   app.set('view engine', 'pug');

@@ -18,7 +18,11 @@ class ReceiptEmail extends Email {
     const { alias } = cart;
     const pass = process.env.RECEIPT_PASSWORD;
     const email =
-      process.env.NODE_ENV !== 'production' ? process.env.TEST_EMAIL : process.env.RECEIPT_EMAIL;
+      process.env.NODE_ENV === 'production' ||
+      (process.env.NODE_ENV === 'development' && process.env.REMOTE === 'true')
+        ? process.env.RECEIPT_EMAIL
+        : process.env.TEST_EMAIL;
+
     const from = `WishTender <${email}>`;
     const subject = `Your Receipt`;
     const html = `<h1> Thank you for you for your purchase!</h1><p>You purchased a WishTender for ${

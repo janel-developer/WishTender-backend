@@ -16,11 +16,11 @@ const stripeInfoSchema = new mongoose.Schema(
     // detailsSubmitted: { type: Boolean, required: true },
     currency: { type: String },
     country: { type: String },
-    accountFees: {
-      due: { type: Date },
-      lastAccountFeePaid: { type: Date },
-      accountFeesPaid: [{ type: Date }],
-    },
+    // accountFees: {
+    //   due: { type: Date },
+    //   lastAccountFeePaid: { type: Date },
+    //   accountFeesPaid: [{ type: Date }],
+    // },
   },
   {
     toJSON: {

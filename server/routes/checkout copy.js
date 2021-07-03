@@ -156,36 +156,34 @@ module.exports = () => {
           });
         });
         // wishlistItemService.updateWishlistItem()
+        if (order.fees.stripe.accountDues === 200) {
+          alias = await AliasModel.findOne({ _id: alias_id })
+            .populate({
+              path: 'user',
+              model: 'User',
+              populate: {
+                path: 'stripeAccountInfo',
+                model: 'StripeAccountInfo',
+              },
+            })
+            .exec();
+          let inThirtyDays = new Date(time);
+          inThirtyDays = new Date(inThirtyDays.setDate(inThirtyDays.getDate() + 30));
+          alias.user.stripeAccountInfo.accountFees = {
+            due: inThirtyDays,
+            lastAccountFeePaid: time,
+            accountFeesPaid: [...alias.user.stripeAccountInfo.accountFees.accountFeesPaid, time],
+          };
 
-        // removing because this was a crazy idea
-        // if (order.fees.stripe.accountDues === 200) {
-        //   alias = await AliasModel.findOne({ _id: alias_id })
-        //     .populate({
-        //       path: 'user',
-        //       model: 'User',
-        //       populate: {
-        //         path: 'stripeAccountInfo',
-        //         model: 'StripeAccountInfo',
-        //       },
-        //     })
-        //     .exec();
-        //   let inThirtyDays = new Date(time);
-        //   inThirtyDays = new Date(inThirtyDays.setDate(inThirtyDays.getDate() + 30));
-        //   alias.user.stripeAccountInfo.accountFees = {
-        //     due: inThirtyDays,
-        //     lastAccountFeePaid: time,
-        //     accountFeesPaid: [...alias.user.stripeAccountInfo.accountFees.accountFeesPaid, time],
-        //   };
-
-        //   await alias.user.stripeAccountInfo.save();
-        // } else {
-        alias = await AliasModel.findOne({ _id: alias_id })
-          .populate({
-            path: 'user',
-            model: 'User',
-          })
-          .exec();
-        // }
+          await alias.user.stripeAccountInfo.save();
+        } else {
+          alias = await AliasModel.findOne({ _id: alias_id })
+            .populate({
+              path: 'user',
+              model: 'User',
+            })
+            .exec();
+        }
         // send receipt to notify gifter
         try {
           const receiptEmail = new ReceiptEmail(order);

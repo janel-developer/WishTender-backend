@@ -64,7 +64,7 @@ const checkout = async (aliasCart, currency, orderObject) => {
   }
 
   // start checkout
-  const { checkoutSession, fees } = await stripeService.checkoutCart(
+  const checkoutSession = await stripeService.checkoutCart(
     cart,
     currency,
     usToPres,
@@ -82,8 +82,8 @@ const checkout = async (aliasCart, currency, orderObject) => {
   newOrderObject.processedBy = 'Stripe';
   newOrderObject.paid = false;
   newOrderObject.expireAt = new Date().toISOString();
-  newOrderObject.total = { amount: fees.charge, currency };
-  newOrderObject.wishersTender = { intended: { amount: fees.wishersTender, currency } };
+  newOrderObject.total = { amount: Math.round(aliasCart.totalPrice * 1.1), currency };
+  newOrderObject.wishersTender = { intended: { amount: aliasCart.totalPrice, currency } };
 
   // this is adding alias to every item. think about redesigning to remove alias from items
   // temp delete alias from each item
@@ -101,16 +101,16 @@ const checkout = async (aliasCart, currency, orderObject) => {
   newOrderObject.cartConverted = !!cart.convertedTo;
   if (cart.convertedTo) newOrderObject.convertedCart = deleteAliasOnItems(cart);
   newOrderObject.fees = {
-    wishTender: fees.appFee,
-    stripe: {
-      charge: fees.stripeFee,
-      connectedAccount: fees.stripeConnectedFee,
-      internationalTransfer: fees.internationalTransferFee,
-      currencyConversion: fees.currencyConversionFee,
-      accountDues: fees.accountFeeDue,
-      total: fees.stripeTotalFee,
-    },
-    total: fees.appFee + fees.stripeTotalFee,
+    wishTender: aliasCart.totalPrice * 0.1,
+    // stripe: {
+    //   charge: fees.stripeFee,
+    //   connectedAccount: fees.stripeConnectedFee,
+    //   internationalTransfer: fees.internationalTransferFee,
+    //   currencyConversion: fees.currencyConversionFee,
+    //   accountDues: fees.accountFeeDue,
+    //   total: fees.stripeTotalFee,
+    // },
+    total: Math.round(aliasCart.totalPrice * 1.1),
     currency,
   };
 
