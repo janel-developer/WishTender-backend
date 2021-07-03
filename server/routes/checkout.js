@@ -1,6 +1,6 @@
 require('dotenv').config({ path: `${__dirname}/./../../.env` });
 const stripe = require('stripe')(
-  process.env.NODE_END === 'production'
+  process.env.NODE_ENV === 'production'
     ? process.env.STRIPE_SECRET_KEY
     : process.env.STRIPE_SECRET_TEST_KEY
 );
