@@ -109,8 +109,9 @@ module.exports = () => {
       if (!order.paid) {
         // add the stripe exchange rate
         order.paid = true;
-        const time = new Date();
-        time.setUTCSeconds(req.stripeExpandedSession.payment_intent.charges.data[0].created);
+        const time = new Date(
+          req.stripeExpandedSession.payment_intent.charges.data[0].created * 1000
+        );
         order.paidOn = time;
         order.expireAt = undefined;
         // order.wishersTender.sent = amountToWisher;
