@@ -6,6 +6,7 @@ const stripe = require('stripe')(
 );
 
 const mongoose = require('mongoose');
+
 const { Schema } = mongoose;
 const SessionSchema = new Schema({ session: String, _id: String }, { strict: false });
 const Session = mongoose.model('sessions', SessionSchema, 'sessions');

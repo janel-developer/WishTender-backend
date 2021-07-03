@@ -2,7 +2,11 @@
 const mongoose = require('mongoose');
 const emailValidator = require('email-validator');
 const bcrypt = require('bcrypt');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_TEST_KEY);
+const stripe = require('stripe')(
+  process.env.NODE_END === 'production'
+    ? process.env.STRIPE_SECRET_KEY
+    : process.env.STRIPE_SECRET_TEST_KEY
+);
 const softDelete = require('mongoosejs-soft-delete');
 const mongoose_delete = require('mongoose-delete');
 const cryptEmail = require('../lib/cryptEmail');

@@ -1,7 +1,7 @@
 require('express-validator');
 const _ = require('lodash');
 const stripe = require('stripe')(
-  process.env.NODE_END === 'production'
+  process.env.NODE_ENV === 'production'
     ? process.env.STRIPE_SECRET_KEY
     : process.env.STRIPE_SECRET_TEST_KEY
 );
@@ -16,28 +16,6 @@ const stripeService = new StripeService(stripe);
 const orderService = new OrderService(OrderModel);
 
 const ratesApi = new ExchangeRatesApiInterface();
-
-const validate = (method) => {
-  // eslint-disable-next-line default-case
-  switch (method) {
-    case 'checkout': {
-      return [
-        body('order', `order doesn't exist`).exists(),
-        body('email', 'Invalid email').exists().isEmail(),
-        // body('order.noteToWisher', 'Note to wisher too long')
-        //   .optional()
-        //   .custom((value) => {
-        //     const aliasId = req.body.alias;
-        //     const aliasCart = req.session.cart.aliasCarts[aliasId];
-        //     const { currency } = aliasCart.alias;
-        //     const total = aliasCart.alias.totalPrice;
-        //     if (value.length <= total) return true;
-        //     if (value.length > total) return false;
-        //   }),
-      ];
-    }
-  }
-};
 
 const checkout = async (aliasCart, currency, orderObject) => {
   // get exchange rate
@@ -118,4 +96,4 @@ const checkout = async (aliasCart, currency, orderObject) => {
   return checkoutSession;
 };
 
-module.exports = { checkout, validate };
+module.exports = { checkout };
