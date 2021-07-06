@@ -68,12 +68,53 @@ class AliasService {
   }
 
   /**
-   * gets an alias
+   * gets an alias pop with wishlist
    * @param {object} query the query
    *
    * @returns {object} the alias
    */
   async getAlias(query) {
+    let alias;
+    try {
+      alias = await this.AliasModel.findOne(query);
+    } catch (err) {
+      throw new ApplicationError({ err }, `Internal error when trying to find alias.`);
+    }
+    return alias;
+  }
+
+  /**
+   * gets an alias pop with wishlist
+   * @param {object} query the query
+   *
+   * @returns {object} the alias
+   */
+  async getAliasWithWishlist(query) {
+    let alias;
+    try {
+      alias = await this.AliasModel.findOne(query)
+        .populate({
+          path: 'wishlists',
+          model: 'Wishlist',
+          populate: {
+            path: 'wishlistItems',
+            model: 'WishlistItem',
+          },
+        })
+        .exec();
+    } catch (err) {
+      throw new ApplicationError({ err }, `Internal error when trying to find alias.`);
+    }
+    return alias;
+  }
+
+  /**
+   * gets an alias pop with user and stripe info
+   * @param {object} query the query
+   *
+   * @returns {object} the alias
+   */
+  async getAliasPopWithWishlistAndStripe(query) {
     let alias;
     try {
       alias = await this.AliasModel.findOne(query)

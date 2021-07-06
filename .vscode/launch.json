@@ -168,6 +168,21 @@
       "envFile": "${workspaceFolder}/.env"
     },
     {
+      "name": "Delete",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/server/migrations/migration6-23-20.js",
+      "console": "integratedTerminal",
+      "env": {
+        "PORT": "4000",
+        "NODE_ENV": "development",
+        "AWS": "true"
+      },
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
       "name": "get countries",
       "type": "node",
       "request": "launch",
