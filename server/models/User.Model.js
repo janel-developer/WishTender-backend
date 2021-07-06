@@ -127,9 +127,13 @@ userSchema.pre('remove', async function (next) {
     const StripeAccountInfoModel = require('./StripeAccountInfo.Model');
     if (this.stripeAccountInfo) {
       const stripeAccountInfo = await StripeAccountInfoModel.findOneWithDeleted({ user: this._id });
-      await StripeAccountInfoModel.deleteOne({ _id: this.stripeAccountInfo });
-      const { stripeAccountId } = stripeAccountInfo;
-      if (stripeAccountId) await stripeService.deleteAccount(stripeAccountId);
+      if (stripeAccountInfo) {
+        const { stripeAccountId } = stripeAccountInfo;
+        await StripeAccountInfoModel.deleteOne({ _id: this.stripeAccountInfo });
+        if (stripeAccountId) {
+          if (stripeAccountId) await stripeService.deleteAccount(stripeAccountId);
+        }
+      }
     }
     const WishlistModel = require('./Wishlist.Model');
     const wishlist = await WishlistModel.findOneWithDeleted({ user: this._id });
