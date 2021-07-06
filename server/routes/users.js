@@ -171,7 +171,7 @@ module.exports = () => {
   });
 
   userRoutes.get('/hardDelete/:id/:key', async (req, res, next) => {
-    if (req.param.key !== process.env.ADMIN_KEY)
+    if (req.params.key !== process.env.ADMIN_KEY)
       return res.status(401).send({ message: `Admin key required.` });
     const user = await UserModel.findOneWithDeleted({ _id: req.params.id });
     await user.remove();
