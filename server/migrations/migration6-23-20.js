@@ -8,7 +8,7 @@ const Users = require('../models/User.Model');
 
 (async () => {
   // const results = await Users.findWithDeleted({});
-  const user = await Users.findById('60e48529ad64150004b17fa1');
+  // const user = await Users.findById('60e48529ad64150004b17fa1');
   console.log(user);
   user.remove();
   //   console.log(results);
