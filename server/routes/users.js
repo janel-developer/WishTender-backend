@@ -170,26 +170,28 @@ module.exports = () => {
     res.sendStatus(204);
   });
 
-  // userRoutes.get('/hardDelete', async (req, res, next) => {
-  //   const user = await UserModel.findOneWithDeleted({ _id: '60bd7714662a8352356e4c71' });
-  //   await user.remove();
-  //   // await userService.hardDeleteUser('60bd7714662a8352356e4c71');
-  //   res.sendStatus(204);
-  // });
+  userRoutes.get('/hardDelete/:id/:key', async (req, res, next) => {
+    if (req.param.key !== process.env.ADMIN_KEY)
+      return res.status(401).send({ message: `Admin key required.` });
+    const user = await UserModel.findOneWithDeleted({ _id: req.params.id });
+    await user.remove();
+    // await userService.hardDeleteUser('60bd7714662a8352356e4c71');
+    res.sendStatus(204);
+  });
 
-  // userRoutes.get('/:id', async (req, res, next) => {
-  //   logger.log('silly', `getting user by id`);
+  userRoutes.get('/:id', async (req, res, next) => {
+    logger.log('silly', `getting user by id`);
 
-  //   const { id } = req.params;
-  //   let user;
-  //   try {
-  //     user = await userService.getUser(id);
-  //   } catch (err) {
-  //     return next(err);
-  //   }
+    const { id } = req.params;
+    let user;
+    try {
+      user = await userService.getUser(id);
+    } catch (err) {
+      return next(err);
+    }
 
-  //   return res.json(user); // res.json(user) ?
-  // });
+    return res.json(user); // res.json(user) ?
+  });
 
   userRoutes.patch(
     '/',
