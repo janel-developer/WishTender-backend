@@ -167,19 +167,18 @@ module.exports = () => {
     }
   );
   aliasRoutes.get(
-    '/:id',
-
-    authLoggedIn,
+    '/',
+    // authLoggedIn,
 
     // we don't want people to be able to associate a user with an alias that isn't theirs
-    authUserOwnsAliasInParam,
+    // authUserOwnsAliasInParam,
 
     async (req, res, next) => {
       logger.log('silly', `getting alias by query params`);
-      const { params } = req;
+      const { query } = req;
       let alias;
       try {
-        alias = await aliasService.getAlias({ _id: params.id });
+        alias = await aliasService.getAliasPopWithWishlistAndStripe(query);
       } catch (err) {
         return next(err);
       }
