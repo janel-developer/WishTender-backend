@@ -25,8 +25,14 @@ const itemImageService = new ImageService(`images/itemImages/`);
 
 const SALT_ROUNDS = 12;
 const { Schema } = mongoose;
-const normalizeAndEncrypt = (v) => cryptEmail.encrypt(v.toLowerCase());
-const decrypt = (v) => cryptEmail.defs(v);
+const normalizeAndEncrypt = (v) => {
+  const result = cryptEmail.encrypt(v.toLowerCase());
+  return result;
+};
+const decrypt = (v) => {
+  const result = cryptEmail.defs(v);
+  return result;
+};
 const userSchema = new Schema(
   {
     deleted: { type: Boolean, default: false },
@@ -44,17 +50,18 @@ const userSchema = new Schema(
       type: String,
       required: true,
       trim: true,
-      set: normalizeAndEncrypt,
-      get: decrypt,
-      // no lowercase since encrypted
-      // lowercase: true,
+      // removing encryption for now
+      // set: normalizeAndEncrypt,
+      // get: decrypt,
+      // no lowercase since encrypted// added back because removed encryption
+      lowercase: true,
       // partialFilterExpression addresses this https://github.com/dsanel/mongoose-delete/issues/86
       index: { unique: true, partialFilterExpression: { deleted: false } },
-      // removed below because encrypted
-      // validate: {
-      //   validator: emailValidator.validate,
-      //   message: (props) => `${props.value} is not a valid email address.`,
-      // },
+      // removed below because encrypted // added again because I removed encryption
+      validate: {
+        validator: emailValidator.validate,
+        message: (props) => `${props.value} is not a valid email address.`,
+      },
     },
     password: {
       type: String,
