@@ -168,7 +168,7 @@
       "envFile": "${workspaceFolder}/.env"
     },
     {
-      "name": "Delete",
+      "name": "Migration",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "node",
