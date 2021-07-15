@@ -306,11 +306,11 @@ class StripeService {
    * create a login link
    * @param {String} accountId an account id
    */
-  async createLoginLink(accountId) {
+  async createLoginLink(accountId, redirect = 'wish-tracker') {
     const link = await this.stripe.accounts.createLoginLink(
       accountId,
       {
-        redirect_url: `${process.env.FRONT_BASEURL}/wish-tracker`,
+        redirect_url: `${process.env.FRONT_BASEURL}/${redirect}`,
       },
       { idempotencyKey: uuidv4() } // correct?
     );

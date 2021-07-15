@@ -19,8 +19,9 @@ const stripeService = new StripeService(stripe);
 module.exports = () => {
   stripeRoutes.get('/login', middlewares.authLoggedIn, async (req, res, next) => {
     try {
+      const { from } = req.query;
       const account = await stripeAccountInfoService.getAccountByUser(req.user._id);
-      const loginLink = await stripeService.createLoginLink(account.stripeAccountId);
+      const loginLink = await stripeService.createLoginLink(account.stripeAccountId, from);
       res.redirect(302, loginLink);
     } catch (err) {
       throw new ApplicationError(
