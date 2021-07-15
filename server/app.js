@@ -124,6 +124,7 @@ module.exports = (config) => {
 
   app.use((req, res, next) => {
     console.log('sessionID: ', req.sessionID);
+    console.log('req.body: ', req.body);
     next();
   });
   app.use(auth.initialize);

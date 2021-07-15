@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const cryptEmail = require('../lib/cryptEmail');
 require('dotenv').config({ path: `${__dirname}/./../../.env` });
 
-mongoose.connect(process.env.PRODUCTION_DB_DSN, { useNewUrlParser: true });
+mongoose.connect(process.env.DEVELOPMENT_DB_DSN, { useNewUrlParser: true });
 
 const Users = require('../models/User.Model');
 
