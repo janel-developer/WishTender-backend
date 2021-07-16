@@ -74,6 +74,7 @@ async function authUserOwnsWishlistItem(req, res, next) {
 module.exports = () => {
   wishlistItemRoutes.post(
     '/',
+
     authLoggedIn,
     csrfProtection,
     authUserOwnsWishlistItem,

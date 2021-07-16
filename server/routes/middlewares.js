@@ -13,10 +13,12 @@ module.exports.upload = upload;
 
 module.exports.handleImage = (imageService, dims) => async (req, res, next) => {
   if (!req.file) return next();
-  if (req.file.mimetype !== 'image/png' && req.file.mimetype !== 'image/jpeg') {
-    // should this be a 400 hundred error/validation?
-    return next(new Error('File format is not supported'));
-  }
+
+  // getting rid of this because my mime type detection is bad
+  // if (req.file.mimetype !== 'image/png' && req.file.mimetype !== 'image/jpeg') {
+  //   // should this be a 400 hundred error/validation?
+  //   return next(new Error('File format is not supported'));
+  // }
   try {
     req.file.storedFilename = await imageService.store(req.file.buffer, dims);
     return next();

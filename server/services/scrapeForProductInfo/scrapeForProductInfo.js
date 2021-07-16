@@ -95,8 +95,9 @@ function scrape(html) {
     }
   });
 
-  info.imageSrcs = new Array(...new Set(imageSrcs)); //gets rid of duplicates
-
+  const uniqueImages = new Array(...new Set(imageSrcs)); //gets rid of duplicates
+  const startWithSlashes = /^\/\/?/g;
+  info.imageSrcs = uniqueImages.map((url) => url.replace(startWithSlashes, 'http://'));
   // title--<title>--&-og:title------------------------------------------
 
   const titleMetaTags = $('meta[property="og:title"]');

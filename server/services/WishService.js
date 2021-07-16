@@ -2,7 +2,7 @@ const axios = require('axios');
 const scrape = require('./scrapeForProductInfo/scrapeForProductInfo');
 const WishModel = require('../models/Wish.Model');
 const logger = require('../lib/logger');
-
+const ApplicationError = require('../lib/Error');
 /**
  * Logic for fetching speakers information
  */
@@ -18,7 +18,6 @@ class WishesService {
   // move this somewhere else
   // eslint-disable-next-line class-methods-use-this
   async getProductInfo(url) {
-    console.log('sup');
     const response = await axios
       .get(url)
       .then((res) => {
@@ -31,8 +30,12 @@ class WishesService {
         throw res.statusText;
       })
       .catch((err) => {
-        console.log(err);
-        return `Error getting product info: ${err}`;
+        if (err.response.status === 403) {
+          throw new Error(
+            `The store you tried to add a wish from blocks scraping. We are trying to fix this.`
+          );
+        }
+        throw new ApplicationError({ err }, `Error getting product info`);
       });
     return response;
   }

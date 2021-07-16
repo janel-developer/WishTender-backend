@@ -1,8 +1,10 @@
 const express = require('express');
+const puppeteer = require('puppeteer');
+
 // const bodyParser = require('body-parser');
 const cors = require('cors');
 const helmet = require('helmet');
-
+const axios = require('axios');
 const mongoose = require('mongoose');
 const flash = require('connect-flash');
 const RateLimit = require('express-rate-limit');
@@ -22,6 +24,7 @@ const handleError = require('./lib/handleError');
 const logger = require('./lib/logger');
 const routes = require('./routes');
 const { testEmail } = require('./lib/testemail');
+const { default: Axios } = require('axios');
 
 if (process.env.NODE_ENV === 'production') {
   process.env.FRONT_BASEURL = 'https://www.wishtender.com';
@@ -182,7 +185,7 @@ module.exports = (config) => {
       return next(err);
     }
   });
-  // app.get('/s', testEmail);
+
   app.use('/api', routes());
   app.set('views', __dirname + '/views');
   app.set('view engine', 'pug');
