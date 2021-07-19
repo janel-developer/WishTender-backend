@@ -100,6 +100,7 @@ class WishlistService {
         const val = update[1];
         wishlist[field] = val;
       });
+
       await wishlist.save();
       if (Object.keys(updates).includes('coverImage') && oldImageFile) {
         await imageService.delete(oldImageFile);
