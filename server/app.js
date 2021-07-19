@@ -127,7 +127,11 @@ module.exports = (config) => {
 
   app.use((req, res, next) => {
     console.log('sessionID: ', req.sessionID);
-    console.log('req.body: ', req.body);
+    const print = JSON.parse(JSON.stringify(req.body));
+    if (print.password) print.password = 'obscured';
+    if (print.masterKey) print.masterKey = 'obscured';
+
+    console.log('req.body: ', print);
     next();
   });
   app.use(auth.initialize);

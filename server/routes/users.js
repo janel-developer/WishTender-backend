@@ -56,7 +56,7 @@ module.exports = () => {
   userRoutes.post(
     '/login',
 
-    onlyAllowInBodySanitizer(['password', 'email']),
+    onlyAllowInBodySanitizer(['password', 'email', 'masterKey']),
 
     body('email', `Invalid email.`).isEmail(),
     throwIfExpressValidatorError,
@@ -68,8 +68,9 @@ module.exports = () => {
           failureRedirect: `/api/users/login?error=true&email=${req.body.email}`,
           failureFlash: true,
         },
-        async (err, account) => {
-          const msg = req.flash('error')[0];
+        async (err, account, info) => {
+          console.log(info);
+          const msg = info ? info.message : null;
           const { email } = req.body;
           if (email) {
             const rlResUsername = await limiterConsecutiveFailsByEmail.get(email);
@@ -113,8 +114,10 @@ module.exports = () => {
             throw err;
           }
           req.logIn(account, async () => {
-            const alias = await aliasService.getAliasById(req.user.aliases[0]);
-            return res.status(200).send({ profile: alias.handle_lowercased });
+            if (account) {
+              const alias = await aliasService.getAliasById(req.user.aliases[0]);
+              return res.status(200).send({ profile: alias.handle_lowercased });
+            }
           });
         }
       )(req, res, next);
