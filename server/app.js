@@ -75,6 +75,7 @@ module.exports = (config) => {
     })(req, res, next);
   });
   app.use((req, res, next) => {
+    console.log('log 7/20/21');
     let allowedOrigin;
     if (req.get('origin')) {
       // couldn't someone just add a key in postman to origin? is that ok? Maybe in production change this so allowedOrigin it's hard coded, not dynamic
