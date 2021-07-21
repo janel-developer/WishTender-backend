@@ -192,7 +192,7 @@ module.exports = (config) => {
 
   app.get('/test', (req, res, next) => {
     console.log('done');
-    next();
+    res.status(200).send({ message: 'hi' });
   });
   app.use('/api', routes());
   app.set('views', __dirname + '/views');
