@@ -92,21 +92,21 @@ class Email2 {
   }
 }
 
-(async (req, res, next) => {
-  // module.exports.testEmail = async (req, res, next) => {
-  //   const email = new Email2(process.env.CONFIRM_EMAIL, process.env.CONFIRM_PASSWORD);
-  //   const email = new Email2(process.env.THANKYOU_EMAIL, process.env.THANKYOU_PASSWORD);
-  const email = new Email2(process.env.RECEIPT_EMAIL, process.env.RECEIPT_PASSWORD);
-  try {
-    const info = await email.sendSync().then((inf) => inf);
-    if (info) {
-      console.log(info);
-    }
-  } catch (err) {
-    console.log(err);
-    // return next(
-    //   new ApplicationError({ err }, `Couldn't send receipt to tender because of an internal error.`)
-    // );
-  }
-  // email.send();
-})();
+// (async (req, res, next) => {
+//   // module.exports.testEmail = async (req, res, next) => {
+//   //   const email = new Email2(process.env.CONFIRM_EMAIL, process.env.CONFIRM_PASSWORD);
+//   //   const email = new Email2(process.env.THANKYOU_EMAIL, process.env.THANKYOU_PASSWORD);
+//   const email = new Email2(process.env.RECEIPT_EMAIL, process.env.RECEIPT_PASSWORD);
+//   try {
+//     const info = await email.sendSync().then((inf) => inf);
+//     if (info) {
+//       console.log(info);
+//     }
+//   } catch (err) {
+//     console.log(err);
+// return next(
+//   new ApplicationError({ err }, `Couldn't send receipt to tender because of an internal error.`)
+// );
+// }
+// email.send();
+// })();
