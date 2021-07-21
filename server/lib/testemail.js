@@ -108,5 +108,5 @@ class Email2 {
     //   new ApplicationError({ err }, `Couldn't send receipt to tender because of an internal error.`)
     // );
   }
-  email.send();
+  // email.send();
 })();
