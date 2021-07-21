@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer');
 const ReceiptEmail = require('./email/ReceiptEmail');
+const ThankYouEmail = require('./email/ThankYouEmail');
 const { ApplicationError } = require('./Error');
 const logger = require('./logger');
 
@@ -24,7 +25,15 @@ class Email2 {
       from: this.user,
       to: 'dangerousdashie@gmail.com',
       subject: 'email',
-      html: 'sending email',
+      html: 'Embedded image: <img src="cid:unique@kreata.ee"/>',
+      attachments: [
+        {
+          filename: 'image.png',
+          path:
+            'https://wishtender.s3.us-east-2.amazonaws.com/images/coverImages/0ab49471-74d2-4944-9d27-ed27869f302d.png',
+          cid: 'unique@kreata.ee', //same cid value as in the html img src
+        },
+      ],
     };
   }
 
@@ -83,19 +92,21 @@ class Email2 {
   }
 }
 
-module.exports.testEmail = async (req, res, next) => {
+(async (req, res, next) => {
+  // module.exports.testEmail = async (req, res, next) => {
   //   const email = new Email2(process.env.CONFIRM_EMAIL, process.env.CONFIRM_PASSWORD);
   //   const email = new Email2(process.env.THANKYOU_EMAIL, process.env.THANKYOU_PASSWORD);
-  const email = new Email2(process.env.RECEIPT_EMAIL, 'koko');
+  const email = new Email2(process.env.RECEIPT_EMAIL, process.env.RECEIPT_PASSWORD);
   try {
     const info = await email.sendSync().then((inf) => inf);
     if (info) {
       console.log(info);
     }
   } catch (err) {
-    return next(
-      new ApplicationError({ err }, `Couldn't send receipt to tender because of an internal error.`)
-    );
+    console.log(err);
+    // return next(
+    //   new ApplicationError({ err }, `Couldn't send receipt to tender because of an internal error.`)
+    // );
   }
-  //   email.send();
-};
+  email.send();
+})();

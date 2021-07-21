@@ -190,6 +190,10 @@ module.exports = (config) => {
     }
   });
 
+  app.get('/test', (req, res, next) => {
+    console.log('done');
+    next();
+  });
   app.use('/api', routes());
   app.set('views', __dirname + '/views');
   app.set('view engine', 'pug');

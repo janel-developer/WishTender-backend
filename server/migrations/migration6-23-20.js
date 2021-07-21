@@ -2,12 +2,13 @@ const mongoose = require('mongoose');
 const cryptEmail = require('../lib/cryptEmail');
 require('dotenv').config({ path: `${__dirname}/./../../.env` });
 
-mongoose.connect(process.env.DEVELOPMENT_DB_DSN, { useNewUrlParser: true });
+mongoose.connect(process.env.PRODUCTION_DB_DSN, { useNewUrlParser: true });
 
 const Users = require('../models/User.Model');
 
 (async () => {
-  const results = await Users.findWithDeleted({});
+  // const results = await Users.findWithDeleted({});
+  const results = await Users.find({});
   // const user = await Users.findById('60ec90bbed21ee00041e255a');
   // console.log(user);
   // user.remove();
@@ -24,12 +25,12 @@ const Users = require('../models/User.Model');
   // console.log(cryptEmail.defs(cryptEmail.encrypt(cryptEmail.encrypt('zausmer@gmail.com'))));
   //   // console.log(email2 === user.email);
   results.forEach(async (user) => {
-    console.log('user ', user.email);
-    console.log('user ', user._id);
+    console.log(user.email);
+    // console.log('user ', user._id);
 
-    const unobf = cryptEmail.defs(user.email);
-    user.email = unobf;
-    console.log(unobf);
-    user.save();
+    // const unobf = cryptEmail.defs(user.email);
+    // user.email = unobf;
+    // console.log(unobf);
+    // user.save();
   });
 })();
