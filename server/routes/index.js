@@ -20,6 +20,15 @@ const router = express.Router();
 module.exports = () => {
   router.use('/wishes', wishRoutes());
 
+  // router.get('/chrome-extension-update', (req, res, next) => {
+  //   console.log(req);
+  //   const { v } = req.query;
+  //   if (v !== 2)
+  //     return res.status(409).send({
+  //       message: 'Update to the new chrome extension. Go To wishtender.com to find out how.',
+  //     });
+  //   next();
+  // });
   router.use('/users', userRoutes());
   router.use('/aliases', aliasRoutes());
   router.use('/wishlists', wishlistRoutes());

@@ -15,6 +15,11 @@ class WishesService {
     this.WishModel = WishModel;
   }
 
+  // eslint-disable-next-line class-methods-use-this
+  async scrapeHTML(html) {
+    return scrape(html);
+  }
+
   // move this somewhere else
   // eslint-disable-next-line class-methods-use-this
   async getProductInfo(url) {
@@ -32,7 +37,7 @@ class WishesService {
       .catch((err) => {
         if (err.response.status === 403) {
           throw new Error(
-            `The store you tried to add a wish from blocks scraping. We are trying to fix this.`
+            `The store you tried to add a wish from blocks scraping. We are building a Chrome extension that will allow you to add products from these sites. Thanks for your patience.`
           );
         }
         throw new ApplicationError({ err }, `Error getting product info`);
