@@ -50,7 +50,7 @@ module.exports = (config) => {
     'https://wishtender.netlify.app',
     'https://www.wishtender.com',
     'https://staging.wishtender.com',
-    'chrome-extension://jmfmpnjaeknofpgafaickkcpnonbebcj',
+    'chrome-extension://apdhdmpoicblbhadnogonfdfhofcfndi',
   ];
   if (process.env.NODE_ENV !== 'production') origins.push('http://localhost:3000');
   console.log('allowed origins', origins);
@@ -99,7 +99,8 @@ module.exports = (config) => {
   app.use(express.static(`${__dirname}/public`));
   // app.use(bodyParser.json());
   // app.use(bodyParser.urlencoded({ extended: true }));
-  app.use(express.json({ limit: '1000kb' }));
+  app.use('/api/wishes/scrapeHtml', express.json({ limit: '3000kb' }));
+  app.use(express.json({ limit: '100kb' }));
   app.use(cookieParser());
   app.use(setLocaleCookie);
 
