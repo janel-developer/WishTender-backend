@@ -31,7 +31,7 @@ function authLoggedIn(req, res, next) {
   return next();
 }
 
-async function authUserOwnsWishlistItem(req, res, next) {
+async function authUserOwnsWishlistOrItem(req, res, next) {
   // change this to check that wishlist is in user wishlist array
   logger.log('silly', `authorizing user owns resource...`);
   if (req.method === 'POST') {
@@ -74,10 +74,12 @@ async function authUserOwnsWishlistItem(req, res, next) {
 module.exports = () => {
   wishlistItemRoutes.post(
     '/',
-
+    (r, re, n) => {
+      n();
+    },
     authLoggedIn,
     csrfProtection,
-    authUserOwnsWishlistItem,
+    authUserOwnsWishlistOrItem,
     middlewares.onlyAllowInBodySanitizer([
       'itemName',
       'imageCrop',
@@ -118,7 +120,7 @@ module.exports = () => {
     authLoggedIn,
     csrfProtection,
     middlewares.onlyAllowInBodySanitizer(['itemName', 'imageCrop', 'price', 'url', 'image']),
-    authUserOwnsWishlistItem,
+    authUserOwnsWishlistOrItem,
     middlewares.upload.single('image'),
     (req, res, next) => {
       if (!Object.keys(req.body).length && !req.file) {
@@ -157,7 +159,7 @@ module.exports = () => {
   wishlistItemRoutes.delete(
     '/:id',
     authLoggedIn,
-    authUserOwnsWishlistItem,
+    authUserOwnsWishlistOrItem,
     async (req, res, next) => {
       logger.log('silly', `deleting wishlist item by id`);
       const { id } = req.params;

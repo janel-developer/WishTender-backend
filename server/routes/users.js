@@ -69,7 +69,6 @@ module.exports = () => {
           failureFlash: true,
         },
         async (err, account, info) => {
-          console.log(info);
           const msg = info ? info.message : null;
           const { email } = req.body;
           if (email) {
@@ -114,6 +113,7 @@ module.exports = () => {
             throw err;
           }
           req.logIn(account, async () => {
+            logger.log('silly', 'user logged in');
             if (account) {
               const alias = await aliasService.getAliasById(req.user.aliases[0]);
               return res.status(200).send({ profile: alias.handle_lowercased });

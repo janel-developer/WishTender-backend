@@ -50,6 +50,7 @@ module.exports = (config) => {
     'https://wishtender.netlify.app',
     'https://www.wishtender.com',
     'https://staging.wishtender.com',
+    'chrome-extension://apdhdmpoicblbhadnogonfdfhofcfndi',
   ];
   if (process.env.NODE_ENV !== 'production') origins.push('http://localhost:3000');
   console.log('allowed origins', origins);
@@ -98,7 +99,8 @@ module.exports = (config) => {
   app.use(express.static(`${__dirname}/public`));
   // app.use(bodyParser.json());
   // app.use(bodyParser.urlencoded({ extended: true }));
-  app.use(express.json({ limit: '10kb' }));
+  app.use('/api/wishes/scrapeHtml', express.json({ limit: '3000kb' }));
+  app.use(express.json({ limit: '100kb' }));
   app.use(cookieParser());
   app.use(setLocaleCookie);
 
@@ -158,19 +160,19 @@ module.exports = (config) => {
   // --------------------------------------
 
   // app.use((req, res, next) => {
-  // req.session.p = 1;
-  // console.log('req.headers: ', req.headers);
-  // console.log('req.body: ', req.body);
-  // console.log('req.cookies: ', req.cookies);
-  // console.log('req.user: ', req.user);
+  //   req.session.p = 1;
+  //   console.log('req.headers: ', req.headers);
+  //   console.log('req.body: ', req.body);
+  //   console.log('req.cookies: ', req.cookies);
+  //   console.log('req.user: ', req.user);
 
-  // res.on('close', async () => {
-  // console.log('res.statusCode', res.statusCode);
-  // console.log('res.statusMessage', res.statusMessage);
-  // console.log('res.headers', res._headers);
-  // console.log('set-cookie', res._headers['set-cookie']);
-  // });
-  // next();
+  //   res.on('close', async () => {
+  //     console.log('res.statusCode', res.statusCode);
+  //     console.log('res.statusMessage', res.statusMessage);
+  //     console.log('res.headers', res._headers);
+  //     console.log('set-cookie', res._headers['set-cookie']);
+  //   });
+  //   next();
   // });
   app.use(auth.setUser);
 
@@ -190,6 +192,10 @@ module.exports = (config) => {
     }
   });
 
+  app.get('/test', (req, res, next) => {
+    console.log('test, ', req.user);
+    res.status(200).send({ message: 'hi', user: req.user });
+  });
   app.use('/api', routes());
   app.set('views', __dirname + '/views');
   app.set('view engine', 'pug');
