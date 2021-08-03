@@ -26,6 +26,7 @@ class Email {
       to: this.to,
       subject: this.subject,
       html: this.html,
+      messageId: Math.floor(100000 + Math.random() * 900000),
     };
   }
 
@@ -68,7 +69,8 @@ class Email {
       cb ||
         ((error, info) => {
           if (error) console.log(error);
-          if (info) logger.log('silly', `message sent: ${info.messageId}`);
+          if (info)
+            logger.log('silly', `message sent from ${this.from} to ${this.to}: ${info.messageId}`);
           this.transporter.close();
         })
     );

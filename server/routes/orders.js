@@ -3,7 +3,15 @@ const logger = require('../lib/logger');
 const { ApplicationError } = require('../lib/Error');
 const OrderModel = require('../models/Order.Model');
 const OrderService = require('../services/OrderService');
-const { authLoggedIn } = require('./middlewares');
+const { upload, uploadLarge, authLoggedIn, handleImage } = require('./middlewares');
+
+const ImageService =
+  process.env.NODE_ENV === 'production' || process.env.REMOTE || process.env.AWS
+    ? require('../services/AWSImageService')
+    : require('../services/FSImageService');
+
+const imageAttachmentDirectory = `images/thankyouImageAttachments/`;
+const imageService = new ImageService(imageAttachmentDirectory);
 
 const orderService = new OrderService(OrderModel);
 const orderRoutes = express.Router();
@@ -107,8 +115,14 @@ module.exports = () => {
   // );
   orderRoutes.patch(
     '/reply/:id',
+    (r, re, n) => {
+      console.log('l');
+      n();
+    },
     authLoggedIn,
     authUserOwnsOrder("Couldn't reply."),
+    uploadLarge.single('imageAttachment'),
+    handleImage(imageService, { h: 700, w: 700 }),
     async (req, res, next) => {
       if (req.order.noteToTender && req.order.noteToTender.message)
         return res.status(409).send({ message: 'Note to tender already sent.' });
@@ -117,27 +131,46 @@ module.exports = () => {
     async (req, res, next) => {
       logger.log('silly', 'replying to tender');
       const { message } = req.body;
+      const imageAttachment = req.file && req.file.storedFilename;
       try {
         const tenderEmail = req.order.buyerInfo.email;
         const { alias } = req.order.cart;
+        req.order.noteToTender = { message, sent: new Date().toISOString() };
+        if (imageAttachment)
+          req.order.noteToTender.imageAttachment = imageService.filepathToStore(imageAttachment);
         const thankYouEmail = new ThankYouEmail(
           tenderEmail,
           alias.aliasName,
           `${process.env.FRONT_BASEURL}/${alias.handle}`,
-          message
+          message,
+          req.order.noteToTender.imageAttachment
         );
 
-        const info = await thankYouEmail.sendSync().then((inf) => inf);
-        if (info) {
-          req.order.noteToTender = { message, sent: new Date().toISOString() };
+        const info = await thankYouEmail.sendSync().then((inf, err) => {
+          logger.log('silly', JSON.stringify(inf));
+
+          return inf;
+        });
+
+        // should we throw an error if no info?
+        if (info && info.response.slice(0, 3) === '250') {
           await req.order.save();
+        } else {
+          throw new Error('Problem sending email to gifter.');
         }
       } catch (err) {
+        if (req.file && req.file.storedFilename) {
+          await imageService.delete(req.file.storedFilename);
+        }
+        logger.log('silly', `alias could not be updated`);
         return next(
           new ApplicationError({ err }, `Couldn't reply to tender because of an internal error.`)
         );
       }
-      return res.status(200).send({ messageSent: message });
+      const resMsg = { messageSent: message };
+      if (imageAttachment) resMsg.imageAttachment = req.order.noteToTender.imageAttachment;
+
+      return res.status(200).send(resMsg);
     }
   );
   return orderRoutes;
