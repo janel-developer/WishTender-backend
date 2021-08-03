@@ -37,10 +37,10 @@ async function uploadToS3(buffer, path) {
       s3bucket.upload(params, function (err, data) {
         if (err) {
           logger.log('error', err.message);
-          rej(err);
+          return rej(err);
         }
         logger.log('silly', 'upload to AWS successful');
-        res(data);
+        return res(data);
       });
     });
   });

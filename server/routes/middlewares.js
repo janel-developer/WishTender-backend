@@ -8,8 +8,14 @@ const upload = multer({
     fileSize: 4 * 1024 * 1024,
   },
 });
+const uploadLarge = multer({
+  // limits: {
+  //   fileSize: 8 * 1024 * 1024,
+  // },
+});
 
 module.exports.upload = upload;
+module.exports.uploadLarge = uploadLarge;
 
 module.exports.handleImage = (imageService, dims) => async (req, res, next) => {
   if (!req.file) return next();
