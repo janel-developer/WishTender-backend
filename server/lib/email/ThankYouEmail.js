@@ -16,13 +16,13 @@ class ThankYouEmail extends Email {
     const date = new Date();
     const from = `WishTender Wishlist <${email}>`;
     const subject = `Thank You from ${aliasName} ${date.getMonth()}/${date.getDate()}`;
-    const html = `<h3> You received a "Thank You" message from <a href = '${aliasUrl}'>${aliasName}</a> for your gift.</h3> <p> Replies to this message will send to WishTender support.</p> <p>Thank you message:</p>
-    ${
+    const html = `<h3> You received a "Thank You" message from <a href = '${aliasUrl}'>${aliasName}</a> for your gift on <a href = '${aliasUrl}'>WishTender</a>.</h3> <p> Replies to this message will send to WishTender support.</p> <p>Thank you message:</p>
+    <div style = "float:left; width: 80%;
+    maxWidth: 400px;">${
       thankYouMessage &&
       `<div  style="color: white;
     background: rgb(1, 133, 169);
-    width: 55%;
-    float: left;
+    width: 100%;
     border-radius: ${imageURL ? '20px 20px 0px 0px' : '20px 20px 20px 0'};
     padding: 10px;
     margin-top: 20px;
@@ -31,13 +31,13 @@ class ThankYouEmail extends Email {
     }
     ${
       imageURL
-        ? `<img style="float: left; width: 55%; border-radius: ${
+        ? `<img style="width: 100%; border-radius: ${
             thankYouMessage ? '0px 0px 20px 0px' : '20px 20px 20px 0'
           };"
          src="cid:attachedImage123456" />`
         : ''
     }
-    `;
+    </div>`;
     super(email, pass, from, to, subject, html);
     this.imageURL = imageURL;
   }
