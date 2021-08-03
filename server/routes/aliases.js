@@ -201,6 +201,10 @@ module.exports = () => {
   );
   aliasRoutes.patch(
     '/:id',
+    (r, re, n) => {
+      console.log('l');
+      n();
+    },
     middlewares.onlyAllowInBodySanitizer(['handle', 'aliasName']),
     body('handle', "Your handle can only contain letters, numbers, '_', or '-'")
       .optional()
