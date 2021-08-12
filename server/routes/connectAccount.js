@@ -119,7 +119,7 @@ const validateAccountInfoNotActivated = (req, res, next) => {
   if (!req.stripeAccountInfo.activated) {
     return next();
   }
-  console.log('debug1238: ', JSON.stringify(req.stripeAccountInfo.activated));
+  console.log('debug1238: ', JSON.stringify(req.stripeAccountInfo));
   console.log('debug1234: ', req.stripeAccountInfo.activated);
   return res.status(409).send({ error: 'Account Activated', message: 'Account already activated' });
 };
