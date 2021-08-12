@@ -64,6 +64,7 @@ const frontEndRoutes = [
   'demo',
   'sign-up',
   'email',
+  'extension',
   'wishlist-setup',
   'order',
   'login',
