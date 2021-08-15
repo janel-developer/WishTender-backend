@@ -4,18 +4,21 @@ const puppeteer = require('puppeteer');
 // const bodyParser = require('body-parser');
 const cors = require('cors');
 const helmet = require('helmet');
-const axios = require('axios');
 const mongoose = require('mongoose');
 const flash = require('connect-flash');
 const RateLimit = require('express-rate-limit');
 const RateMongoStore = require('rate-limit-mongo');
+
 const mongoSanitize = require('express-mongo-sanitize');
+
+const UserModel = require('./models/User.Model');
 
 const { getAcceptableDomain, isPhoneDebugging } = require('./utils/utils');
 
 const session = require('express-session');
 const SessionMongoStore = require('connect-mongo')(session);
 const cookieParser = require('cookie-parser');
+const { ApplicationError } = require('./lib/Error');
 require('dotenv').config({ path: `${__dirname}/./../../.env` });
 
 const setLocaleCookie = require('./lib/setLocaleCookie');
@@ -23,8 +26,6 @@ const auth = require('./lib/auth');
 const handleError = require('./lib/handleError');
 const logger = require('./lib/logger');
 const routes = require('./routes');
-const { testEmail } = require('./lib/testemail');
-const { default: Axios } = require('axios');
 
 if (process.env.NODE_ENV === 'production') {
   process.env.FRONT_BASEURL = 'https://www.wishtender.com';
@@ -193,9 +194,33 @@ module.exports = (config) => {
     }
   });
 
-  app.get('/test', (req, res, next) => {
-    console.log('test, ', req.user);
-    res.status(200).send({ message: 'hi', user: req.user });
+  app.use(async (req, res, next) => {
+    try {
+      if (!req.user) return next();
+
+      if (!req.user.userActivity) {
+        await UserModel.findOneAndUpdate(
+          { _id: req.user._id },
+          { $set: { userActivity: { hourly: [new Date()] } } },
+          { upsert: true, new: true }
+        );
+      } else if (
+        new Date() - req.user.userActivity.hourly[req.user.userActivity.hourly.length - 1] >
+        3600000
+      ) {
+        const newHourly = [...req.user.userActivity.hourly];
+        newHourly.push(new Date());
+        await UserModel.findOneAndUpdate(
+          { _id: req.user._id },
+          { $set: { userActivity: { hourly: [...newHourly] } } },
+          { upsert: true, new: true }
+        );
+      }
+    } catch (err) {
+      throw new ApplicationError({ err }, `Internal error setting user activity`);
+    }
+
+    return next();
   });
   app.use('/api', routes());
   app.set('views', __dirname + '/views');
@@ -206,16 +231,6 @@ module.exports = (config) => {
     return res.status(404).render('404');
   });
 
-  // error handling function
-  // app.use((err, req, res, next) => {
-  //   if (res.headersSent) {
-  //     return next(err);
-  //   }
-  //   console.err(err);
-  //   return res.status(500).render('500', {
-  //     title: '500',
-  //   });
-  // });
   app.use(handleError);
   return app;
 };

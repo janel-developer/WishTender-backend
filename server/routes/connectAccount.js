@@ -54,8 +54,6 @@ const authCountrySet = async (req, res, next) => {
 
 const validateStripeAccountInfoExists = async (req, res, next) => {
   if (req.user.stripeAccountInfo) {
-    console.log('debug123: ', JSON.stringify(req.user.stripeAccountInfo));
-
     return next();
   }
   return res.status(409).send({
@@ -119,8 +117,7 @@ const validateAccountInfoNotActivated = (req, res, next) => {
   if (!req.stripeAccountInfo.activated) {
     return next();
   }
-  console.log('debug1238: ', JSON.stringify(req.stripeAccountInfo));
-  console.log('debug1234: ', req.stripeAccountInfo.activated);
+
   return res.status(409).send({ error: 'Account Activated', message: 'Account already activated' });
 };
 // ===============================

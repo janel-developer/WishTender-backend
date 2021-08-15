@@ -4,7 +4,10 @@ const logger = require('../lib/logger');
 const Token = require('../models/Token.Model');
 const csrf = require('csurf');
 
+const OrderModel = require('../models/Order.Model');
+
 const ConfirmationEmailService = require('./ConfirmationEmailService');
+
 const confirmationEmailService = new ConfirmationEmailService();
 /**
  * Logic for interacting with the user model
@@ -70,6 +73,58 @@ class UserService {
       throw new ApplicationError({ err }, `Internal error getting user.`);
     }
     return user;
+  }
+
+  /**
+   * gets all users
+   *
+   * @returns {array} the users
+   */
+  async getUsers() {
+    let users;
+    try {
+      // user = await this.UserModel.find({ email: 'dangerousdashie@gmail.com' })
+      //   .populate({
+      //     path: 'aliases',
+      //     model: 'Alias',
+      //   })
+      //   .exec();
+
+      let orders = await OrderModel.find({ paid: true });
+      users = await this.UserModel.find({})
+        .populate({
+          path: 'wishlists',
+          model: 'Wishlist',
+          options: { withDeleted: true },
+          populate: {
+            path: 'wishlistItems',
+            model: 'WishlistItem',
+            options: { withDeleted: true },
+          },
+        })
+        .populate({
+          path: 'aliases',
+          model: 'Alias',
+          options: { withDeleted: true },
+        })
+        .populate({
+          path: 'stripeAccountInfo',
+          model: 'StripeAccountInfo',
+          options: { withDeleted: true },
+        })
+        .exec();
+      users = users.map((user) => {
+        const newUser = user.toJSON();
+        if (user.aliases && user.aliases[0])
+          newUser.orders = orders
+            .filter((order) => order.alias.toJSON() === newUser.aliases[0]._id.toJSON())
+            .map((order) => order.toJSON());
+        return newUser;
+      });
+    } catch (err) {
+      throw new ApplicationError({ err }, `Internal error users.`);
+    }
+    return users;
   }
 
   /**
