@@ -74,6 +74,9 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    userActivity: {
+      type: Object,
+    },
     aliases: [
       {
         type: mongoose.Schema.Types.ObjectId,

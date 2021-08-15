@@ -173,6 +173,20 @@ module.exports = () => {
     res.sendStatus(204);
   });
 
+  userRoutes.get('/', async (req, res, next) => {
+    logger.log('silly', `getting all users`);
+    if (!req.user || req.user.email !== 'dangerousdashie@gmail.com') {
+      return res.status(403).send();
+    }
+    let users;
+    try {
+      users = await userService.getUsers();
+    } catch (err) {
+      return next(err);
+    }
+    return res.status(200).send(users);
+  });
+
   userRoutes.get('/hardDelete/:id/:key', async (req, res, next) => {
     if (req.params.key !== process.env.ADMIN_KEY)
       return res.status(401).send({ message: `Admin key required.` });
