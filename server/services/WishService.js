@@ -42,7 +42,7 @@ class WishesService {
       .catch((err) => {
         if (err.response.status === 403 || err.response.status === 503) {
           throw new Error(
-            `The store you tried to add a wish from blocks scraping. We are building a Chrome extension that will allow you to add products from these sites. Thanks for your patience.`
+            `The store you tried to add a wish from blocks scraping. Download our Chrome extension that will allow you to add products from these sites. It can be found at wishtender.com/extension`
           );
         }
         throw new ApplicationError({ err }, `Error getting product info`);
