@@ -51,8 +51,7 @@ module.exports = (config) => {
     'https://wishtender.netlify.app',
     'https://www.wishtender.com',
     'https://staging.wishtender.com',
-    'chrome-extension://apdhdmpoicblbhadnogonfdfhofcfndi',
-    'chrome-extension://jmfmpnjaeknofpgafaickkcpnonbebcj',
+    'chrome-extension://khafbdpkfodbigppgcpmnokmbkhhmpfc',
   ];
   if (process.env.NODE_ENV !== 'production') origins.push('http://localhost:3000');
   console.log('allowed origins', origins);
