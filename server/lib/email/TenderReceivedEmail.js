@@ -32,7 +32,7 @@ class TenderReceivedEmail extends Email {
       process.env.NODE_ENV === 'production' ? 'www' : 'staging'
     }.wishtender.com/wish-tracker'> View granted wishes</a>.</p>
     <h2>When Will I Receive My Funds?</h2>
-    <p>If this is the first gift you received on WishTender, our secure 3rd party payment processor takes 7-14 days to payout new accounts. Otherwise, if you have received gift funds before, you will receive the funds on the next payout day, which occur every two business days.</p>
+    <p>If this is the first gift you received on WishTender, our secure 3rd party payment processor takes 7-14 days to pay out new accounts for security reasons. However, users have pleasantly reported, contrary to our processors' claims, that the first payout can be as fast as 2 days. Otherwise, if you have received gift funds before, you will receive the funds on the next payout day, which occur every two business days.</p>
     `;
 
     super(email, pass, from, wisherEmail, subject, html);
