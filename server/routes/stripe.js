@@ -24,9 +24,11 @@ module.exports = () => {
       const loginLink = await stripeService.createLoginLink(account.stripeAccountId, from);
       res.redirect(302, loginLink);
     } catch (err) {
-      throw new ApplicationError(
-        { err },
-        `Couldn't get login link for stripe account because of an internal error.`
+      next(
+        new ApplicationError(
+          { err },
+          `Couldn't get login link for stripe account because of an internal error.`
+        )
       );
     }
   });

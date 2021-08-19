@@ -1,4 +1,5 @@
 const cheerio = require('cheerio');
+const puppeteer = require('puppeteer');
 
 /**
  *
@@ -168,6 +169,145 @@ function scrape(html) {
 
   return info;
 }
+/**
+ *
+ * @param {*} html Response data from an html request
+ */
+function scrapeAWCategories(html) {
+  const $ = cheerio.load(html);
+  const cat = [];
+  $('#friends-lists-holder > div > div > a').each((i, link) => {
+    cat[i] = {
+      title: link.attribs.title,
+      url: link.attribs.href,
+    };
+  });
+
+  return cat;
+}
+/**
+ *
+ * @param {*} html Response data from an html request
+ */
+async function scroll(url) {
+  async function autoScroll(page) {
+    const doc = await page.evaluate(async () => {
+      await new Promise((resolve, reject) => {
+        window.scrollBy(0, document.documentElement.offsetHeight);
+        setTimeout(function () {
+          resolve(document.documentElement.innerHTML);
+        }, 2000);
+      });
+    });
+    // const doc = await page.evaluate(async () => {
+    //   await new Promise((resolve, reject) => {
+    //     let totalHeight = 0;
+    //     const distance = 100;
+    //     const timer = setInterval(() => {
+    //       const { scrollHeight } = document.body;
+    //       window.scrollBy(0, distance);
+    //       totalHeight += distance;
+
+    //       if (totalHeight >= scrollHeight) {
+    //         clearInterval(timer);
+    //         resolve(document.documentElement.innerHTML);
+    //       }
+    //     }, 100);
+    //   });
+    // });
+    // const doc = await page.evaluate(
+    //   () =>
+    //     new Promise((resolve) => {
+    //       var scrollTop = -1;
+    //       const interval = setInterval(() => {
+    //         window.scrollBy(0, 100);
+    //         if (document.documentElement.scrollTop !== scrollTop) {
+    //           scrollTop = document.documentElement.scrollTop;
+    //           return;
+    //         }
+    //         clearInterval(interval);
+    //         resolve(document.documentElement.innerHTML);
+    //       }, 10);
+    //     })
+    // );
+    return doc;
+  }
+
+  const browser = await puppeteer.launch({
+    headless: true,
+  });
+  const page = await browser.newPage();
+  await page.goto(url);
+  await page.setViewport({
+    width: 1200,
+    height: 800,
+  });
+
+  const t = await autoScroll(page);
+  const $ = cheerio.load(t);
+  const { length } = $('ul#g-items')[0].children;
+  if (length === 90) {
+    console.log('success');
+  } else {
+    console.log(length);
+  }
+
+  // console.log(data);
+
+  // await page.screenshot({
+  //   path: 'yoursite.png',
+  //   fullPage: true,
+  // });
+
+  await browser.close();
+  return 'done';
+}
+/**
+ *
+ * @param {*} html Response data from an html request
+ */
+async function scrapeAmazonWishlist(url, category) {
+  const $ = cheerio.load(url);
+
+  async function autoScroll(page) {
+    await page.evaluate(async () => {
+      await new Promise((resolve, reject) => {
+        let totalHeight = 0;
+        const distance = 100;
+        const timer = setInterval(() => {
+          const { scrollHeight } = document.body;
+          window.scrollBy(0, distance);
+          totalHeight += distance;
+
+          if (totalHeight >= scrollHeight) {
+            clearInterval(timer);
+            resolve();
+          }
+        }, 400);
+      });
+    });
+  }
+
+  const browser = await puppeteer.launch({
+    headless: false,
+  });
+  const page = await browser.newPage();
+  await page.goto(url);
+  await page.setViewport({
+    width: 1200,
+    height: 800,
+  });
+
+  await autoScroll(page);
+
+  await page.screenshot({
+    path: 'yoursite.png',
+    fullPage: true,
+  });
+
+  await browser.close();
+}
+
 // const htmls = require('../../../test/unit/server/services/scrapeForProductInfo/htmls.js');
 // scrape(htmls.kion);
-module.exports = scrape;
+module.exports = { scrape, scrapeAmazonWishlist, scrapeAWCategories, scroll };
