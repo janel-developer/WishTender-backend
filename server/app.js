@@ -161,13 +161,14 @@ module.exports = (config) => {
   // --------------------------------------
 
   // app.use((req, res, next) => {
-  //   req.session.p = 1;
-  //   console.log('req.headers: ', req.headers);
-  //   console.log('req.body: ', req.body);
-  //   console.log('req.cookies: ', req.cookies);
-  //   console.log('req.user: ', req.user);
+  //   //   req.session.p = 1;
+  //   //   console.log('req.headers: ', req.headers);
+  //   //   console.log('req.body: ', req.body);
+  //   //   console.log('req.cookies: ', req.cookies);
+  //   //   console.log('req.user: ', req.user);
 
   //   res.on('close', async () => {
+  //     console.log('req', req);
   //     console.log('res.statusCode', res.statusCode);
   //     console.log('res.statusMessage', res.statusMessage);
   //     console.log('res.headers', res._headers);
