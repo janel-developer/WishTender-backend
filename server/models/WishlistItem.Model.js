@@ -19,6 +19,7 @@ const itemSchema = new mongoose.Schema(
 
     currency: { type: String, trim: true },
     url: { type: String, trim: true },
+    category: { type: String, trim: true },
     wishlist: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Wishlist',
