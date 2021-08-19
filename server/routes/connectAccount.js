@@ -62,40 +62,49 @@ const validateStripeAccountInfoExists = async (req, res, next) => {
 };
 
 const handleUnfinishedPrevReq = async (req, res, next) => {
-  if (!req.user.stripeAccountInfo) {
-    // no stripeAccountInfo ID, go to the next function to set up stripeaccountinfo
+  try {
+    if (!req.user.stripeAccountInfo) {
+      // no stripeAccountInfo ID, go to the next function to set up stripeaccountinfo
+      return next();
+    }
+    // check if activated and get onboardlink
+
+    req.stripeAccountInfo = await stripeAccountInfoService.getAccountByUser(req.user._id);
+
+    // no actual stripeAccountInfo, go to the next function to set up stripeaccountinfo
+    if (!req.stripeAccountInfo) return next();
+
+    req.stripeAccount = await stripeService.retrieveAccount(req.stripeAccountInfo.stripeAccountId);
+
+    // no actual stripeAccount, go to the next function to set up stripeaccount
+    if (!req.stripeAccount) {
+      next();
+    }
+
+    if (req.stripeAccount.capabilities.transfers === 'active') {
+      return res.status(409).send({ message: 'This account has already been activated.' });
+    }
+    const { country } = req.user;
+    if (country === req.stripeAccountInfo.country) {
+      const onboardLink = await stripeService.createAccountLink(
+        req.stripeAccountInfo.stripeAccountId
+      );
+      return res.status(200).send({ onboardLink });
+    }
+    // clean up if failed - I don't think this works- also i don't know if it should be here
+    await stripeService.deleteAccount(req.stripeAccountInfo.stripeAccountId);
+    await req.stripeAccountInfo.remove();
+    delete req.user.stripeAccountInfo;
+    await req.user.save();
     return next();
-  }
-  // check if activated and get onboardlink
-
-  req.stripeAccountInfo = await stripeAccountInfoService.getAccountByUser(req.user._id);
-
-  // no actual stripeAccountInfo, go to the next function to set up stripeaccountinfo
-  if (!req.stripeAccountInfo) return next();
-
-  req.stripeAccount = await stripeService.retrieveAccount(req.stripeAccountInfo.stripeAccountId);
-
-  // no actual stripeAccount, go to the next function to set up stripeaccount
-  if (!req.stripeAccount) {
-    next();
-  }
-
-  if (req.stripeAccount.capabilities.transfers === 'active') {
-    return res.status(409).send({ message: 'This account has already been activated.' });
-  }
-  const country = req.user.county;
-  if (country === req.stripeAccountInfo.country) {
-    const onboardLink = await stripeService.createAccountLink(
-      req.stripeAccountInfo.stripeAccountId
+  } catch (err) {
+    return next(
+      new ApplicationError(
+        { err },
+        `Couldn't create connect account because of an internal error with unfinished connect account.`
+      )
     );
-    return res.status(200).send({ onboardLink });
   }
-  // clean up if failed
-  await stripeService.deleteAccount(req.stripeAccountInfo.stripeAccountId);
-  await req.stripeAccountInfo.remove();
-  delete req.user.stripeAccountInfo;
-  await req.user.save();
-  return next();
 };
 
 const authStripeAccountTransfersActive = async (req, res, next) => {
