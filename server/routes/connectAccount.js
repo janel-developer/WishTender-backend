@@ -75,11 +75,14 @@ const handleUnfinishedPrevReq = async (req, res, next) => {
     if (!req.stripeAccountInfo) return next();
 
     req.stripeAccount = await stripeService.retrieveAccount(req.stripeAccountInfo.stripeAccountId);
-
     // no actual stripeAccount, go to the next function to set up stripeaccount
     if (!req.stripeAccount) {
       next();
     }
+    console.log('stripe1', req.user.email);
+    console.log('stripe12', req.stripeAccountInfo);
+    console.log('stripe1234', req.stripeAccount);
+    console.log('stripe12345', req.stripeAccount.capabilities.transfers);
 
     if (req.stripeAccount.capabilities.transfers === 'active') {
       return res.status(409).send({ message: 'This account has already been activated.' });
