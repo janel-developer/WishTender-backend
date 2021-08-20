@@ -2,7 +2,6 @@ const softDelete = require('mongoosejs-soft-delete');
 const mongoose_delete = require('mongoose-delete');
 
 const mongoose = require('mongoose');
-const { ApplicationError } = require('../lib/Error');
 
 const itemSchema = new mongoose.Schema(
   {
@@ -30,6 +29,7 @@ const itemSchema = new mongoose.Schema(
       ref: 'Alias',
       required: true,
     },
+    batch: { type: String },
     itemImage: { type: String },
     user: {
       type: mongoose.Schema.Types.ObjectId,
