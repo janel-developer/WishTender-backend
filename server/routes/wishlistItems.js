@@ -1,5 +1,6 @@
 const express = require('express');
 const csrf = require('csurf');
+const { createCroppedImage } = require('../lib/canvas');
 
 const csrfProtection = csrf();
 
@@ -112,6 +113,78 @@ module.exports = () => {
           )
         );
       }
+    }
+  );
+  wishlistItemRoutes.post(
+    '/multi',
+
+    (req, res, next) => {
+      if (req.body.code !== process.env.MASTER_KEY) return res.send(403).send();
+      return next();
+    },
+    middlewares.onlyAllowInBodySanitizer(['items', 'wishlist', 'site']),
+
+    async (req, res, next) => {
+      logger.log('silly', `creating multi wishlist item`);
+
+      // for each item
+      const { site } = req.body;
+      let itemsAdded = 0;
+      const addItemToDatabase = async (item) => {
+        const prom = new Promise((resolve, rej) => {
+          (async () => {
+            let file;
+            try {
+              file = await createCroppedImage(
+                item.imageCrop.url,
+                item.imageCrop.crop,
+                {
+                  h: 300,
+                  w: 300,
+                },
+                site === 'amazon' ? 'png' : null
+              );
+              file.storedFilename = await imageService.store(file.buffer, { h: 300, w: 300 });
+            } catch (err) {
+              return next(err);
+            }
+
+            const newItem = { ...item };
+            newItem.itemImage = imageService.filepathToStore(file.storedFilename);
+            delete newItem.imageCrop;
+            try {
+              const itemRes = await wishlistItemService.addWishlistItem(newItem);
+              return resolve(itemRes);
+            } catch (err) {
+              await imageService.delete(req.file.storedFilename);
+
+              return rej(err);
+            }
+          })();
+        });
+        return prom;
+      };
+
+      // sequential so not to arouse the bot detectors
+      const items = req.body.items.reduce(
+        (prevPr, currentItemEl, i) =>
+          prevPr
+            .then((acc) => addItemToDatabase(currentItemEl).then((resp) => [...acc, resp]))
+            // eslint-disable-next-line arrow-body-style
+            .catch((err) => {
+              return next(new ApplicationError({ err }, `Failed to add items at the i=${i} item`));
+            }),
+        Promise.resolve([])
+      );
+      items
+        .then(async (itms) => {
+          console.log(itms);
+          return res.status(201).send();
+        })
+        // eslint-disable-next-line arrow-body-style
+        .catch((err) => {
+          return next(new ApplicationError({ err }, `Failed to add items`));
+        });
     }
   );
 
