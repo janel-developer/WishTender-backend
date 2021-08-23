@@ -22,7 +22,7 @@ class AWSImageService extends ImageService {
       deleteFile = path;
     }
     const result = await deleteFromS3(this.filepath(deleteFile));
-    logger.log('silly', `deleted ${result.Deleted.Key}`);
+    logger.log('silly', `deleted ${result.Deleted[0].Key}`);
   }
 
   filepathToStore(filename) {

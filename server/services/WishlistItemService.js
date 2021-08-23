@@ -72,6 +72,7 @@ class WishlistItemService {
     let wishlistItems;
     try {
       wishlistItems = await this.WishlistItemModel.find({ _id: { $in: ids } });
+      // wishlistItems = await this.WishlistItemModel.find({ _id: ids });
     } catch (err) {
       throw new ApplicationError(
         { err },
@@ -237,6 +238,71 @@ class WishlistItemService {
       throw new ApplicationError(
         { err },
         `Couldn't delete wishlist item because of an internal error.`
+      );
+    }
+
+    return item;
+  }
+
+  /**
+   * hard deletes a wishlist item entirely
+   *
+   *@param {string} id the wishlist item id
+   *
+   * @returns {object} deleted wishlist item from the
+   */
+  async deleteHardWishlistItem(id, imageService) {
+    let item;
+    try {
+      item = await this.WishlistItemModel.findById(id);
+    } catch (err) {
+      throw new ApplicationError(
+        { err },
+        `Couldn't delete wishlist item. Internal error when finding item.`
+      );
+    }
+    let wishlist;
+
+    try {
+      wishlist = await WishlistModel.findById(item.wishlist);
+    } catch (err) {
+      throw new ApplicationError(
+        {
+          err,
+        },
+        `Internal error when deleting wishlist item from wishlist.`
+      );
+    }
+    try {
+      wishlist.wishlistItems.splice(wishlist.wishlistItems.indexOf(item._id), 1);
+      await wishlist.save();
+    } catch (err) {
+      console.log(err);
+      throw new ApplicationError(
+        { err },
+        `Couldn't delete wishlist item from wishlist because of an internal error.`
+      );
+    }
+
+    try {
+      // // hard
+      if (!item.orders.length) await item.remove();
+    } catch (err) {
+      console.log(err);
+      throw new ApplicationError(
+        { err },
+        `Couldn't delete wishlist item because of an internal error.`
+      );
+    }
+
+    try {
+      if (!item.orders.length) await imageService.delete(item.itemImage);
+    } catch (err) {
+      throw new ApplicationError(
+        {
+          err,
+        },
+        `Internal error when deleting wishlist item image.`
       );
     }
 
