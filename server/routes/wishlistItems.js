@@ -130,6 +130,13 @@ module.exports = () => {
       // for each item
       const { site } = req.body;
       let itemsAdded = 0;
+      function sleep(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+      const randomSleepTime = async (min, max) => {
+        const ms = Math.floor(Math.random() * (max - min + 1) + min);
+        await sleep(ms);
+      };
       const addItemToDatabase = async (item) => {
         const prom = new Promise((resolve, rej) => {
           (async () => {
@@ -144,6 +151,7 @@ module.exports = () => {
                 },
                 site === 'amazon' ? 'png' : null
               );
+              await randomSleepTime(900, 3000);
               file.storedFilename = await imageService.store(file.buffer, { h: 300, w: 300 });
             } catch (err) {
               return next(err);
@@ -230,7 +238,95 @@ module.exports = () => {
   );
 
   wishlistItemRoutes.delete(
+    '/multi',
+    (req, res, next) => {
+      // if (req.body.code !== process.env.MASTER_KEY) return res.send(403).send();
+      return next();
+    },
+    // authLoggedIn,
+    // authUserOwnsWishlistOrItem,
+    async (req, res, next) => {
+      logger.log('silly', `deleting wishlist item by id`);
+      // const { id } = req.params;
+      const { ids } = req.body;
+      let items;
+      try {
+        items = await wishlistItemService.getWishlistItems(ids);
+      } catch (err) {
+        return next(new ApplicationError({ err }, `Failed to get items`));
+      }
+      const deleteItem = async (item) => {
+        try {
+          if (!item.orders.length) {
+            await wishlistItemService.deleteHardWishlistItem(item._id, imageService);
+          } else {
+            await wishlistItemService.deleteWishlistItem(item._id);
+            return;
+          }
+          return;
+        } catch (err) {
+          next(err);
+        }
+      };
+
+      const itemsToDelete = items.map((it) => it._id.toJSON());
+      // sequential just to keep easy to denug but this is slow and shouldn't be used in production
+      const prom = items.reduce(
+        (prevPr, currentItem, i) =>
+          prevPr
+            .then((acc) => {
+              return deleteItem(currentItem).then((resp) => {
+                return [...acc, resp];
+              });
+            })
+            // eslint-disable-next-line arrow-body-style
+            .catch((err) => {
+              return next(new ApplicationError({ err }, `Failed to add items at the i=${i} item`));
+            }),
+        Promise.resolve([])
+      );
+      prom
+        .then(async (p) => {
+          console.log(p);
+          return res.status(204).send();
+        })
+        // eslint-disable-next-line arrow-body-style
+        .catch((err) => {
+          return next(
+            new ApplicationError(
+              { err },
+              `Failed to delete all items. Items not deleted: ${itemsToDelete.join(', ')}`
+            )
+          );
+        });
+      // await new Promise((resolve) => {
+      //   items.forEach(async (item) => {
+      //     try {
+      //       await deleteItem(item);
+      //       const index = itemsToDelete.indexOf(item._id.toJSON());
+      //       itemsToDelete.splice(index, 1);
+      //       if (!itemsToDelete.length) return resolve();
+      //     } catch (err) {
+      //       return next(
+      //         new ApplicationError(
+      //           { err },
+      //           `Failed to delete all items. Items not deleted: ${itemsToDelete.join(', ')}`
+      //         )
+      //       );
+      //     }
+      //   });
+      // });
+
+      // return res.status(204).send();
+    }
+  );
+
+  wishlistItemRoutes.delete(
     '/:id',
+    (req, res, next) => {
+      // if (req.body.code !== process.env.MASTER_KEY) return res.send(403).send();
+      return next();
+    },
     authLoggedIn,
     authUserOwnsWishlistOrItem,
     async (req, res, next) => {

@@ -203,7 +203,7 @@
       "request": "launch",
       "runtimeExecutable": "node",
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/server/lib/testscrape.js",
+      "program": "${workspaceFolder}/server/lib/amazonscrape.js",
       "console": "integratedTerminal",
       "env": {
         "PORT": "4000",
