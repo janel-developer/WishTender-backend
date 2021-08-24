@@ -57,19 +57,24 @@ const $ = cheerio.load(html);
 // set these
 const currency = 'USD';
 // const wishlist = '60e0b52734b7180004920108';
-const wishlist = '60de32e756c14400041aa2e9';
-// const wishlist = '611c06c27f58690004740444'; //synnerangel
+// const wishlist = '60de32e756c14400041aa2e9';
+const wishlist = '611c06c27f58690004740444'; //synnerangel
 const category = $('#profile-list-name')[0].children[0].data;
 const additionalMoney = 500; // $5.00
 const itemEls = $('ul#g-items > li');
-// const amount = 2;
+// const amount = 5;
 const amount = itemEls.length;
 // let items = [];
 
+const imgURL = (asin) =>
+  `https://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&MarketPlace=US&ASIN=${asin}&ServiceVersion=20070822&ID=AsinImage&WS=1&Format=SL300`;
 const getItemInfo = (el, i) => {
   console.log('get item info ', i);
-  const elToCheerio = $(itemEls[0]);
+  const elToCheerio = $(itemEls[i]);
   const itemId = elToCheerio[0].attribs['data-itemid'];
+  const asin = JSON.parse(elToCheerio[0].attribs['data-reposition-action-params'])
+    .itemExternalId.slice(5)
+    .split('|')[0];
   const itemName = `#itemName_${elToCheerio[0].attribs['data-itemid']}`;
   let { title } = elToCheerio.find(`#itemName_${itemId}`)[0].attribs;
   let subtitle = '';
@@ -87,7 +92,7 @@ const getItemInfo = (el, i) => {
   // const imageCrop = await getProductImage(url, i);
 
   // temporary and is replaced in later function
-  const imageCrop = { url, i };
+  const imageCrop = { url: imgURL(asin), i };
   const item = {
     imageCrop,
     wishlist,
@@ -106,45 +111,74 @@ itemEls.each((i, v) => {
   itemInfo[i] = getItemInfo(v, i);
 });
 
+let proxy = 0;
+const proxies = [
+  '104.255.170.90:57848',
+  '50.227.101.179:5678',
+  '104.255.170.63:50109',
+  '104.255.170.67:58163',
+];
+
+const nextProxy = () => {
+  if (proxy === proxies.length - 1) proxy = 0;
+  proxy += 1;
+  return proxy;
+};
+
+const randomSleepTime = async (min, max) => {
+  const ms = Math.floor(Math.random() * (max - min + 1) + min);
+  await sleep(ms);
+};
 itemInfo = itemInfo.slice(0, amount);
 const getItemImage = async (url, i) => {
   const prom = new Promise((res) => {
     (async () => {
       console.log('getting product image', i);
-      const browser = await puppeteer.launch({ headless: true });
-      const page = await browser.newPage();
-      await page.goto(url);
 
-      const imageCropObj = await page.evaluate(() => {
-        const img = document.querySelector('#imgBlkFront');
-        return {
-          url: img.src,
-          crop: {
-            x: 0, // sx
-            y: 0, // sy
-            width: img.naturalWidth, // sw
-            height: img.naturalHeight, // sh
-            dx: (300 - (300 / img.naturalHeight) * img.naturalWidth) / 2, // dx
-            dy: 0, // dy
-            dw: (300 / img.naturalHeight) * img.naturalWidth, // dw
-            dh: 300, // dh
-          },
-        };
+      const browser = await puppeteer.launch({
+        headless: false,
+        // args: [`--proxy-server=${proxies[nextProxy()]}`],
       });
+      const page = await browser.newPage();
+      // await page.setUserAgent(
+      //   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36'
+      // );
+      let imageCropObj;
+      try {
+        await page.goto(url);
+        // await page.goto(`http://api.scraperapi.com?api_key=${process.env.PROXY_KEY}&url=${url}`);
+        imageCropObj = await page.evaluate(() => {
+          const img = document.querySelector('img');
+          return {
+            url: img.src,
+            crop: {
+              x: 0, // sx
+              y: 0, // sy
+              width: img.naturalWidth, // sw
+              height: img.naturalHeight, // sh
+              dx: (300 - (300 / img.naturalHeight) * img.naturalWidth) / 2, // dx
+              dy: 0, // dy
+              dw: (300 / img.naturalHeight) * img.naturalWidth, // dw
+              dh: 300, // dh
+            },
+          };
+        });
+      } catch (err) {
+        console.log(err);
+      }
       await browser.close();
       console.log('got image');
-
+      await randomSleepTime(1500, 4000);
       res(imageCropObj);
     })();
   });
   return prom;
 };
-
 (async () => {
   const prom = itemInfo.reduce(
     (prevPr, currentItemInfo, i) =>
       prevPr.then((acc) =>
-        getItemImage(currentItemInfo.url, i).then((resp) => {
+        getItemImage(currentItemInfo.imageCrop.url, i).then((resp) => {
           itemInfo[i].imageCrop = resp;
         })
       ),

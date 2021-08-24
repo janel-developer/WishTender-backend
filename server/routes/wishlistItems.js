@@ -133,6 +133,10 @@ module.exports = () => {
       function sleep(ms) {
         return new Promise((resolve) => setTimeout(resolve, ms));
       }
+      const randomSleepTime = async (min, max) => {
+        const ms = Math.floor(Math.random() * (max - min + 1) + min);
+        await sleep(ms);
+      };
       const addItemToDatabase = async (item) => {
         const prom = new Promise((resolve, rej) => {
           (async () => {
@@ -147,7 +151,7 @@ module.exports = () => {
                 },
                 site === 'amazon' ? 'png' : null
               );
-              await sleep(900);
+              await randomSleepTime(900, 3000);
               file.storedFilename = await imageService.store(file.buffer, { h: 300, w: 300 });
             } catch (err) {
               return next(err);
