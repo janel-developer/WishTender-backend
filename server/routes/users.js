@@ -175,7 +175,7 @@ module.exports = () => {
 
   userRoutes.get('/', async (req, res, next) => {
     logger.log('silly', `getting all users`);
-    if (!req.user || req.user.admin) {
+    if (!req.user || !req.user.admin) {
       return res.status(403).send();
     }
     let users;
