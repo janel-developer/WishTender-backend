@@ -3,34 +3,62 @@ const cryptEmail = require('../lib/cryptEmail');
 require('dotenv').config({ path: `${__dirname}/./../../.env` });
 
 mongoose.connect(process.env.PRODUCTION_DB_DSN, { useNewUrlParser: true });
+// mongoose.connect(process.env.DEVELOPMENT_DB_DSN, { useNewUrlParser: true });
 
 const Users = require('../models/User.Model');
+const Orders = require('../models/Order.Model');
 
-(async () => {
-  // const results = await Users.findWithDeleted({});
-  const results = await Users.find({});
-  // const user = await Users.findById('60ec90bbed21ee00041e255a');
-  // console.log(user);
-  // user.remove();
-  //   console.log(results);
-  // console.log(user.email);
-  // const result = cryptEmail.defs('zausmer@gmail.com');
-  // // user.email = 'zausmer@gmail.com';
-  // console.log(result);
-  // console.log(cryptEmail.defs(cryptEmail.encrypt('zausmer@gmail.com')));
-  // user.save();
-  // console.log(user.email);
-  // console.log(cryptEmail.defs(cryptEmail.encrypt(user.email)));
-  // console.log(cryptEmail.defs(cryptEmail.encrypt('zausmer@gmail.com')));
-  // console.log(cryptEmail.defs(cryptEmail.encrypt(cryptEmail.encrypt('zausmer@gmail.com'))));
-  //   // console.log(email2 === user.email);
-  results.forEach(async (user) => {
-    console.log(user.email);
-    // console.log('user ', user._id);
+// (async () => {
+// const results = await Users.findWithDeleted({});
 
-    // const unobf = cryptEmail.defs(user.email);
-    // user.email = unobf;
-    // console.log(unobf);
-    // user.save();
+// results.reduce(async (a, order) => {
+//   a.then(async () => {
+//     if (order.noteToTender && results.noteToTender.length !== undefined) {
+//       return Promise.resolve(a);
+//     }
+
+//     order.noteToTender = [results.noteToTender];
+//     order.save();
+//     const res = await Orders.find({ _id: order._id });
+//     return Promise.resolve([...a, res]);
+//   });
+// }, Promise.resolve(null));
+
+const getProm = async (order) => {
+  const prom = new Promise((res) => {
+    (async () => {
+      if (
+        order.noteToTender &&
+        order.noteToTender.length !== undefined && // is an array
+        order.noteToTender[0].length === undefined // is not array
+      ) {
+        return res(order);
+      }
+      if (order.noteToTender && order.noteToTender[0] && order.noteToTender[0].length) {
+        order.noteToTender = [...order.noteToTender[0]];
+      }
+      if (order.noteToTender && order.noteToTender.length === undefined) {
+        order.noteToTender = [order.noteToTender];
+      }
+      await order.save();
+      const newOrder = await Orders.find({ _id: order._id });
+      return res(newOrder[0]);
+    })();
   });
-})();
+  return prom;
+};
+// (async () => {
+//   const results = await Orders.find({});
+//   const prom = results.reduce((prevPr, order, i) => {
+//     console.log(order);
+//     return prevPr.then((acc) =>
+//       getProm(order).then((resp) => {
+//         console.log('some action', i);
+//         return [...acc, resp];
+//       })
+//     );
+//   }, Promise.resolve([]));
+//   prom.then(async (l) => {
+//     console.log(l);
+//   });
+// })();
