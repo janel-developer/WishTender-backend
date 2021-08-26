@@ -15,7 +15,8 @@ const orderSchema = new mongoose.Schema(
     },
     convertedCart: { type: Object },
     noteToWisher: { type: Object },
-    noteToTender: { type: Object },
+    // noteToTender: { type: Object },
+    noteToTender: { type: Array },
     payment: { type: Object },
     processedBy: {
       type: String,

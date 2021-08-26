@@ -123,27 +123,24 @@ module.exports = () => {
     authUserOwnsOrder("Couldn't reply."),
     uploadLarge.single('imageAttachment'),
     handleImage(imageService, { h: 700, w: 700 }),
-    async (req, res, next) => {
-      if (req.order.noteToTender && req.order.noteToTender.message)
-        return res.status(409).send({ message: 'Note to tender already sent.' });
-      return next();
-    },
+
     async (req, res, next) => {
       logger.log('silly', 'replying to tender');
       const { message } = req.body;
       const imageAttachment = req.file && req.file.storedFilename;
+      let msg;
       try {
         const tenderEmail = req.order.buyerInfo.email;
         const { alias } = req.order.cart;
-        req.order.noteToTender = { message, sent: new Date().toISOString() };
-        if (imageAttachment)
-          req.order.noteToTender.imageAttachment = imageService.filepathToStore(imageAttachment);
+        msg = { message, sent: new Date().toISOString() };
+        if (imageAttachment) msg.imageAttachment = imageService.filepathToStore(imageAttachment);
+        req.order.noteToTender.push(msg);
         const thankYouEmail = new ThankYouEmail(
           tenderEmail,
           alias.aliasName,
           `${process.env.FRONT_BASEURL}/${alias.handle}`,
           message,
-          req.order.noteToTender.imageAttachment
+          msg.imageAttachment
         );
 
         const info = await thankYouEmail.sendSync().then((inf, err) => {
@@ -168,7 +165,7 @@ module.exports = () => {
         );
       }
       const resMsg = { messageSent: message };
-      if (imageAttachment) resMsg.imageAttachment = req.order.noteToTender.imageAttachment;
+      if (imageAttachment) resMsg.imageAttachment = msg.imageAttachment;
 
       return res.status(200).send(resMsg);
     }
