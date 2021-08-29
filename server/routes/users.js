@@ -115,8 +115,11 @@ module.exports = () => {
           req.logIn(account, async () => {
             logger.log('silly', 'user logged in');
             if (account) {
-              const alias = await aliasService.getAliasById(req.user.aliases[0]);
-              return res.status(200).send({ profile: alias.handle_lowercased });
+              if (req.user.aliases[0]) {
+                const alias = await aliasService.getAliasById(req.user.aliases[0]);
+                return res.status(200).send({ profile: alias.handle_lowercased });
+              }
+              return res.status(200).send({});
             }
           });
         }
