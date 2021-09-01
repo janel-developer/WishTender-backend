@@ -191,7 +191,8 @@ module.exports = () => {
         : false;
       if (
         (!req.user || req.user._id.toString() !== alias.user._id.toString()) &&
-        (!alias.user.stripeAccountInfo || !alias.user.stripeAccountInfo.activated)
+        (!alias.user.stripeAccountInfo || !alias.user.stripeAccountInfo.activated) &&
+        !req.user.admin
       )
         aliasCopy.wishlists[0].wishlistItems = [];
       if (!req.user || (req.user._id.toString() !== alias.user._id.toString() && aliasCopy.user)) {
