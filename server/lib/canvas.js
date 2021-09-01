@@ -15,6 +15,7 @@ module.exports.createCroppedImage = async (url, crop, dimensions, convert) => {
       // const img = new Image(); // Create a new Image
       img = await sharp(imageResponse.data).toFormat(convert).toBuffer();
     }
+    ctx.fillStyle = 'white';
 
     const file = await loadImage(img || url).then((image) => {
       ctx.drawImage(

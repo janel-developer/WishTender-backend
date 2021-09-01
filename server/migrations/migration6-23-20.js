@@ -62,3 +62,26 @@ const getProm = async (order) => {
 //     console.log(l);
 //   });
 // })();
+(async () => {
+  const results = await Users.find({})
+    .populate({
+      path: 'stripeAccountInfo',
+      model: 'StripeAccountInfo',
+    })
+    .populate({
+      path: 'alias',
+      model: 'Alias',
+    })
+    .exec();
+  const prob = results.filter((u) => {
+    if (
+      u.stripeAccountInfo &&
+      u.stripeAccountInfo.stripeAccountId &&
+      !u.stripeAccountInfo.activated
+    ) {
+      return true;
+    }
+    return false;
+  });
+  console.log(prob);
+})();
