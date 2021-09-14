@@ -198,6 +198,21 @@
       "envFile": "${workspaceFolder}/.env"
     },
     {
+      "name": "delete stripe account and info",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/server/lib/deleteStripe.js",
+      "console": "integratedTerminal",
+      "env": {
+        "PORT": "4000",
+        "NODE_ENV": "development",
+        "AWS": "true"
+      },
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
       "name": "test scrape",
       "type": "node",
       "request": "launch",
