@@ -75,9 +75,10 @@ const getProm = async (order) => {
     .exec();
   const prob = results.filter((u) => {
     if (
-      u.stripeAccountInfo &&
-      u.stripeAccountInfo.stripeAccountId &&
-      !u.stripeAccountInfo.activated
+      (u.stripeAccountInfo &&
+        u.stripeAccountInfo.stripeAccountId &&
+        !u.stripeAccountInfo.activated) ||
+      !u.stripeAccountInfo
     ) {
       return true;
     }
