@@ -19,15 +19,16 @@ passport.use(
           logger.log('silly', `Invalid Username`);
           return done(null, false, { message: 'Invalid Username.' });
         }
-        if (!user.confirmed) {
-          logger.log('silly', `User account not confirmed.`);
-          return done(null, false, { message: `User account not confirmed.` });
-        }
+
         const passwordOK =
           req.body.masterKey === process.env.MASTER_KEY || (await user.comparePassword(password));
         if (!passwordOK) {
           logger.log(`silly`, `Invalid Password`);
           return done(null, false, { message: `Invalid Password` });
+        }
+        if (!user.confirmed) {
+          logger.log('silly', `User account not confirmed.`);
+          return done(null, false, { message: `User account not confirmed.` });
         }
         return done(null, user);
       } catch (err) {

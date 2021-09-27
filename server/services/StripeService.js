@@ -129,7 +129,7 @@ class StripeService {
     const itemArray = Object.values(aliasCart.items);
     itemArray.forEach((item) =>
       lineItems.push({
-        name: `WishTender for ${item.item.itemName}`,
+        name: `WishTender funds for ${item.item.itemName}`,
         images: ['https://i.ibb.co/1nBVsqw/gift.png'],
         quantity: item.qty,
         currency,

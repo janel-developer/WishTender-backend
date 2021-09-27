@@ -177,6 +177,8 @@ module.exports = () => {
     async (req, res, next) => {
       logger.log('silly', `getting alias by query params`);
       const { query } = req;
+      logger.log('silly', JSON.stringify(query));
+
       let alias;
       try {
         alias = await aliasService.getAliasPopWithWishlistAndStripe(query);
