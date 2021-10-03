@@ -183,7 +183,7 @@ module.exports = () => {
     }
     let users;
     try {
-      users = await userService.getUsers();
+      users = await userService.getUsers(req.user.admin);
     } catch (err) {
       return next(err);
     }

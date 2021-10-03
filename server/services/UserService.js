@@ -80,8 +80,9 @@ class UserService {
    *
    * @returns {array} the users
    */
-  async getUsers() {
+  async getUsers(admin) {
     let users;
+    if (!admin) return null; // this sends gifter emails
     try {
       // user = await this.UserModel.find({ email: 'dangerousdashie@gmail.com' })
       //   .populate({
@@ -90,7 +91,7 @@ class UserService {
       //   })
       //   .exec();
 
-      let orders = await OrderModel.find({ paid: true });
+      const orders = await OrderModel.find({ paid: true });
       users = await this.UserModel.find({})
         .populate({
           path: 'wishlists',
@@ -118,7 +119,7 @@ class UserService {
         if (user.aliases && user.aliases[0])
           newUser.orders = orders
             .filter((order) => order.alias.toJSON() === newUser.aliases[0]._id.toJSON())
-            .map((order) => order.toJSON());
+            .map((order) => order.toJSON({ transform: false }));
         return newUser;
       });
     } catch (err) {
