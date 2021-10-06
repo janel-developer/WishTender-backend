@@ -22,7 +22,7 @@ const CheckoutService = require('../services/CheckoutService');
 const { ApplicationError } = require('../lib/Error');
 const { unitToStandard } = require('../lib/currencyFormatHelpers');
 const ReceiptEmail = require('../lib/email/ReceiptEmail');
-const TenderReceivedEmail = require('../lib/email/TenderReceivedEmail');
+const TenderReceivedEmail = require('../lib/email/TenderReceivedEmail/TenderReceivedEmail');
 
 const checkoutRoutes = express.Router();
 

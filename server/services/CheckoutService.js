@@ -60,9 +60,11 @@ const checkout = async (aliasCart, currency, orderObject) => {
   newOrderObject.processedBy = 'Stripe';
   newOrderObject.paid = false;
   newOrderObject.expireAt = new Date().toISOString();
-  newOrderObject.total = { amount: Math.round(aliasCart.totalPrice * 1.1), currency };
-  newOrderObject.wishersTender = { intended: { amount: aliasCart.totalPrice, currency } };
-
+  newOrderObject.wishersTender = { intended: { amount: aliasCart.totalPrice, aliasCurrency } };
+  newOrderObject.total = {
+    amount: checkoutSession.amount_total,
+    currency,
+  }; // cart is converted alias cart is not converted here
   // this is adding alias to every item. think about redesigning to remove alias from items
   // temp delete alias from each item
   const deleteAliasOnItems = (alCart) => {
@@ -91,6 +93,18 @@ const checkout = async (aliasCart, currency, orderObject) => {
     total: Math.round(aliasCart.totalPrice * 1.1),
     currency,
   };
+  /// what if no converted cart?
+  // if (newOrderObject.convertedCart) {
+  //   newOrderObject.total = {
+  //     amount: Math.round(newOrderObject.convertedCart.totalPrice * 1.1),
+  //     currency,
+  //   };
+  // } else {
+  //   newOrderObject.total = {
+  //     amount: Math.round(newOrderObject.Cart.totalPrice * 1.1),
+  //     aliasCurrency,
+  //   };
+  // }
 
   await orderService.createOrder(newOrderObject);
   return checkoutSession;

@@ -5,6 +5,7 @@ require('dotenv').config();
 // const { getMaxListeners } = require('../models/Order.Model');
 // const ReceiptEmail = require('./email/ReceiptEmail');
 const ThankYouEmail = require('./email/ThankYouEmail');
+const TenderReceivedEmail = require('./email/TenderReceivedEmail/TenderReceivedEmail');
 // const { ApplicationError } = require('./Error');
 const logger = require('./logger');
 
@@ -68,6 +69,12 @@ class Email {
   }
 }
 
+// (async () => {
+//   const email = new TenderReceivedEmail({}, 'dangerousdashie@gmail.com');
+//   await email.sendSync().then((inf, err) => {
+//     console.log(inf, err);
+//   });
+// })();
 // (async () => {
 //   const email = new ThankYouEmail(
 //     'dangerousdashie@gmail.com',

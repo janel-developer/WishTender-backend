@@ -40,49 +40,67 @@ const getProm = async (order) => {
       // if (order.noteToTender && order.noteToTender.length === undefined) {
       //   order.noteToTender = [order.noteToTender];
       // }
-      await order.save();
+      order.total.amount = order.cashFlow.customerCharged.amount;
+
+      order.total.currency = order.cashFlow.customerCharged.currency;
+
+      // await order.save();
       const newOrder = await Orders.find({ _id: order._id });
       return res(newOrder[0]);
     })();
   });
   return prom;
 };
-// (async () => {
-//   const results = await Orders.find({});
-//   const prom = results.reduce((prevPr, order, i) => {
-//     console.log(order);
-//     return prevPr.then((acc) =>
-//       getProm(order).then((resp) => {
-//         console.log('some action', i);
-//         return [...acc, resp];
-//       })
-//     );
-//   }, Promise.resolve([]));
-//   prom.then(async (l) => {
-//     console.log(l);
-//   });
-// })();
 (async () => {
-  const results = await Users.find({})
-    .populate({
-      path: 'stripeAccountInfo',
-      model: 'StripeAccountInfo',
-    })
-    .populate({
-      path: 'alias',
-      model: 'Alias',
-    })
-    .exec();
-  const prob = results.filter((u) => {
-    if (
-      (u.stripeAccountInfo &&
-        u.stripeAccountInfo.stripeAccountId &&
-        !u.stripeAccountInfo.activated) ||
-      !u.stripeAccountInfo
-    ) {
-      return true;
-    }
-    return false;
+  const orders = await Orders.find({});
+  const converted = orders.filter((order) => order.convertedCart);
+
+  const prom = converted.reduce(
+    (prevPr, order, i) =>
+      prevPr.then((acc) =>
+        getProm(order).then((resp) => {
+          console.log('some action', i);
+          return [...acc, resp];
+        })
+      ),
+    Promise.resolve([])
+  );
+  prom.then(async (l) => {
+    console.log(l);
   });
+})();
+// (async () => {
+//   const results = await Users.find({})
+//     .populate({
+//       path: 'stripeAccountInfo',
+//       model: 'StripeAccountInfo',
+//     })
+//     .populate({
+//       path: 'alias',
+//       model: 'Alias',
+//     })
+//     .exec();
+//   const prob = results.filter((u) => {
+//     if (
+//       (u.stripeAccountInfo &&
+//         u.stripeAccountInfo.stripeAccountId &&
+//         !u.stripeAccountInfo.activated) ||
+//       !u.stripeAccountInfo
+//     ) {
+//       return true;
+//     }
+//     return false;
+//   });
+//   console.log(prob);
+// })();
+
+(async () => {
+  const orders = await Orders.find({});
+
+  // find all with converted cart
+  const converted = orders.filter((order) => order.convertedCart);
+
+  converted;
+
   console.log(prob);
 })();
