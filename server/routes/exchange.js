@@ -178,12 +178,12 @@ module.exports = () => {
   });
   exchangeRateRoutes.route('/').get(async (req, res, next) => {
     const { base, symbols } = req.query;
-    if (process.env.NODE_ENV === 'production') {
-      const rate = await ratesApi.getExchangeRate(base, symbols);
+    // if (process.env.NODE_ENV === 'production') {
+    const rate = await ratesApi.getExchangeRate(base, symbols);
 
-      return res.status(200).json({ rate });
-    }
-    return res.status(200).json({ rate: 1.4777 });
+    return res.status(200).json({ rate });
+    // }
+    // return res.status(200).json({ rate: 1.4777 });
   });
 
   return exchangeRateRoutes;
