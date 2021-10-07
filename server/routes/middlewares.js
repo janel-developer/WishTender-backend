@@ -35,8 +35,12 @@ module.exports.handleImage = (imageService, dims) => async (req, res, next) => {
 
 module.exports.cropImage = (dims) => async (req, res, next) => {
   if (!req.body.imageCrop) return next();
-  req.file = await createCroppedImage(req.body.imageCrop.url, req.body.imageCrop.crop, dims);
-  return next();
+  try {
+    req.file = await createCroppedImage(req.body.imageCrop.url, req.body.imageCrop.crop, dims);
+    return next();
+  } catch (err) {
+    return next(err);
+  }
 };
 
 module.exports.onlyAllowInBodySanitizer = (allow) =>
