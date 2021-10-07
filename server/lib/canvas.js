@@ -25,6 +25,9 @@ module.exports.createCroppedImage = async (url, crop, dimensions, convert) => {
       img = await sharp(imageResponse.data).toFormat(convert).toBuffer();
     }
     console.log('canvas 17', url);
+    console.log('canvas 29', img);
+    // tsting
+    // url = 'http://httpstat.us/200?sleep=10000';
 
     ctx.fillStyle = 'white';
 

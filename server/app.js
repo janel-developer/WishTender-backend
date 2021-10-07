@@ -53,6 +53,7 @@ module.exports = (config) => {
     'https://www.wishtender.com',
     'https://staging.wishtender.com',
     'chrome-extension://khafbdpkfodbigppgcpmnokmbkhhmpfc',
+    'chrome-extension://jmfmpnjaeknofpgafaickkcpnonbebcj',
   ];
   if (process.env.NODE_ENV !== 'production') origins.push('http://localhost:3000');
   console.log('allowed origins', origins);
