@@ -227,7 +227,7 @@ module.exports = (config) => {
   });
   app.use('/test', async (req, res, next) => {
     await Axios(
-      'https://www.asos.com/se/missguided/missguided-graddvit-prickig-klanning-i-jacquard-med-puffarmar/prd/22556821?clr=kramvit&colourwayid=60407745&cid=5235',
+      'https://images.asos-media.com/products/missguided-graddvit-prickig-klanning-i-jacquard-med-puffarmar/22556821-1-cream',
       {
         method: 'get',
       }
