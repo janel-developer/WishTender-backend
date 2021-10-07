@@ -61,6 +61,27 @@ const authOrderPaidFor = async (req, res, next) => {
 module.exports = () => {
   checkoutRoutes.get(
     // this is the route that stripe send users too after a success. I'm not sure if it is incorrect because it is a get and gets are supposed to be "safe" but this is changing the database.
+    '/success2',
+    authOrderPaidFor,
+    async (req, res, next) => {
+      // eslint-disable-next-line camelcase
+      const { session_id, alias_id } = req.query;
+
+      const alias = await AliasModel.findOne({ _id: alias_id })
+        .populate({
+          path: 'user',
+          model: 'User',
+        })
+        .exec();
+
+      return res.redirect(
+        301,
+        `${process.env.FRONT_BASEURL}/order?success=true&session_id=${session_id}&aliasHandle=${alias.handle}`
+      );
+    }
+  );
+  checkoutRoutes.get(
+    // this is the route that stripe send users too after a success. I'm not sure if it is incorrect because it is a get and gets are supposed to be "safe" but this is changing the database.
     '/success',
     authOrderPaidFor,
     async (req, res, next) => {
