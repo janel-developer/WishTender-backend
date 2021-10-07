@@ -4,13 +4,17 @@ const sharp = require('sharp');
 const { ApplicationError } = require('./Error');
 
 module.exports.createCroppedImage = async (url, crop, dimensions, convert) => {
-  console.log('canvas lin 7');
+  console.log('canvas lin 7', dimensions.w, dimensions.h);
   const canvas = createCanvas(dimensions.w, dimensions.h);
+  console.log('canvas 9');
+
   const ctx = canvas.getContext('2d');
   let img;
+  console.log('canvas 14', convert);
+
   try {
     if (convert) {
-      console.log('canvas 13', url);
+      console.log('canvas 17', url);
 
       const imageResponse = await axios.get(url, {
         responseType: 'arraybuffer',
@@ -20,9 +24,13 @@ module.exports.createCroppedImage = async (url, crop, dimensions, convert) => {
       // const img = new Image(); // Create a new Image
       img = await sharp(imageResponse.data).toFormat(convert).toBuffer();
     }
+    console.log('canvas 17', url);
+
     ctx.fillStyle = 'white';
 
     const file = await loadImage(img || url).then((image) => {
+      console.log('canvas 32', image);
+
       ctx.drawImage(
         image,
         crop.x,
@@ -34,8 +42,13 @@ module.exports.createCroppedImage = async (url, crop, dimensions, convert) => {
         crop.dw || canvas.width,
         crop.dh || canvas.height
       );
+      console.log('canvas 46');
+
       let ext = url.split('.').pop().split('?')[0];
+      console.log('canvas 48', ext);
+
       ext = convert || ext === 'jpg' ? 'jpeg' : ext;
+      console.log('canvas 51');
 
       return { buffer: canvas.toBuffer(), mimetype: `image/${ext}` };
     });
