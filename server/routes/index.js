@@ -13,6 +13,7 @@ const connectAccountRoutes = require('./connectAccount');
 const confirmation = require('./confirmation');
 const exchange = require('./exchange');
 const resetPasswordRoutes = require('./resetPassword');
+const stripeWebhookRoutes = require('./stripeWebhook');
 
 const csrfProtection = csrf();
 
@@ -40,5 +41,6 @@ module.exports = () => {
   router.use('/connectAccount', connectAccountRoutes());
   router.use('/exchange', exchange());
   router.use('/reset-password', resetPasswordRoutes());
+  router.use('/stripeWebhooks', stripeWebhookRoutes());
   return router;
 };
