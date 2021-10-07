@@ -81,6 +81,10 @@ module.exports = () => {
     authLoggedIn,
     csrfProtection,
     authUserOwnsWishlistOrItem,
+    (r, re, n) => {
+      console.log('85');
+      n();
+    },
     middlewares.onlyAllowInBodySanitizer([
       'itemName',
       'imageCrop',
@@ -89,8 +93,20 @@ module.exports = () => {
       'url',
       'wishlist',
     ]),
+    (r, re, n) => {
+      console.log('97');
+      n();
+    },
     middlewares.throwIfExpressValidatorError,
+    (r, re, n) => {
+      console.log('102');
+      n();
+    },
     middlewares.cropImage({ h: 300, w: 300 }),
+    (r, re, n) => {
+      console.log('107');
+      n();
+    },
     middlewares.handleImage(imageService, { h: 300, w: 300 }),
     async (req, res, next) => {
       logger.log('silly', `creating new wishlist item`);
