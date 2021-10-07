@@ -3,7 +3,7 @@ const axios = require('axios');
 const sharp = require('sharp');
 const { ApplicationError } = require('./Error');
 
-module.exports.createCroppedImage = async (url, crop, dimensions, convert) => {
+module.exports.createCroppedImage = async (url, crop, dimensions, convert, next) => {
   console.log('canvas lin 7', dimensions.w, dimensions.h);
   const canvas = createCanvas(dimensions.w, dimensions.h);
   console.log('canvas 9');
@@ -27,9 +27,16 @@ module.exports.createCroppedImage = async (url, crop, dimensions, convert) => {
     console.log('canvas 17', url);
     console.log('canvas 29', img);
     // tsting
-    // url = 'http://httpstat.us/200?sleep=10000';
+    // url = 'http://httpstat.us/200?sleep=60000';
 
     ctx.fillStyle = 'white';
+    setTimeout(() => {
+      try {
+        throw new Error('image load timed out');
+      } catch (err) {
+        next(new ApplicationError({ err }, `Internal error cropping image. Image load timed out.`));
+      }
+    }, 10000);
 
     const file = await loadImage(img || url).then((image) => {
       console.log('canvas 32', image);

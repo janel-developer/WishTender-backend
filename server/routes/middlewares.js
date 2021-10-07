@@ -40,7 +40,13 @@ module.exports.cropImage = (dims) => async (req, res, next) => {
   try {
     console.log('crop image ln 41');
 
-    req.file = await createCroppedImage(req.body.imageCrop.url, req.body.imageCrop.crop, dims);
+    req.file = await createCroppedImage(
+      req.body.imageCrop.url,
+      req.body.imageCrop.crop,
+      dims,
+      false,
+      next
+    );
     return next();
   } catch (err) {
     console.log('crop image ln 46 error', err);

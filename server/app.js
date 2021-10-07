@@ -234,5 +234,8 @@ module.exports = (config) => {
   });
 
   app.use(handleError);
+  // process.on('uncaughtException', function (err) {
+  //   console.log(err);
+  // });
   return app;
 };
