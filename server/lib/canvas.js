@@ -28,13 +28,18 @@ module.exports.createCroppedImage = async (url, crop, dimensions, convert, next)
     console.log('canvas 29', img);
     // tsting
     // url = 'http://httpstat.us/200?sleep=60000';
-
+    // throw new Error('new');
     ctx.fillStyle = 'white';
     setTimeout(() => {
       try {
         throw new Error('image load timed out');
       } catch (err) {
-        next(new ApplicationError({ err }, `Internal error cropping image. Image load timed out.`));
+        next(
+          new ApplicationError(
+            { err },
+            `Image loading timed out. If you can this error contact Dash in the support chat to get help adding the link.`
+          )
+        );
       }
     }, 10000);
 
