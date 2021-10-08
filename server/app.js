@@ -27,6 +27,7 @@ const auth = require('./lib/auth');
 const handleError = require('./lib/handleError');
 const logger = require('./lib/logger');
 const routes = require('./routes');
+const { default: Axios } = require('axios');
 
 if (process.env.NODE_ENV === 'production') {
   process.env.FRONT_BASEURL = 'https://www.wishtender.com';
@@ -53,6 +54,7 @@ module.exports = (config) => {
     'https://www.wishtender.com',
     'https://staging.wishtender.com',
     'chrome-extension://khafbdpkfodbigppgcpmnokmbkhhmpfc',
+    'chrome-extension://jmfmpnjaeknofpgafaickkcpnonbebcj',
   ];
   if (process.env.NODE_ENV !== 'production') origins.push('http://localhost:3000');
   console.log('allowed origins', origins);
@@ -223,6 +225,7 @@ module.exports = (config) => {
 
     return next();
   });
+
   app.use('/api', routes());
   app.set('views', __dirname + '/views');
   app.set('view engine', 'pug');
@@ -233,5 +236,8 @@ module.exports = (config) => {
   });
 
   app.use(handleError);
+  // process.on('uncaughtException', function (err) {
+  //   console.log(err);
+  // });
   return app;
 };

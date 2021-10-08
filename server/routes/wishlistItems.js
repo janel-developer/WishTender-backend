@@ -75,14 +75,15 @@ async function authUserOwnsWishlistOrItem(req, res, next) {
 module.exports = () => {
   wishlistItemRoutes.post(
     '/',
-    (r, re, n) => {
-      n();
-    },
+
     authLoggedIn,
     csrfProtection,
+    middlewares.upload.single('image'), // for request with a blob
+    middlewares.cropImage({ h: 300, w: 300 }), // for requests with a link and crop instructions
     authUserOwnsWishlistOrItem,
     middlewares.onlyAllowInBodySanitizer([
       'itemName',
+      'image',
       'imageCrop',
       'price',
       'currency',
@@ -90,7 +91,7 @@ module.exports = () => {
       'wishlist',
     ]),
     middlewares.throwIfExpressValidatorError,
-    middlewares.cropImage({ h: 300, w: 300 }),
+
     middlewares.handleImage(imageService, { h: 300, w: 300 }),
     async (req, res, next) => {
       logger.log('silly', `creating new wishlist item`);
@@ -186,7 +187,6 @@ module.exports = () => {
       );
       items
         .then(async (itms) => {
-          console.log(itms);
           return res.status(201).send();
         })
         // eslint-disable-next-line arrow-body-style
@@ -198,6 +198,7 @@ module.exports = () => {
 
   wishlistItemRoutes.patch(
     '/:id',
+
     authLoggedIn,
     csrfProtection,
     middlewares.onlyAllowInBodySanitizer(['itemName', 'imageCrop', 'price', 'url', 'image']),

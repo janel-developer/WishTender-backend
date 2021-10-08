@@ -115,7 +115,6 @@ module.exports = () => {
         const patch = { ...req.body };
         if (imageFile) patch.coverImage = imageService.filepathToStore(imageFile);
         await wishlistService.updateWishlist(req.params.id, patch, imageService);
-        console.log('wishlists.js/112');
       } catch (err) {
         if (req.file && req.file.storedFilename) {
           await imageService.delete(req.file.storedFilename);

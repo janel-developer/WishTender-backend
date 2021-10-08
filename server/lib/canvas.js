@@ -3,19 +3,35 @@ const axios = require('axios');
 const sharp = require('sharp');
 const { ApplicationError } = require('./Error');
 
-module.exports.createCroppedImage = async (url, crop, dimensions, convert) => {
+module.exports.createCroppedImage = async (url, crop, dimensions, convert, next) => {
   const canvas = createCanvas(dimensions.w, dimensions.h);
+
   const ctx = canvas.getContext('2d');
   let img;
+
   try {
     if (convert) {
       const imageResponse = await axios.get(url, {
         responseType: 'arraybuffer',
       });
+
       // const img = new Image(); // Create a new Image
       img = await sharp(imageResponse.data).toFormat(convert).toBuffer();
     }
+
     ctx.fillStyle = 'white';
+    setTimeout(() => {
+      try {
+        throw new Error('image load timed out');
+      } catch (err) {
+        next(
+          new ApplicationError(
+            { err },
+            `Image loading timed out. Use the WishTender Chrome extension (version 1.2 or later) to add this item.`
+          )
+        );
+      }
+    }, 6000);
 
     const file = await loadImage(img || url).then((image) => {
       ctx.drawImage(
@@ -29,7 +45,9 @@ module.exports.createCroppedImage = async (url, crop, dimensions, convert) => {
         crop.dw || canvas.width,
         crop.dh || canvas.height
       );
+
       let ext = url.split('.').pop().split('?')[0];
+
       ext = convert || ext === 'jpg' ? 'jpeg' : ext;
 
       return { buffer: canvas.toBuffer(), mimetype: `image/${ext}` };
