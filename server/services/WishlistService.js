@@ -74,7 +74,6 @@ class WishlistService {
     let wishlist;
     try {
       wishlist = await this.WishlistModel.findOne({ _id: id }).populate('wishlistItems').exec();
-      console.log('d');
     } catch (err) {
       throw new ApplicationError({ err }, `Wishlist not found because of an internal error.`);
     }

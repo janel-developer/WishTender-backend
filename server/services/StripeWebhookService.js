@@ -4,8 +4,7 @@ const stripe = require('stripe')(
     : process.env.STRIPE_SECRET_TEST_KEY
 );
 
-// left off
-// still need to change old payment object
+
 const chargeSucceeded = async (req,res,next) => {
   const req.stripeExpandedSession = await stripe.checkout.sessions.retrieve(req.query.session_id, {
     expand: ['payment_intent.charges.data'],

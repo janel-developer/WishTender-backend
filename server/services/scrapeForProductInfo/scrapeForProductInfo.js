@@ -85,6 +85,10 @@ function scrape(html) {
     }
   });
 
+  // if(imageTags.length === 0){
+
+  // }
+
   const imageTags = $('img');
   Object.keys(imageTags).forEach((key) => {
     if (imageTags[key].type === 'tag' && imageTags[key].name === 'img') {

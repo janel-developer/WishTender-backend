@@ -50,7 +50,7 @@ module.exports = () => {
   wishRoutes.route('/scrapeHtml').post(async function (req, res) {
     try {
       const info = await wishService.scrapeHTML(req.body.html);
-
+      console.log(JSON.stringify(info));
       res.status(200).json(info);
     } catch (err) {
       if (err.constructor.name === 'ApplicationError') {
