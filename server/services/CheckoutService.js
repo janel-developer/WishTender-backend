@@ -9,7 +9,7 @@ const ExchangeRatesApiInterface = require('../lib/ExchangeRate-Api');
 const OrderService = require('./OrderService');
 const OrderModel = require('../models/Order.Model');
 const CartService = require('./CartService');
-const StripeService = require('../services/StripeService');
+const StripeService = require('./StripeService');
 
 const stripeService = new StripeService(stripe);
 

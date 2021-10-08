@@ -4,12 +4,29 @@ const stripe = require('stripe')(
     : process.env.STRIPE_SECRET_TEST_KEY
 );
 
+const mongoose = require('mongoose');
+const { ApplicationError } = require('../lib/Error');
+const WishlistItem = require('../models/WishlistItem.Model');
+const OrderService = require('./OrderService');
 
-const chargeSucceeded = async (req,res,next) => {
-  const req.stripeExpandedSession = await stripe.checkout.sessions.retrieve(req.query.session_id, {
+const OrderModel = require('../models/Order.Model');
+
+const orderService = new OrderService(OrderModel);
+
+const UserModel = require('../models/User.Model');
+
+const { Schema } = mongoose;
+const SessionSchema = new Schema({ session: String, _id: String }, { strict: false });
+
+const Session = mongoose.model('sessions', SessionSchema, 'sessions');
+const ReceiptEmail = require('../lib/email/ReceiptEmail');
+const TenderReceivedEmail = require('../lib/email/TenderReceivedEmail/TenderReceivedEmail');
+
+const checkoutSessionCompleted = async (checkout) => {
+  const expandedCheckout = await stripe.checkout.sessions.retrieve(checkout.id, {
     expand: ['payment_intent.charges.data'],
   });
-  const chargeId = req.stripeExpandedSession.payment_intent.charges.data[0].id;
+  const chargeId = expandedCheckout.payment_intent.charges.data[0].id;
   const charge = await stripe.charges.retrieve(chargeId, {
     expand: [
       'balance_transaction',
@@ -35,12 +52,9 @@ const chargeSucceeded = async (req,res,next) => {
   };
 
   // eslint-disable-next-line camelcase
-  const { session_id, alias_id } = req.query;
-
-  let alias;
 
   // update user account fee due
-  const order = await orderService.getOrder({ processorPaymentID: session_id });
+  const order = await orderService.getOrder({ processorPaymentID: checkout.id });
   const customerCharged = {
     from: { amountBeforeFees: order.cart.totalPrice, currency: order.cart.alias.currency },
     amountBeforeFees: order.convertedCart ? order.convertedCart.totalPrice : order.cart.totalPrice,
@@ -52,7 +66,7 @@ const chargeSucceeded = async (req,res,next) => {
   if (!order.paid) {
     // add the stripe exchange rate
     order.paid = true;
-    const time = new Date(req.stripeExpandedSession.payment_intent.charges.data[0].created * 1000);
+    const time = new Date(expandedCheckout.payment_intent.charges.data[0].created * 1000);
     order.paidOn = time;
     order.expireAt = undefined;
     // order.wishersTender.sent = amountToWisher;
@@ -66,7 +80,7 @@ const chargeSucceeded = async (req,res,next) => {
     // what is this for?
     order.exchangeRate.stripe = [
       {
-        from: req.stripeExpandedSession.currency.toUpperCase(),
+        from: checkout.currency.toUpperCase(),
         to: toPlatform.currency,
         value: toPlatform.exchangeRate,
         type: 'customer to platform',
@@ -79,7 +93,7 @@ const chargeSucceeded = async (req,res,next) => {
       },
       {
         from: toConnect.currency.toUpperCase(),
-        to: req.stripeExpandedSession.currency.toUpperCase(),
+        to: checkout.currency.toUpperCase(),
         value: 1 / (toConnect.exchangeRate * toPlatform.exchangeRate),
         type: 'connect to customer',
       },
@@ -121,12 +135,14 @@ const chargeSucceeded = async (req,res,next) => {
 
     //   await alias.user.stripeAccountInfo.save();
     // } else {
-    alias = await AliasModel.findOne({ _id: alias_id })
-      .populate({
-        path: 'user',
-        model: 'User',
-      })
-      .exec();
+    const user = await UserModel.findOne({ aliases: order.alias });
+
+    // alias = await AliasModel.findOne({ _id: alias_id })
+    //   .populate({
+    //     path: 'user',
+    //     model: 'User',
+    //   })
+    //   .exec();
     // }
     // send receipt to notify gifter
     try {
@@ -136,16 +152,14 @@ const chargeSucceeded = async (req,res,next) => {
         console.log(info);
       }
     } catch (err) {
-      return next(
-        new ApplicationError(
-          { err },
-          `Couldn't send receipt to tender because of an internal error.`
-        )
+      throw new ApplicationError(
+        { err },
+        `Couldn't send receipt to tender because of an internal error.`
       );
     }
 
     // send notification email to notify wisher
-    const wishersEmail = alias.user.email;
+    const wishersEmail = user.email;
     try {
       const tenderReceivedEmail = new TenderReceivedEmail(order, wishersEmail);
       const info = await tenderReceivedEmail.sendSync().then((inf) => inf);
@@ -153,14 +167,14 @@ const chargeSucceeded = async (req,res,next) => {
         console.log(info);
       }
     } catch (err) {
-      return next(
-        new ApplicationError(
-          { err },
-          `Couldn't send notification to wisher because of an internal error.`
-        )
+      throw new ApplicationError(
+        { err },
+        `Couldn't send notification to wisher because of an internal error.`
       );
     }
   }
+
+  // delete alias cart off session
   const session = await Session.findOne({ _id: order.session });
   if (session) {
     const jsonSession = JSON.parse(session.session);
@@ -168,7 +182,7 @@ const chargeSucceeded = async (req,res,next) => {
       delete jsonSession.cart;
       session.session = JSON.stringify(jsonSession);
     } else if (jsonSession.cart) {
-      delete jsonSession.cart.aliasCarts[alias_id];
+      delete jsonSession.cart.aliasCarts[order.alias];
       session.session = JSON.stringify(jsonSession);
     }
     await session.save();
@@ -183,4 +197,4 @@ const chargeSucceeded = async (req,res,next) => {
   //     .exec();
   // }
 };
-module.exports = { chargeSucceeded };
+module.exports = { checkoutSessionCompleted };
