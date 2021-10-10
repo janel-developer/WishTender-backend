@@ -192,7 +192,7 @@ module.exports = () => {
 
       return res.status(200).json({ rate });
     }
-    return res.status(200).json({ rate: 1.4777 });
+    return res.status(200).json({ rate: ratesFromBase(base, dummyRates)[symbols] });
   });
 
   return exchangeRateRoutes;
