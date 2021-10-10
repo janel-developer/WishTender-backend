@@ -4,7 +4,7 @@ const exchangeRateRoutes = express.Router();
 const ExchangeRateApiInterface = require('../lib/ExchangeRate-Api');
 
 const dummyRates = {
-  EUR: 1.5,
+  EUR: 1,
   AED: 4.25511428,
   AFN: 92.42206235,
   ALL: 121.34760705,
@@ -165,25 +165,34 @@ const dummyRates = {
   ZAR: 17.23694782,
   ZMW: 19.72623029,
 };
+const ratesFromBase = (bs, rates) => {
+  const ratesArray = Object.entries(rates);
+  const indexOfBase = Object.entries(rates).findIndex((o) => o[0] === bs);
+  const newRates = {};
+  ratesArray.forEach((rate) => {
+    newRates[rate[0]] = rate[1] / ratesArray[indexOfBase][1];
+  });
+  return newRates;
+};
 const ratesApi = new ExchangeRateApiInterface();
 module.exports = () => {
   exchangeRateRoutes.route('/all').get(async (req, res, next) => {
     const { base } = req.query;
-    // if (process.env.NODE_ENV === 'production') {
-    const rates = await ratesApi.getAllExchangeRates(base);
-    return res.status(200).json({ rates });
-    // }
-    // dummyRates[base] = 1;
-    // return res.status(200).json(dummyRates);
+    if (process.env.NODE_ENV === 'production') {
+      const rates = await ratesApi.getAllExchangeRates(base);
+      return res.status(200).json({ rates });
+    }
+
+    return res.status(200).json({ rates: ratesFromBase(base, dummyRates) });
   });
   exchangeRateRoutes.route('/').get(async (req, res, next) => {
     const { base, symbols } = req.query;
-    // if (process.env.NODE_ENV === 'production') {
-    const rate = await ratesApi.getExchangeRate(base, symbols);
+    if (process.env.NODE_ENV === 'production') {
+      const rate = await ratesApi.getExchangeRate(base, symbols);
 
-    return res.status(200).json({ rate });
-    // }
-    // return res.status(200).json({ rate: 1.4777 });
+      return res.status(200).json({ rate });
+    }
+    return res.status(200).json({ rate: 1.4777 });
   });
 
   return exchangeRateRoutes;
