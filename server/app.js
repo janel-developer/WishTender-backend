@@ -103,8 +103,11 @@ module.exports = (config) => {
   app.use(express.static(`${__dirname}/public`));
   // app.use(bodyParser.json());
   // app.use(bodyParser.urlencoded({ extended: true }));
+  app.use('/api/stripeWebhooks', express.raw({ limit: '100kb', type: 'application/json' }));
+
   app.use('/api/wishes/scrapeHtml', express.json({ limit: '3000kb' }));
   app.use(express.json({ limit: '100kb' }));
+
   app.use(cookieParser());
   app.use(setLocaleCookie);
 

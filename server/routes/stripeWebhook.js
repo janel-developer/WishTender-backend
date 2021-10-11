@@ -1,21 +1,43 @@
 const express = require('express');
+const stripe = require('stripe')(
+  process.env.NODE_ENV === 'production'
+    ? process.env.STRIPE_SECRET_KEY
+    : process.env.STRIPE_SECRET_TEST_KEY
+);
+
 const webhookRoutes = express.Router();
+const StripeWebhookService = require('../services/StripeWebhookService');
+
+let endpointSecret;
+if (process.env.NODE_ENV === 'production') {
+  endpointSecret = process.env.STRIPE_WEBHOOK_SIGNING_SECRET;
+} else if (process.env.REMOTE === 'true')
+  endpointSecret = process.env.STRIPE_WEBHOOK_SIGNING_SECRET_TEST_REMOTE;
+else {
+  endpointSecret = process.env.STRIPE_WEBHOOK_SIGNING_SECRET_TEST;
+}
 
 module.exports = () => {
-  webhookRoutes.post('/', (req, res, next) => {
-    if (req.body.type === 'charge.succeeded') {
-      return res.status(200).send();
+  webhookRoutes.post('/', async (req, res, next) => {
+    try {
+      req.event = stripe.webhooks.constructEvent(
+        req.body,
+        req.headers['stripe-signature'],
+        endpointSecret
+      );
+    } catch (err) {
+      console.log(err);
+      return res.status(400).send({ message: 'Stripe event not verified.' });
+    }
+    if (req.event.type === 'checkout.session.completed') {
+      try {
+        await StripeWebhookService.checkoutSessionCompleted(req.event.data.object);
+        return res.status(200).send();
+      } catch (err) {
+        return next(err);
+      }
     }
     return res.status(200).send();
-    // 'transfer.created'
-    //     transfer.created [evt_3JhkaeLLBOhef2QN158OQW3b]
-    // 2021-10-06 19:37:01   --> customer.created [evt_1JhkbYLLBOhef2QNctAL6VC5]
-    // 2021-10-06 19:37:01   --> payment_intent.succeeded [evt_3JhkaeLLBOhef2QN1xpynOMF]
-    // 2021-10-06 19:37:01   --> charge.succeeded [evt_3JhkaeLLBOhef2QN1zjYgt6z]
-    // 2021-10-06 19:37:02   --> connect payment.created [evt_1JhkbZPq51wqD5PLAfKq0Iej]
-    // 2021-10-06 19:37:02   --> checkout.session.completed [evt_1JhkbZLLBOhef2QNbUX7w0XA]
-    // 2021-10-06 19:37:02   --> customer.updated
-    return res.status(400).send();
   });
   return webhookRoutes;
 };

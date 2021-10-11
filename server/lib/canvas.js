@@ -27,7 +27,7 @@ module.exports.createCroppedImage = async (url, crop, dimensions, convert, next)
         next(
           new ApplicationError(
             { err },
-            `Image loading timed out. Use the WishTender Chrome extension (version 1.2 or later) to add this item.`
+            `Image loading timed out. Use the WishTender Chrome extension to add this item.`
           )
         );
       }
