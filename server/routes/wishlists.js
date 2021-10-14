@@ -94,8 +94,22 @@ module.exports = () => {
     } catch (err) {
       return next(err);
     }
+    const wishlistCopy = wishlist.toJSON();
 
-    return res.json(wishlist);
+    const categories = wishlist.wishlistItems.reduce((a, c) => {
+      if (c.categories && c.categories.length) {
+        c.categories.forEach((cat) => {
+          if (!a.includes(cat)) {
+            a.push(cat);
+          }
+        });
+        return a;
+      }
+      return a;
+    }, []);
+    wishlistCopy.categories = categories;
+
+    return res.status(200).send(wishlistCopy);
   });
 
   wishlistRoutes.patch(

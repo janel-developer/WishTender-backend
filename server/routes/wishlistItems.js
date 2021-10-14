@@ -83,6 +83,7 @@ module.exports = () => {
     authUserOwnsWishlistOrItem,
     middlewares.onlyAllowInBodySanitizer([
       'itemName',
+      'category',
       'image',
       'imageCrop',
       'price',
@@ -186,9 +187,7 @@ module.exports = () => {
         Promise.resolve([])
       );
       items
-        .then(async (itms) => {
-          return res.status(201).send();
-        })
+        .then(async () => res.status(201).send())
         // eslint-disable-next-line arrow-body-style
         .catch((err) => {
           return next(new ApplicationError({ err }, `Failed to add items`));
@@ -201,7 +200,15 @@ module.exports = () => {
 
     authLoggedIn,
     csrfProtection,
-    middlewares.onlyAllowInBodySanitizer(['itemName', 'imageCrop', 'price', 'url', 'image']),
+    middlewares.onlyAllowInBodySanitizer([
+      // this is not doing anything what up
+      'itemName',
+      'category',
+      'imageCrop',
+      'price',
+      'url',
+      'image',
+    ]),
     authUserOwnsWishlistOrItem,
     middlewares.upload.single('image'),
     (req, res, next) => {
@@ -220,6 +227,7 @@ module.exports = () => {
       try {
         const imageFile = req.file && req.file.storedFilename;
         const patch = { ...req.body };
+        if (patch.categories === '[]') patch.categories = []; // could not figure out how to send an empty array in form data, keeps sending as a string
         if (imageFile) patch.itemImage = imageService.filepathToStore(imageFile);
         await wishlistItemService.updateWishlistItem(req.params.id, patch, imageService);
       } catch (err) {
@@ -241,7 +249,7 @@ module.exports = () => {
   wishlistItemRoutes.delete(
     '/multi',
     (req, res, next) => {
-      // if (req.body.code !== process.env.MASTER_KEY) return res.send(403).send();
+      if (req.body.code !== process.env.MASTER_KEY) return res.send(403).send();
       return next();
     },
     // authLoggedIn,

@@ -2,11 +2,12 @@ const mongoose = require('mongoose');
 const cryptEmail = require('../lib/cryptEmail');
 require('dotenv').config({ path: `${__dirname}/./../../.env` });
 
-mongoose.connect(process.env.PRODUCTION_DB_DSN, { useNewUrlParser: true });
-// mongoose.connect(process.env.DEVELOPMENT_DB_DSN, { useNewUrlParser: true });
+// mongoose.connect(process.env.PRODUCTION_DB_DSN, { useNewUrlParser: true });
+mongoose.connect(process.env.DEVELOPMENT_DB_DSN, { useNewUrlParser: true });
 
 const Users = require('../models/User.Model');
 const Orders = require('../models/Order.Model');
+const WishlistItem = require('../models/WishlistItem.Model');
 
 // (async () => {
 // const results = await Users.findWithDeleted({});
@@ -24,51 +25,51 @@ const Orders = require('../models/Order.Model');
 //   });
 // }, Promise.resolve(null));
 
-const getProm = async (order) => {
-  const prom = new Promise((res) => {
-    (async () => {
-      // if (
-      //   order.noteToTender &&
-      //   order.noteToTender.length !== undefined && // is an array
-      //   (order.noteToTender.length === 0 || order.noteToTender[0].length === undefined) // is not array
-      // ) {
-      //   return res(order);
-      // }
-      // if (order.noteToTender && order.noteToTender[0] && order.noteToTender[0].length) {
-      //   order.noteToTender = [...order.noteToTender[0]];
-      // }
-      // if (order.noteToTender && order.noteToTender.length === undefined) {
-      //   order.noteToTender = [order.noteToTender];
-      // }
-      order.total.amount = order.cashFlow.customerCharged.amount;
+// const getProm = async (order) => {
+//   const prom = new Promise((res) => {
+//     (async () => {
+//       // if (
+//       //   order.noteToTender &&
+//       //   order.noteToTender.length !== undefined && // is an array
+//       //   (order.noteToTender.length === 0 || order.noteToTender[0].length === undefined) // is not array
+//       // ) {
+//       //   return res(order);
+//       // }
+//       // if (order.noteToTender && order.noteToTender[0] && order.noteToTender[0].length) {
+//       //   order.noteToTender = [...order.noteToTender[0]];
+//       // }
+//       // if (order.noteToTender && order.noteToTender.length === undefined) {
+//       //   order.noteToTender = [order.noteToTender];
+//       // }
+//       order.total.amount = order.cashFlow.customerCharged.amount;
 
-      order.total.currency = order.cashFlow.customerCharged.currency;
+//       order.total.currency = order.cashFlow.customerCharged.currency;
 
-      // await order.save();
-      const newOrder = await Orders.find({ _id: order._id });
-      return res(newOrder[0]);
-    })();
-  });
-  return prom;
-};
-(async () => {
-  const orders = await Orders.find({});
-  const converted = orders.filter((order) => order.convertedCart);
+//       // await order.save();
+//       const newOrder = await Orders.find({ _id: order._id });
+//       return res(newOrder[0]);
+//     })();
+//   });
+//   return prom;
+// };
+// (async () => {
+//   const orders = await Orders.find({});
+//   const converted = orders.filter((order) => order.convertedCart);
 
-  const prom = converted.reduce(
-    (prevPr, order, i) =>
-      prevPr.then((acc) =>
-        getProm(order).then((resp) => {
-          console.log('some action', i);
-          return [...acc, resp];
-        })
-      ),
-    Promise.resolve([])
-  );
-  prom.then(async (l) => {
-    console.log(l);
-  });
-})();
+//   const prom = converted.reduce(
+//     (prevPr, order, i) =>
+//       prevPr.then((acc) =>
+//         getProm(order).then((resp) => {
+//           console.log('some action', i);
+//           return [...acc, resp];
+//         })
+//       ),
+//     Promise.resolve([])
+//   );
+//   prom.then(async (l) => {
+//     console.log(l);
+//   });
+// })();
 // (async () => {
 //   const results = await Users.find({})
 //     .populate({
@@ -94,13 +95,25 @@ const getProm = async (order) => {
 //   console.log(prob);
 // })();
 
-(async () => {
-  const orders = await Orders.find({});
+// (async () => {
+//   const orders = await Orders.find({});
 
-  // find all with converted cart
-  const converted = orders.filter((order) => order.convertedCart);
+//   // find all with converted cart
+//   const converted = orders.filter((order) => order.convertedCart);
 
-  converted;
+//   converted;
 
-  console.log(prob);
-})();
+//   console.log(prob);
+// })();
+// (async () => {
+//   const wishlists = await WishlistItem.find({});
+
+//   // find all with converted cart
+//   const cat = wishlists.filter((wishlist) => wishlist.category);
+//   cat.forEach(async (list) => {
+//     list.categories = [...list.categories, list.category];
+//     await list.save();
+//   });
+
+//   console.log(cat);
+// })();

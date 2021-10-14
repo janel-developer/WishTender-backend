@@ -138,6 +138,7 @@ class AliasService {
     } catch (err) {
       throw new ApplicationError({ err }, `Internal error when trying to find alias.`);
     }
+
     return alias;
   }
 
