@@ -188,6 +188,20 @@ module.exports = () => {
       // logger.log('silly', `alias found: ${alias}`);
       if (!alias) return res.sendStatus(204);
       const aliasCopy = alias.toJSON();
+
+      const categories = aliasCopy.wishlists[0].wishlistItems.reduce((a, c) => {
+        if (c.categories && c.categories.length) {
+          c.categories.forEach((cat) => {
+            if (!a.includes(cat)) {
+              a.push(cat);
+            }
+          });
+          return a;
+        }
+        return a;
+      }, []);
+
+      aliasCopy.wishlists[0].categories = categories;
       aliasCopy.activated = alias.user.stripeAccountInfo
         ? alias.user.stripeAccountInfo.activated
         : false;
