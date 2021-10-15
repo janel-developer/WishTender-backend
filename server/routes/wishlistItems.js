@@ -85,6 +85,7 @@ module.exports = () => {
       'itemName',
       'category',
       'image',
+      'itemImage',
       'imageCrop',
       'price',
       'currency',
