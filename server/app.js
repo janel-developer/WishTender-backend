@@ -63,6 +63,7 @@ module.exports = (config) => {
   if (process.env.NODE_ENV !== 'production') {
     origins.push('http://localhost:3000');
     origins.push('http://10.0.2.2:3000');
+    origins.push('http://192.168.0.17:3000');
   }
   console.log('allowed origins', origins);
   app.use((req, res, next) => {
@@ -93,7 +94,19 @@ module.exports = (config) => {
       allowedOrigin = origins.includes(req.get('origin')) ? req.get('origin') : '';
     } else if (req.headers.referer) {
       const reg = /(http:\/\/|https:\/\/)(.*)(?=\/)|(http:\/\/|https:\/\/)(.*)/g;
-      const origin = req.headers.referer.match(reg)[0];
+      let origin;
+
+      //android gmail default browser error fix
+      if (
+        req.path.slice(0, 17) === '/api/confirmation' &&
+        req.headers.referer === 'android-app://com.google.android.gm/'
+      ) {
+        origins.push('android-app://com.google.android.gm/');
+        origin = 'android-app://com.google.android.gm/';
+      } else {
+        [origin] = req.headers.referer.match(reg);
+      }
+      // 'android-app://com.google.android.gm/'
       allowedOrigin = origins.includes(origin) ? origin : '';
     }
     console.log('allowedOrigin', allowedOrigin);
