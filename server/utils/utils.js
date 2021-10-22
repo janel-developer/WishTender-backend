@@ -34,7 +34,12 @@ const isPhoneDebugging = (req) =>
 
 const getAcceptableDomain = (req) => {
   let domain = 'wishtender.com';
-  if (isLocalhost(req) && process.env.NODE_ENV !== 'production') {
+  // const isAndroidEmulator = req.get('origin').slice(0, 15) === 'http://10.0.2.2';
+  if (
+    isLocalhost(req) &&
+    // || isAndroidEmulator
+    process.env.NODE_ENV !== 'production'
+  ) {
     // domain = 'localhost';
     domain = '';
   } else if (

@@ -3,7 +3,7 @@ const cryptEmail = require('../lib/cryptEmail');
 require('dotenv').config({ path: `${__dirname}/./../../.env` });
 
 // mongoose.connect(process.env.PRODUCTION_DB_DSN, { useNewUrlParser: true });
-mongoose.connect(process.env.DEVELOPMENT_DB_DSN, { useNewUrlParser: true });
+// mongoose.connect(process.env.DEVELOPMENT_DB_DSN, { useNewUrlParser: true });
 
 const Users = require('../models/User.Model');
 const Orders = require('../models/Order.Model');
@@ -93,6 +93,11 @@ const WishlistItem = require('../models/WishlistItem.Model');
 //     return false;
 //   });
 //   console.log(prob);
+// })();
+// (async () => {
+//   const results = await Users.find({});
+
+//   console.log(results);
 // })();
 
 // (async () => {

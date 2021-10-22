@@ -43,7 +43,12 @@ passport.serializeUser((user, done) => done(null, user._id));
 
 passport.deserializeUser(async (id, done) => {
   try {
-    const user = await UserModel.findById(id).exec();
+    const user = await UserModel.findById(id)
+      .populate({
+        path: 'stripeAccountInfo',
+        model: 'StripeAccountInfo',
+      })
+      .exec();
     return done(null, user);
   } catch (err) {
     return done(err);

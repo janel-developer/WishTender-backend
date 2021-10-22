@@ -168,6 +168,22 @@
       "envFile": "${workspaceFolder}/.env"
     },
     {
+      "name": "Launch Program Dev AWS ANDROID Emulator",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "nodemon",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/bin/www.js",
+      "console": "integratedTerminal",
+      "env": {
+        "PORT": "4000",
+        "NODE_ENV": "development",
+        "AWS": "true",
+        "ANDROID_EMULATOR": "true"
+      },
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
       "name": "Migration",
       "type": "node",
       "request": "launch",
