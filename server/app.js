@@ -37,8 +37,12 @@ if (process.env.NODE_ENV === 'production') {
   process.env.FRONT_BASEURL = 'https://staging.wishtender.com';
   process.env.API_BASEURL = 'https://api-staging.wishtender.com';
 } else {
-  process.env.FRONT_BASEURL = 'http://localhost:3000';
-  process.env.API_BASEURL = 'http://localhost:4000';
+  process.env.FRONT_BASEURL = `http://${
+    process.env.ANDROID_EMULATOR ? '10.0.2.2' : 'localhost'
+  }:3000`;
+  process.env.API_BASEURL = `http://${
+    process.env.ANDROID_EMULATOR ? '10.0.2.2' : 'localhost'
+  }:4000`;
 }
 
 module.exports = (config) => {
@@ -56,7 +60,11 @@ module.exports = (config) => {
     'chrome-extension://khafbdpkfodbigppgcpmnokmbkhhmpfc',
     'chrome-extension://jmfmpnjaeknofpgafaickkcpnonbebcj',
   ];
-  if (process.env.NODE_ENV !== 'production') origins.push('http://localhost:3000');
+  if (process.env.NODE_ENV !== 'production') {
+    origins.push('http://localhost:3000');
+    origins.push('http://10.0.2.2:3000');
+    origins.push('http://192.168.0.17:3000');
+  }
   console.log('allowed origins', origins);
   app.use((req, res, next) => {
     logger.log('silly', `${req.method}: ${req.path}`);
@@ -86,7 +94,19 @@ module.exports = (config) => {
       allowedOrigin = origins.includes(req.get('origin')) ? req.get('origin') : '';
     } else if (req.headers.referer) {
       const reg = /(http:\/\/|https:\/\/)(.*)(?=\/)|(http:\/\/|https:\/\/)(.*)/g;
-      const origin = req.headers.referer.match(reg)[0];
+      let origin;
+
+      //android gmail default browser error fix
+      if (
+        req.path.slice(0, 17) === '/api/confirmation' &&
+        req.headers.referer === 'android-app://com.google.android.gm/'
+      ) {
+        origins.push('android-app://com.google.android.gm/');
+        origin = 'android-app://com.google.android.gm/';
+      } else {
+        [origin] = req.headers.referer.match(reg);
+      }
+      // 'android-app://com.google.android.gm/'
       allowedOrigin = origins.includes(origin) ? origin : '';
     }
     console.log('allowedOrigin', allowedOrigin);
@@ -167,11 +187,11 @@ module.exports = (config) => {
   // --------------------------------------
 
   // app.use((req, res, next) => {
-  //   //   req.session.p = 1;
-  //   //   console.log('req.headers: ', req.headers);
-  //   //   console.log('req.body: ', req.body);
-  //   //   console.log('req.cookies: ', req.cookies);
-  //   //   console.log('req.user: ', req.user);
+  //   req.session.p = 1;
+  //   console.log('req.headers: ', req.headers);
+  //   console.log('req.body: ', req.body);
+  //   console.log('req.cookies: ', req.cookies);
+  //   console.log('req.user: ', req.user);
 
   //   res.on('close', async () => {
   //     console.log('req', req);

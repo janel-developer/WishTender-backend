@@ -26,7 +26,8 @@ class ConfirmationEmailService {
 
     const confirmationEmail = new this.ConfirmationEmail(
       user.email,
-      `/api/confirmation/${user.email}/${token.token}`
+      // `/api/confirmation/${user.email}/${token.token}`
+      `/confirm-email?email=${user.email}&token=${token.token}`
     );
     confirmationEmail.send();
   }
