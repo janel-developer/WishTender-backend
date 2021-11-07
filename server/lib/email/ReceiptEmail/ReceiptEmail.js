@@ -13,8 +13,6 @@ class ReceiptEmail extends Email {
    * @param {string} order the order
    */
   constructor(order) {
-    const cart = order.convertedCart || order.cart;
-
     const pass = process.env.RECEIPT_PASSWORD;
     const email =
       process.env.NODE_ENV === 'production' ||

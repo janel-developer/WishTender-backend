@@ -249,7 +249,7 @@
       "request": "launch",
       "runtimeExecutable": "node",
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/server/lib/email/ReceiptEmail/html.js",
+      "program": "${workspaceFolder}/server/lib/email/ReceiptEmail/test.js",
       "console": "integratedTerminal",
       "env": {
         "PORT": "4000",

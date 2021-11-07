@@ -1,89 +1,455 @@
-const fs = require('fs');
-const ExchangeRateAPI = require('../../ExchangeRate-Api');
 
-const exchangeRateAPI = new ExchangeRateAPI();
-const Currency = require('../../currency');
-
-const currency = new Currency(exchangeRateAPI);
-
-//change names from alias items to order.blabla
-const html = (alias, items, totalQty, totalPrice, fee) => {
-  console.log('p');
-  return `
 <html lang="en">
   <head>
-    \n<\!--[if gte mso 9]>\n
+    
+<!--[if gte mso 9]>
+
     <xml
-      >\n
+      >
+
       <o:OfficeDocumentsettings
-        >\n <o:AllowPNG />\n <o:PixelsPerInch>96</o:PixelsPerInch>\n </o:OfficeDocumentsettings
-      >\n
+        >
+ <o:AllowPNG />
+ <o:PixelsPerInch>96</o:PixelsPerInch>
+ </o:OfficeDocumentsettings
+      >
+
     </xml>
-    \n
+    
+
     <![endif]-->
-    \n
+    
+
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    \n
+    
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    \n
+    
+
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    \n
+    
+
     <meta name="format-detection" content="address=no" />
-    \n
+    
+
     <meta name="format-detection" content="telephone=no" />
-    \n
+    
+
     <meta name="format-detection" content="email=no" />
-    \n
+    
+
     <meta name="x-apple-disable-message-reformatting" />
-    \n<\!--[if !mso]><\!-->\n
+    
+<!--[if !mso]><!-->
+
     <style type="text/css">
       @import url('https://static.mailerlite.com/assets/plugins/groot/modules/includes/groot_fonts/import.css?version=1636021');
     </style>
-    \n<\!--
+    
+<!--
     <![endif]-->
-    \n\n<\!--[if mso]>\n
+    
+
+<!--[if mso]>
+
     <style type="text/css">
-      \n    .content-MS .content img { width: 560px; }\n
+      
+    .content-MS .content img { width: 560px; }
+
     </style>
-    \n
+    
+
     <![endif]-->
-    \n\n<\!--[if (mso)|(mso 16)]>\n
+    
+
+<!--[if (mso)|(mso 16)]>
+
     <style type="text/css">
-      \n    .mlContentButton a { text-decoration: none; }\n
+      
+    .mlContentButton a { text-decoration: none; }
+
     </style>
-    \n
+    
+
     <![endif]-->
-    \n<\!--[if !mso]><\!-- -->\n<\!--
+    
+<!--[if !mso]><!-- -->
+<!--
     <![endif]-->
-    \n<\!--[if (lt mso 16)]>\n
+    
+<!--[if (lt mso 16)]>
+
     <style type="text/css" if="variable.bodyBackgroundImage.value">
-      \n    .mlBodyBackgroundImage { background-image: none; }\n
+      
+    .mlBodyBackgroundImage { background-image: none; }
+
     </style>
-    \n
+    
+
     <![endif]-->
-    \n
+    
+
     <style type="text/css">
-      \n    .ReadMsgBody { width: 100%; }\n    .ExternalClass{ width: 100%; }\n    .ExternalClass * { line-height: 100%; }\n    .ExternalClass, .ExternalClass p, .ExternalClass td, .ExternalClass div, .ExternalClass span, .ExternalClass font { line-height:100%; }\n    body { margin: 0; padding: 0; }\n    body, table, td, p, a, li { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }\n    table td { border-collapse: collapse; }\n    table { border-spacing: 0; border-collapse: collapse; }\n    p, a, li, td, blockquote { mso-line-height-rule: exactly; }\n    p, a, li, td, body, table, blockquote { -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; }\n    img, a img { border: 0; outline: none; text-decoration: none; }\n    img { -ms-interpolation-mode: bicubic; }\n    * img[tabindex="0"] + div { display: none !important; }\n    a[href^=tel],a[href^=sms],a[href^=mailto], a[href^=date] { color: inherit; cursor: pointer; text-decoration: none; }\n    a[x-apple-data-detectors]{ color: inherit!important; text-decoration: none!important; font-size: inherit!important; font-family: inherit!important; font-weight: inherit!important; line-height: inherit!important; }\n    #MessageViewBody a { color: inherit; text-decoration: none; font-size: inherit; font-family: inherit; font-weight: inherit; line-height: inherit; }\n    #MessageViewBody { width: 100% !important; }\n    #MessageWebViewDiv { width: 100% !important; }\n\n    @-moz-document url-prefix() {\n      .bodyText p a, .bodyTitle p a {\n        word-break: break-word;\n      }\n    }\n\n    @media screen {\n      body {\n      font-family: 'Poppins', sans-serif;\n    }\n    * {\n    direction: ltr;\n    }\n    }\n\n    @media only screen and (min-width:768px){\n      .mlEmailContainer{\n        width: 640px!important;\n      }\n    }\n\n    @media only screen and (max-width: 640px) {\n      .mlTemplateContainer {\n        padding: 10px 10px 0 10px;\n      }\n    } @media only screen and (max-width: 640px) {\n      .mlTemplateContainer{\n        padding: 10px 10px 0 10px;\n      }\n    } @media only screen and (max-width: 640px) {\n      .mlContentCenter{\n        min-width: 10%!important;\n        margin: 0!important;\n        float: none!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .mlContentTable{\n        width: 100%!important;\n        min-width: 10%!important;\n        margin: 0!important;\n        float: none!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .mlContentBlock{\n        display: block !important;\n        width: 100%!important;\n        min-width: 10%!important;\n        margin: 0!important;\n        float: none!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .mlContentOuter{\n        padding-bottom: 0px!important;\n        padding-left: 15px!important;\n        padding-right: 15px!important;\n        padding-top: 0px!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .mlContentOuterSmall{\n        padding-bottom: 0px!important;\n        padding-left: 10px!important;\n        padding-right: 10px!important;\n        padding-top: 0px!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .mlMenuOuter{\n        padding-bottom: 0px!important;\n        padding-left: 5px!important;\n        padding-right: 5px!important;\n        padding-top: 0px!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .mlContentOuterFullBig{\n        padding: 30px!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .mlContentImage img {\n        height: auto!important;\n        width: 100%!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .mlContentImage160 img {\n        height: auto!important;\n        max-width: 160px;\n        width: 100%!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .mlContentImage260 img {\n        height: auto!important;\n        max-width: 260px;\n        width: 100%!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .mlContentImage{\n        height: 100%!important;\n        width: auto!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .mlProductImage{\n        height: auto!important;\n        width: 100%!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .mlContentButton a{\n        display: block!important;\n        width: auto!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .spacingHeight-20{\n        height: 10px!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .spacingHeight-30{\n        height: 15px!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .spacingHeight-40{\n        height: 20px!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .spacingHeight-50{\n        height: 25px!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .spacingHeight-60{\n        height: 30px!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .spacingHeight-70{\n        height: 35px!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .spacingHeight-80{\n        height: 40px!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .spacingHeight-90{\n        height: 45px!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .spacingHeight-100{\n        height: 50px!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .spacingWidth-20{\n        width: 10px!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .spacingWidth-30{\n        width: 15px!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .spacingWidth-40{\n        width: 20px!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .spacingWidth-60{\n        width: 30px!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .mobileHide{\n        display: none!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .mobileShow{\n        display: block!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .alignCenter{\n        height: auto!important;\n        text-align: center!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .alignCenter img{\n        display: inline !important;\n        text-align: center!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .marginBottom{\n        margin-bottom: 15px!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .marginTop {\n        margin-top: 10px !important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .mlContentHeight{\n        height: auto!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .mlDisplayInline {\n        display: inline-block!important;\n        float: none!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .mlNoFloat{\n        float: none!important;\n        margin-left: auto!important;\n        margin-right: auto!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .mlContentSurvey{\n        float: none!important;\n        margin-bottom: 10px!important;\n        width:100%!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .mlContentSurvey td a{\n        width: auto!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .multiple-choice-item-table{\n        width: 100% !important;\n        margin-bottom: 20px !important;\n        min-width: 10% !important;\n        float: none !important;\n      }\n    } @media only screen and (max-width: 640px) {\n      body{\n        margin: 0px!important;\n        padding: 0px!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      body, table, td, p, a, li, blockquote{\n        -webkit-text-size-adjust: none!important;\n      }\n    }\n    @media only screen and (max-width: 480px){\n      .social-LinksTable{\n        width: 100%!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .social-LinksTable td:first-child{\n        padding-left: 0px!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .social-LinksTable td:last-child{\n        padding-right: 0px!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .social-LinksTable td{\n        padding: 0 10px!important;\n      }\n    } @media only screen and (max-width: 640px) {\n      .social-LinksTable td img{\n        height: auto!important;\n        max-width: 48px;\n        width: 100%!important;\n      }\n    }\n\n    /* Carousel style */\n\n    @media screen and (-webkit-min-device-pixel-ratio: 0) {\n      .webkit {\n        display: block !important;\n      }\n    }  @media screen and (-webkit-min-device-pixel-ratio: 0) {\n      .non-webkit {\n        display: none !important;\n      }\n    }  @media screen and (-webkit-min-device-pixel-ratio: 0) {\n      /* TARGET OUTLOOK.COM */\n      [class="x_non-webkit"] {\n        display: block !important;\n      }\n    }  @media screen and (-webkit-min-device-pixel-ratio: 0) {\n      [class="x_webkit"] {\n        display: none !important;\n      }\n    }\n\n
+      
+    .ReadMsgBody { width: 100%; }
+    .ExternalClass{ width: 100%; }
+    .ExternalClass * { line-height: 100%; }
+    .ExternalClass, .ExternalClass p, .ExternalClass td, .ExternalClass div, .ExternalClass span, .ExternalClass font { line-height:100%; }
+    body { margin: 0; padding: 0; }
+    body, table, td, p, a, li { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table td { border-collapse: collapse; }
+    table { border-spacing: 0; border-collapse: collapse; }
+    p, a, li, td, blockquote { mso-line-height-rule: exactly; }
+    p, a, li, td, body, table, blockquote { -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; }
+    img, a img { border: 0; outline: none; text-decoration: none; }
+    img { -ms-interpolation-mode: bicubic; }
+    * img[tabindex="0"] + div { display: none !important; }
+    a[href^=tel],a[href^=sms],a[href^=mailto], a[href^=date] { color: inherit; cursor: pointer; text-decoration: none; }
+    a[x-apple-data-detectors]{ color: inherit!important; text-decoration: none!important; font-size: inherit!important; font-family: inherit!important; font-weight: inherit!important; line-height: inherit!important; }
+    #MessageViewBody a { color: inherit; text-decoration: none; font-size: inherit; font-family: inherit; font-weight: inherit; line-height: inherit; }
+    #MessageViewBody { width: 100% !important; }
+    #MessageWebViewDiv { width: 100% !important; }
+
+    @-moz-document url-prefix() {
+      .bodyText p a, .bodyTitle p a {
+        word-break: break-word;
+      }
+    }
+
+    @media screen {
+      body {
+      font-family: 'Poppins', sans-serif;
+    }
+    * {
+    direction: ltr;
+    }
+    }
+
+    @media only screen and (min-width:768px){
+      .mlEmailContainer{
+        width: 640px!important;
+      }
+    }
+
+    @media only screen and (max-width: 640px) {
+      .mlTemplateContainer {
+        padding: 10px 10px 0 10px;
+      }
+    } @media only screen and (max-width: 640px) {
+      .mlTemplateContainer{
+        padding: 10px 10px 0 10px;
+      }
+    } @media only screen and (max-width: 640px) {
+      .mlContentCenter{
+        min-width: 10%!important;
+        margin: 0!important;
+        float: none!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .mlContentTable{
+        width: 100%!important;
+        min-width: 10%!important;
+        margin: 0!important;
+        float: none!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .mlContentBlock{
+        display: block !important;
+        width: 100%!important;
+        min-width: 10%!important;
+        margin: 0!important;
+        float: none!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .mlContentOuter{
+        padding-bottom: 0px!important;
+        padding-left: 15px!important;
+        padding-right: 15px!important;
+        padding-top: 0px!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .mlContentOuterSmall{
+        padding-bottom: 0px!important;
+        padding-left: 10px!important;
+        padding-right: 10px!important;
+        padding-top: 0px!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .mlMenuOuter{
+        padding-bottom: 0px!important;
+        padding-left: 5px!important;
+        padding-right: 5px!important;
+        padding-top: 0px!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .mlContentOuterFullBig{
+        padding: 30px!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .mlContentImage img {
+        height: auto!important;
+        width: 100%!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .mlContentImage160 img {
+        height: auto!important;
+        max-width: 160px;
+        width: 100%!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .mlContentImage260 img {
+        height: auto!important;
+        max-width: 260px;
+        width: 100%!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .mlContentImage{
+        height: 100%!important;
+        width: auto!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .mlProductImage{
+        height: auto!important;
+        width: 100%!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .mlContentButton a{
+        display: block!important;
+        width: auto!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .spacingHeight-20{
+        height: 10px!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .spacingHeight-30{
+        height: 15px!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .spacingHeight-40{
+        height: 20px!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .spacingHeight-50{
+        height: 25px!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .spacingHeight-60{
+        height: 30px!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .spacingHeight-70{
+        height: 35px!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .spacingHeight-80{
+        height: 40px!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .spacingHeight-90{
+        height: 45px!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .spacingHeight-100{
+        height: 50px!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .spacingWidth-20{
+        width: 10px!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .spacingWidth-30{
+        width: 15px!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .spacingWidth-40{
+        width: 20px!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .spacingWidth-60{
+        width: 30px!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .mobileHide{
+        display: none!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .mobileShow{
+        display: block!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .alignCenter{
+        height: auto!important;
+        text-align: center!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .alignCenter img{
+        display: inline !important;
+        text-align: center!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .marginBottom{
+        margin-bottom: 15px!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .marginTop {
+        margin-top: 10px !important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .mlContentHeight{
+        height: auto!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .mlDisplayInline {
+        display: inline-block!important;
+        float: none!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .mlNoFloat{
+        float: none!important;
+        margin-left: auto!important;
+        margin-right: auto!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .mlContentSurvey{
+        float: none!important;
+        margin-bottom: 10px!important;
+        width:100%!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .mlContentSurvey td a{
+        width: auto!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .multiple-choice-item-table{
+        width: 100% !important;
+        margin-bottom: 20px !important;
+        min-width: 10% !important;
+        float: none !important;
+      }
+    } @media only screen and (max-width: 640px) {
+      body{
+        margin: 0px!important;
+        padding: 0px!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      body, table, td, p, a, li, blockquote{
+        -webkit-text-size-adjust: none!important;
+      }
+    }
+    @media only screen and (max-width: 480px){
+      .social-LinksTable{
+        width: 100%!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .social-LinksTable td:first-child{
+        padding-left: 0px!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .social-LinksTable td:last-child{
+        padding-right: 0px!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .social-LinksTable td{
+        padding: 0 10px!important;
+      }
+    } @media only screen and (max-width: 640px) {
+      .social-LinksTable td img{
+        height: auto!important;
+        max-width: 48px;
+        width: 100%!important;
+      }
+    }
+
+    /* Carousel style */
+
+    @media screen and (-webkit-min-device-pixel-ratio: 0) {
+      .webkit {
+        display: block !important;
+      }
+    }  @media screen and (-webkit-min-device-pixel-ratio: 0) {
+      .non-webkit {
+        display: none !important;
+      }
+    }  @media screen and (-webkit-min-device-pixel-ratio: 0) {
+      /* TARGET OUTLOOK.COM */
+      [class="x_non-webkit"] {
+        display: block !important;
+      }
+    }  @media screen and (-webkit-min-device-pixel-ratio: 0) {
+      [class="x_webkit"] {
+        display: none !important;
+      }
+    }
+
+
     </style>
-    \n<\!--[if mso]>\n
+    
+<!--[if mso]>
+
     <style type="text/css">
-      \n    .bodyText { font-family: Arial, Helvetica, sans-serif!important ; }\n    .bodyText * { font-family: Arial, Helvetica, sans-serif!important; }\n    .bodyText a { font-family: Arial, Helvetica, sans-serif!important; }\n    .bodyText a span { font-family: Arial, Helvetica, sans-serif!important; }\n    .bodyText span { font-family: Arial, Helvetica, sans-serif!important; }\n    .bodyText p { font-family: Arial, Helvetica, sans-serif!important; }\n    .bodyText ul li { font-family: Arial, Helvetica, sans-serif!important; }\n    .bodyTitle { font-family: Arial, Helvetica, sans-serif!important ; }\n    .bodyTitle * { font-family: Arial, Helvetica, sans-serif!important; }\n    .bodyTitle a { font-family: Arial, Helvetica, sans-serif!important; }\n    .bodyTitle a span { font-family: Arial, Helvetica, sans-serif!important; }\n    .bodyTitle span { font-family: Arial, Helvetica, sans-serif!important; }\n    .bodyTitle p { font-family: Arial, Helvetica, sans-serif!important; }\n    .bodyFont { font-family: Arial, Helvetica, sans-serif!important ; }\n    .bodyFont * { font-family: Arial, Helvetica, sans-serif!important; }\n    .bodyFont a { font-family: Arial, Helvetica, sans-serif!important; }\n    .bodyFont a span { font-family: Arial, Helvetica, sans-serif!important; }\n    .bodyFont span { font-family: Arial, Helvetica, sans-serif!important; }\n    .bodyFont p { font-family: Arial, Helvetica, sans-serif!important; }\n    .mlContentButton { font-family: Arial, Helvetica, sans-serif!important; }\n
+      
+    .bodyText { font-family: Arial, Helvetica, sans-serif!important ; }
+    .bodyText * { font-family: Arial, Helvetica, sans-serif!important; }
+    .bodyText a { font-family: Arial, Helvetica, sans-serif!important; }
+    .bodyText a span { font-family: Arial, Helvetica, sans-serif!important; }
+    .bodyText span { font-family: Arial, Helvetica, sans-serif!important; }
+    .bodyText p { font-family: Arial, Helvetica, sans-serif!important; }
+    .bodyText ul li { font-family: Arial, Helvetica, sans-serif!important; }
+    .bodyTitle { font-family: Arial, Helvetica, sans-serif!important ; }
+    .bodyTitle * { font-family: Arial, Helvetica, sans-serif!important; }
+    .bodyTitle a { font-family: Arial, Helvetica, sans-serif!important; }
+    .bodyTitle a span { font-family: Arial, Helvetica, sans-serif!important; }
+    .bodyTitle span { font-family: Arial, Helvetica, sans-serif!important; }
+    .bodyTitle p { font-family: Arial, Helvetica, sans-serif!important; }
+    .bodyFont { font-family: Arial, Helvetica, sans-serif!important ; }
+    .bodyFont * { font-family: Arial, Helvetica, sans-serif!important; }
+    .bodyFont a { font-family: Arial, Helvetica, sans-serif!important; }
+    .bodyFont a span { font-family: Arial, Helvetica, sans-serif!important; }
+    .bodyFont span { font-family: Arial, Helvetica, sans-serif!important; }
+    .bodyFont p { font-family: Arial, Helvetica, sans-serif!important; }
+    .mlContentButton { font-family: Arial, Helvetica, sans-serif!important; }
+
     </style>
-    \n
+    
+
     <![endif]-->
-    \n
+    
+
     <style type="text/css">
-      \n\t\t\t\t@media only screen and (max-width: 640px){\n\t\t\t\t\t#logoBlock-4 {\n\t\t\t\t\t\tmax-width: 210px!important;\n\t\t\t\t\t\twidth: 100%!important;\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t
+      
+				@media only screen and (max-width: 640px){
+					#logoBlock-4 {
+						max-width: 210px!important;
+						width: 100%!important;
+					}
+				}
+			
     </style>
     <style type="text/css">
-      \n\t\t\t\t@media only screen and (max-width: 640px){\n\t\t\t\t\t#imageBlock-10 img {\n\t\t\t\t\t\tmax-width: 560px!important;\n\t\t\t\t\t\twidth: 100%!important;\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t
+      
+				@media only screen and (max-width: 640px){
+					#imageBlock-10 img {
+						max-width: 560px!important;
+						width: 100%!important;
+					}
+				}
+			
     </style>
     <style type="text/css">
-      \n\t\t\t\t@media only screen and (max-width: 640px){\n\t\t\t\t\t#imageBlock-14 img {\n\t\t\t\t\t\tmax-width: 868px!important;\n\t\t\t\t\t\twidth: 100%!important;\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t
+      
+				@media only screen and (max-width: 640px){
+					#imageBlock-14 img {
+						max-width: 868px!important;
+						width: 100%!important;
+					}
+				}
+			
     </style>
     <title>creating template</title>
     <meta name="robots" content="noindex, nofollow" /></head
-  >\n
+  >
+
   <body
     class="mlBodyBackground vsc-initialized"
     style="
@@ -94,9 +460,13 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
       -webkit-text-size-adjust: none;
     "
   >
-    \n\n
+    
+
+
     <div role="article" aria-roledescription="email" aria-label="creating+template">
-      \n<\!--[if !mso]><\!-- -->\n
+      
+<!--[if !mso]><!-- -->
+
       <table
         width="100%"
         border="0"
@@ -107,19 +477,31 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
         dir="ltr"
         background=""
       >
-        \n
+        
+
 
         <tbody>
           <tr>
-            \n
+            
+
             <td class="mlTemplateContainer" align="center">
-              \n<\!--<![endif]-->\n<\!--[if mso 16]>\n
+              
+<!--<![endif]-->
+<!--[if mso 16]>
+
               <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center">
-                \n
+                
+
                 <tr>
-                  \n
+                  
+
                   <td bgcolor="#f6f8f9" align="center">
-                    \n <\!--<![endif]-->\n\n\n\n
+                    
+ <!--<![endif]-->
+
+
+
+
                     <table
                       cellpadding="0"
                       cellspacing="0"
@@ -129,12 +511,15 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                       style="width: 640px; min-width: 640px;"
                       class="mobileHide"
                     >
-                      \n
+                      
+
                       <tbody>
                         <tr>
-                          \n
+                          
+
                           <td align="center">
-                            \n
+                            
+
                             <table
                               cellpadding="0"
                               cellspacing="0"
@@ -144,16 +529,21 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                               style="width: 640px; min-width: 640px;"
                               class="mlContentTable"
                             >
-                              \n
+                              
+
                               <tbody>
                                 <tr>
-                                  \n
+                                  
+
                                   <td colspan="2" height="20"></td>
-                                  \n
+                                  
+
                                 </tr>
-                                \n
+                                
+
                                 <tr>
-                                  \n
+                                  
+
                                   <td
                                     align="left"
                                     style="
@@ -163,27 +553,38 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                       line-height: 18px;
                                     "
                                   >
-                                    \n
+                                    
+
                                   </td>
-                                  \n\n
+                                  
+
+
                                 </tr>
-                                \n
+                                
+
                                 <tr>
-                                  \n
+                                  
+
                                   <td colspan="2" height="20"></td>
-                                  \n
+                                  
+
                                 </tr>
-                                \n
+                                
+
                               </tbody>
                             </table>
-                            \n
+                            
+
                           </td>
-                          \n
+                          
+
                         </tr>
-                        \n
+                        
+
                       </tbody>
                     </table>
-                    \n
+                    
+
                     <table
                       align="center"
                       border="0"
@@ -192,12 +593,16 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                       class="mlContentTable"
                       width="640"
                     >
-                      \n
+                      
+
                       <tbody>
                         <tr>
-                          \n
+                          
+
                           <td>
-                            \n\n
+                            
+
+
                             <table
                               align="center"
                               border="0"
@@ -207,12 +612,15 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                               cellspacing="0"
                               width="640"
                             >
-                              \n
+                              
+
                               <tbody>
                                 <tr>
-                                  \n
+                                  
+
                                   <td class="mlContentTableCardTd">
-                                    \n
+                                    
+
                                     <table
                                       align="center"
                                       bgcolor="#ffffff"
@@ -223,12 +631,15 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                       style="width: 640px; min-width: 640px;"
                                       width="640"
                                     >
-                                      \n
+                                      
+
                                       <tbody>
                                         <tr>
-                                          \n
+                                          
+
                                           <td>
-                                            \n
+                                            
+
                                             <table
                                               role="presentation"
                                               cellpadding="0"
@@ -239,21 +650,26 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                               style="width: 640px; min-width: 640px;"
                                               class="mlContentTable"
                                             >
-                                              \n
+                                              
+
                                               <tbody>
                                                 <tr>
-                                                  \n
+                                                  
+
                                                   <td
                                                     height="40"
                                                     class="spacingHeight-40"
                                                     style="line-height: 40px; min-height: 40px;"
                                                   ></td>
-                                                  \n
+                                                  
+
                                                 </tr>
-                                                \n
+                                                
+
                                               </tbody>
                                             </table>
-                                            \n
+                                            
+
                                             <table
                                               role="presentation"
                                               cellpadding="0"
@@ -264,16 +680,19 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                               style="width: 640px; min-width: 640px;"
                                               class="mlContentTable"
                                             >
-                                              \n
+                                              
+
                                               <tbody>
                                                 <tr>
-                                                  \n
+                                                  
+
                                                   <td
                                                     align="center"
                                                     style="padding: 0px 40px;"
                                                     class="mlContentOuter"
                                                   >
-                                                    \n
+                                                    
+
                                                     <table
                                                       role="presentation"
                                                       cellpadding="0"
@@ -282,33 +701,43 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                       align="center"
                                                       width="100%"
                                                     >
-                                                      \n
+                                                      
+
                                                       <tbody>
                                                         <tr>
-                                                          \n
+                                                          
+
                                                           <td align="center">
-                                                            \n<img
+                                                            
+<img
                                                               src="https://bucket.mlcdn.com/a/2355/2355557/images/e6e86cad64e87e378b55b563377f1e508a3e1a51.png"
                                                               id="logoBlock-4"
                                                               border="0"
                                                               alt=""
                                                               width="210"
                                                               style="display: block;"
-                                                            />\n
+                                                            />
+
                                                           </td>
-                                                          \n
+                                                          
+
                                                         </tr>
-                                                        \n
+                                                        
+
                                                       </tbody>
                                                     </table>
-                                                    \n
+                                                    
+
                                                   </td>
-                                                  \n
+                                                  
+
                                                 </tr>
-                                                \n
+                                                
+
                                               </tbody>
                                             </table>
-                                            \n
+                                            
+
                                             <table
                                               role="presentation"
                                               cellpadding="0"
@@ -319,35 +748,48 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                               style="width: 640px; min-width: 640px;"
                                               class="mlContentTable"
                                             >
-                                              \n
+                                              
+
                                               <tbody>
                                                 <tr>
-                                                  \n
+                                                  
+
                                                   <td
                                                     height="30"
                                                     class="spacingHeight-30"
                                                     style="line-height: 30px; min-height: 30px;"
                                                   ></td>
-                                                  \n
+                                                  
+
                                                 </tr>
-                                                \n
+                                                
+
                                               </tbody>
                                             </table>
-                                            \n
+                                            
+
                                           </td>
-                                          \n
+                                          
+
                                         </tr>
-                                        \n
+                                        
+
                                       </tbody>
                                     </table>
-                                    \n
+                                    
+
                                   </td>
-                                  \n
+                                  
+
                                 </tr>
-                                \n
+                                
+
                               </tbody>
                             </table>
-                            \n\n\n
+                            
+
+
+
                             <table
                               align="center"
                               border="0"
@@ -357,12 +799,15 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                               cellspacing="0"
                               width="640"
                             >
-                              \n
+                              
+
                               <tbody>
                                 <tr>
-                                  \n
+                                  
+
                                   <td class="mlContentTableCardTd">
-                                    \n
+                                    
+
                                     <table
                                       align="center"
                                       bgcolor="#ffffff"
@@ -373,12 +818,15 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                       style="width: 640px; min-width: 640px;"
                                       width="640"
                                     >
-                                      \n
+                                      
+
                                       <tbody>
                                         <tr>
-                                          \n
+                                          
+
                                           <td>
-                                            \n
+                                            
+
                                             <table
                                               role="presentation"
                                               cellpadding="0"
@@ -389,21 +837,26 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                               style="width: 640px; min-width: 640px;"
                                               class="mlContentTable"
                                             >
-                                              \n
+                                              
+
                                               <tbody>
                                                 <tr>
-                                                  \n
+                                                  
+
                                                   <td
                                                     height="20"
                                                     class="spacingHeight-20"
                                                     style="line-height: 20px; min-height: 20px;"
                                                   ></td>
-                                                  \n
+                                                  
+
                                                 </tr>
-                                                \n
+                                                
+
                                               </tbody>
                                             </table>
-                                            \n
+                                            
+
                                             <table
                                               role="presentation"
                                               cellpadding="0"
@@ -414,16 +867,19 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                               style="width: 640px; min-width: 640px;"
                                               class="mlContentTable"
                                             >
-                                              \n
+                                              
+
                                               <tbody>
                                                 <tr>
-                                                  \n
+                                                  
+
                                                   <td
                                                     align="center"
                                                     style="padding: 0px 40px;"
                                                     class="mlContentOuter"
                                                   >
-                                                    \n
+                                                    
+
                                                     <table
                                                       role="presentation"
                                                       cellpadding="0"
@@ -432,10 +888,12 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                       align="center"
                                                       width="100%"
                                                     >
-                                                      \n
+                                                      
+
                                                       <tbody>
                                                         <tr>
-                                                          \n
+                                                          
+
                                                           <td
                                                             align="center"
                                                             class="bodyTitle"
@@ -453,33 +911,47 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                           >
                                                             Thank you for your purchase!
                                                           </td>
-                                                          \n
+                                                          
+
                                                         </tr>
-                                                        \n
+                                                        
+
                                                       </tbody>
                                                     </table>
-                                                    \n
+                                                    
+
                                                   </td>
-                                                  \n
+                                                  
+
                                                 </tr>
-                                                \n
+                                                
+
                                               </tbody>
                                             </table>
-                                            \n
+                                            
+
                                           </td>
-                                          \n
+                                          
+
                                         </tr>
-                                        \n
+                                        
+
                                       </tbody>
                                     </table>
-                                    \n
+                                    
+
                                   </td>
-                                  \n
+                                  
+
                                 </tr>
-                                \n
+                                
+
                               </tbody>
                             </table>
-                            \n\n\n
+                            
+
+
+
                             <table
                               align="center"
                               border="0"
@@ -489,12 +961,15 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                               cellspacing="0"
                               width="640"
                             >
-                              \n
+                              
+
                               <tbody>
                                 <tr>
-                                  \n
+                                  
+
                                   <td class="mlContentTableCardTd">
-                                    \n
+                                    
+
                                     <table
                                       align="center"
                                       bgcolor="#ffffff"
@@ -505,12 +980,15 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                       style="width: 640px; min-width: 640px;"
                                       width="640"
                                     >
-                                      \n
+                                      
+
                                       <tbody>
                                         <tr>
-                                          \n
+                                          
+
                                           <td>
-                                            \n
+                                            
+
                                             <table
                                               role="presentation"
                                               cellpadding="0"
@@ -521,21 +999,26 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                               style="width: 640px; min-width: 640px;"
                                               class="mlContentTable"
                                             >
-                                              \n
+                                              
+
                                               <tbody>
                                                 <tr>
-                                                  \n
+                                                  
+
                                                   <td
                                                     height="10"
                                                     class="spacingHeight-10"
                                                     style="line-height: 10px; min-height: 10px;"
                                                   ></td>
-                                                  \n
+                                                  
+
                                                 </tr>
-                                                \n
+                                                
+
                                               </tbody>
                                             </table>
-                                            \n
+                                            
+
                                             <table
                                               role="presentation"
                                               cellpadding="0"
@@ -546,16 +1029,19 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                               style="width: 640px; min-width: 640px;"
                                               class="mlContentTable"
                                             >
-                                              \n
+                                              
+
                                               <tbody>
                                                 <tr>
-                                                  \n
+                                                  
+
                                                   <td
                                                     align="center"
                                                     style="padding: 0px 40px;"
                                                     class="mlContentOuter"
                                                   >
-                                                    \n
+                                                    
+
                                                     <table
                                                       role="presentation"
                                                       cellpadding="0"
@@ -564,10 +1050,12 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                       align="center"
                                                       width="100%"
                                                     >
-                                                      \n
+                                                      
+
                                                       <tbody>
                                                         <tr>
-                                                          \n
+                                                          
+
                                                           <td
                                                             class="bodyTitle"
                                                             id="bodyText-8"
@@ -586,38 +1074,38 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                                 text-align: center;
                                                               "
                                                             >
-                                                              You purchased ${
-                                                                totalQty === 1
-                                                                  ? 'a WishTender'
-                                                                  : 'WishTenders'
-                                                              } for
+                                                              You purchased WishTenders for
                                                               <a
-                                                                href="https://www.wishtender.com/${
-                                                                  alias.handle
-                                                                }"
+                                                                href="https://www.wishtender.com/test5"
                                                                 style="
                                                                   word-break: break-word;
                                                                   font-family: 'Poppins', sans-serif;
                                                                   color: #09c269;
                                                                   text-decoration: underline;
                                                                 "
-                                                                >${alias.aliasName}</a
+                                                                >test5</a
                                                               ><br />
                                                             </p>
                                                           </td>
-                                                          \n
+                                                          
+
                                                         </tr>
-                                                        \n
+                                                        
+
                                                       </tbody>
                                                     </table>
-                                                    \n
+                                                    
+
                                                   </td>
-                                                  \n
+                                                  
+
                                                 </tr>
-                                                \n
+                                                
+
                                               </tbody>
                                             </table>
-                                            \n
+                                            
+
                                             <table
                                               role="presentation"
                                               cellpadding="0"
@@ -628,35 +1116,48 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                               style="width: 640px; min-width: 640px;"
                                               class="mlContentTable"
                                             >
-                                              \n
+                                              
+
                                               <tbody>
                                                 <tr>
-                                                  \n
+                                                  
+
                                                   <td
                                                     height="40"
                                                     class="spacingHeight-40"
                                                     style="line-height: 40px; min-height: 40px;"
                                                   ></td>
-                                                  \n
+                                                  
+
                                                 </tr>
-                                                \n
+                                                
+
                                               </tbody>
                                             </table>
-                                            \n
+                                            
+
                                           </td>
-                                          \n
+                                          
+
                                         </tr>
-                                        \n
+                                        
+
                                       </tbody>
                                     </table>
-                                    \n
+                                    
+
                                   </td>
-                                  \n
+                                  
+
                                 </tr>
-                                \n
+                                
+
                               </tbody>
                             </table>
-                            \n\n\n
+                            
+
+
+
                             <table
                               align="center"
                               border="0"
@@ -666,11 +1167,14 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                               cellspacing="0"
                               width="640"
                             >
-                              \n<tbody>
+                              
+<tbody>
                               <tr>
-                                \n
+                                
+
                                 <td class="mlContentTableCardTd">
-                                  \n
+                                  
+
                                   <table
                                     align="center"
                                     bgcolor="#ffffff"
@@ -681,349 +1185,9 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                     style="width: 640px; min-width: 640px;"
                                     width="640"
                                   >
-                                    \n
-                              ${
-                                totalQty === 1
-                                  ? `
-                                      <tbody>
-                                        <tr>
-                                          \n
-                                          <td>
-                                            \n
-                                            <table
-                                              role="presentation"
-                                              cellpadding="0"
-                                              cellspacing="0"
-                                              border="0"
-                                              align="center"
-                                              width="640"
-                                              style="width: 640px; min-width: 640px;"
-                                              class="mlContentTable"
-                                            >
-                                              \n
-                                              <tbody>
-                                                <tr>
-                                                  \n
-                                                  <td
-                                                    height="20"
-                                                    class="spacingHeight-20"
-                                                    style="line-height: 20px; min-height: 20px;"
-                                                  ></td>
-                                                  \n
-                                                </tr>
-                                                \n
-                                              </tbody>
-                                            </table>
-                                            \n
-                                            <table
-                                              role="presentation"
-                                              cellpadding="0"
-                                              cellspacing="0"
-                                              border="0"
-                                              align="center"
-                                              width="640"
-                                              style="width: 640px; min-width: 640px;"
-                                              class="mlContentTable"
-                                            >
-                                              \n
-                                              <tbody>
-                                                <tr>
-                                                  \n
-                                                  <td
-                                                    align="center"
-                                                    style="padding: 0px 40px;"
-                                                    class="mlContentOuter"
-                                                  >
-                                                    \n
-                                                    <table
-                                                      role="presentation"
-                                                      cellpadding="0"
-                                                      cellspacing="0"
-                                                      border="0"
-                                                      align="center"
-                                                      width="100%"
-                                                    >
-                                                      \n
-                                                      <tbody>
-                                                        <tr>
-                                                          \n
-                                                          <td align="center" id="imageBlock-10">
-                                                            <img
-                                                              src="${items[0].item.itemImage}"
-                                                              border="0"
-                                                              width="200"
-                                                              style="display: block;"
-                                                            />
-                                                          </td>
-                                                          \n
-                                                        </tr>
-                                                        \n
-                                                        <tr>
-                                                          \n
-                                                          <td
-                                                            height="20"
-                                                            class="spacingHeight-20"
-                                                          ></td>
-                                                          \n
-                                                        </tr>
-                                                        \n
-                                                        
-                                                        \n
-                                                        <tr>
-                                                          \n
-                                                          <td
-                                                            height="20"
-                                                            class="spacingHeight-20"
-                                                          ></td>
-                                                          \n
-                                                        </tr>
-                                                        \n
-                                                        <tr>
-                                                          \n
-                                                          <td
-                                                            align="left"
-                                                            class="bodyTitle"
-                                                            id="bodyText-10"
-                                                            style="
-                                                              font-family: 'Poppins', sans-serif;
-                                                              font-size: 14px;
-                                                              line-height: 150%;
-                                                              color: #6f6f6f;
-                                                            "
-                                                          >
-                                                            <p
-                                                              style="
-                                                                margin-top: 0px;
-                                                                margin-bottom: 0px;
-                                                                line-height: 150%;
-                                                                text-align: center;
-                                                              "
-                                                            >
-                                                              ${items[0].item.itemName}
-                                                            </p>
-                                                          </td>
-                                                          \n
-                                                        </tr>
-                                                        \n
-                                                        <tr>
-                                                          \n
-                                                          <td
-                                                            height="20"
-                                                            class="spacingHeight-20"
-                                                          ></td>
-                                                          \n
-                                                        </tr>
-                                                        \n
-                                                        <tr>
-                                                          \n
-                                                          <td align="center">
-                                                            \n
-                                                            <table
-                                                              role="presentation"
-                                                              cellpadding="0"
-                                                              border="0"
-                                                              align="center"
-                                                              width="50%"
-                                                              class="mlContentTable"
-                                                            >
-                                                              \n
-                                                              <tbody>
-                                                                <tr>
-                                                                  \n
-                                                                  <td
-                                                                    width="100%"
-                                                                    align="center"
-                                                                    class="bodyTitle"
-                                                                    style="
-                                                                      font-family: 'Poppins',
-                                                                        sans-serif;
-                                                                      font-size: 13px;
-                                                                      font-weight: 700;
-                                                                      line-height: 150%;
-                                                                      color: #111111;
-                                                                    "
-                                                                  >
-                                                                    ${items[0].price}
-                                                                  </td>
-                                                                  \n
-                                                                </tr>
-                                                                \n
-                                                              </tbody>
-                                                            </table>
-                                                            \n
-                                                          </td>
-                                                          \n
-                                                        </tr>
-                                                        \n
+                                    
 
-
-              
-                                                        
-                                                      <tr>
-                                                        <td align="center" class="bodyTitle" style="font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 500; line-height: 150%; color: #111111; text-transform: none; font-style: normal; text-decoration: none; text-align: center;">Fee: ${fee}</td>
-                                                      </tr>
-                                                    
-                                                      
-                                                      <tr>
-                                                        <td height="20" class="spacingHeight-20"></td>
-                                                      </tr>
-                                                      <tr>
-                                                        <td align="center" class="bodyTitle" style="font-family: 'Poppins', sans-serif; font-size: 18px; font-weight: 700; line-height: 150%; color: #111111; text-transform: none; font-style: normal; text-decoration: none; text-align: center;">Total</td>
-                                                      </tr>
-                                                      <tr>
-                                                        <td height="20" class="spacingHeight-20"></td>
-                                                      </tr>
-                                                      
-                                                      <tr>
-                                                      <td align="center">
-                                            
-                                                        <table role="presentation" cellpadding="0" border="0" align="center" width="50%" class="mlContentTable">
-                                                          <tbody><tr>
-                                                            <td width="100%" align="center" class="bodyTitle" style="font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 700; line-height: 150%; color: #111111;">${totalPrice}</td>
-                                                            
-                                                            
-                                                          </tr>
-                                                        </tbody></table>
-                                            
-                                                      </td>
-                                                    </tr>
-                                                        <tr>
-                                                          \n
-                                                          <td
-                                                            height="30"
-                                                            class="spacingHeight-30"
-                                                          ></td>
-                                                          \n
-                                                        </tr>
-                                                        \n
-                                                        <tr>
-                                                          \n
-                                                          <td align="center">
-                                                            \n
-                                                            <table
-                                                              role="presentation"
-                                                              border="0"
-                                                              cellpadding="0"
-                                                              cellspacing="0"
-                                                              width="100%"
-                                                              style="width: 100%; min-width: 100%;"
-                                                            >
-                                                              \n
-                                                              <tbody>
-                                                                <tr>
-                                                                  \n
-                                                                  <td
-                                                                    align="center"
-                                                                    class="mlContentButton"
-                                                                    style="
-                                                                      font-family: 'Poppins',
-                                                                        sans-serif;
-                                                                    "
-                                                                  >
-                                                                    \n<\!--[if
-                                                                    mso]>\n\t\t\t\t\t\t\t\t\t<v:roundrect
-                                                                      xmlns:v="urn:schemas-microsoft-com:vml"
-                                                                      xmlns:w="urn:schemas-microsoft-com:office:word"
-                                                                      href="http://www.wishtender.com"
-                                                                      style="
-                                                                        height: 50px;
-                                                                        v-text-anchor: middle;
-                                                                        width: 229px;
-                                                                      "
-                                                                      arcsize="6%"
-                                                                      stroke="f"
-                                                                      fillcolor="#2d8cff"
-                                                                      >\n\t\t\t\t\t\t\t\t\t<w:anchorlock />\n\t\t\t\t\t\t\t\t\t
-                                                                      <center>
-                                                                        \n\t\t\t\t\t\t\t\t\t<![endif]-->\n<a
-                                                                          class="mlContentButton"
-                                                                          href="https://www.wishtender.com/${alias.handle}"
-                                                                          style="
-                                                                            font-family: 'Poppins',
-                                                                              sans-serif;
-                                                                            background-color: #2d8cff;
-                                                                            border-radius: 3px;
-                                                                            color: #ffffff;
-                                                                            display: inline-block;
-                                                                            font-size: 14px;
-                                                                            font-weight: 400;
-                                                                            line-height: 20px;
-                                                                            padding: 15px 0 15px 0;
-                                                                            text-align: center;
-                                                                            text-decoration: none;
-                                                                            width: 220px;
-                                                                          "
-                                                                          >Visit ${alias.aliasName}'s Wishlist</a
-                                                                        >\n<\!--[if
-                                                                        mso]>\n\t\t\t\t\t\t\t\t\t
-                                                                      </center>
-                                                                      \n\t\t\t\t\t\t\t\t\t</v:roundrect
-                                                                    >\n\t\t\t\t\t\t\t\t\t<![endif]-->\n
-                                                                  </td>
-                                                                  \n
-                                                                </tr>
-                                                                \n
-                                                              </tbody>
-                                                            </table>
-                                                            \n
-                                                          </td>
-                                                          \n
-                                                        </tr>
-                                                        \n
-                                                      </tbody>
-                                                    </table>
-                                                    \n
-                                                  </td>
-                                                  \n
-                                                </tr>
-                                                \n
-                                              </tbody>  
-                                              
-                                            </table>
-                                         
-
-                                       
-                                            \n
-                                            <table
-                                              role="presentation"
-                                              cellpadding="0"
-                                              cellspacing="0"
-                                              border="0"
-                                              align="center"
-                                              width="640"
-                                              style="width: 640px; min-width: 640px;"
-                                              class="mlContentTable"
-                                            >
-                                              \n
-                                              <tbody>
-                                                <tr>
-                                                  \n
-                                                  <td
-                                                    height="20"
-                                                    class="spacingHeight-20"
-                                                    style="line-height: 20px; min-height: 20px;"
-                                                  ></td>
-                                                  \n
-                                                </tr>
-                                                \n
-                                              </tbody>
-                                            </table>
-                                            \n
-                                          </td>
-                                          \n
-                                        </tr>
-                                        \n
-                                      </tbody>
-                                    </table>
-                                    \n
-                                  </td>
-                                  \n
-                                </tr>
-                                \n
-                              </tbody>
-                            </table>
-                            `
-                                  : `<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" width="640" style="width: 640px; min-width: 640px;" class="mlContentTable">
+                              <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" width="640" style="width: 640px; min-width: 640px;" class="mlContentTable">
                                   <tbody><tr>
                                     <td align="center" style="padding: 0px 40px;" class="mlContentOuter">
                                 
@@ -1038,28 +1202,17 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                 
                                 
                                 
-                                ${items.map(
-                                  (item) => `<div style="
+                                <div style="
                                 display: flex;
                                 gap: 1em;
-                            "><img src="${
-                              item.item.itemImage
-                            }" border="0" width="100" style="display: block;">
+                            "><img src="https://wishtender-dev.s3.amazonaws.com/images/itemImages/12017e35-8485-4a00-870f-7a6894775462.png" border="0" width="100" style="display: block;">
                                 
-                            <div align="center" class="bodyTitle" style="font-family: 'Poppins', sans-serif; font-size: 18px; font-weight: 700; line-height: 150%; color: #111111; text-transform: none; font-style: normal; text-decoration: none; text-align: center;">${
-                              item.price
-                            }</div> 
-                            <div align="center" class="bodyTitle" style="font-family: 'Poppins', sans-serif; font-size: 18px; font-weight: 700; line-height: 150%; color: #111111; text-transform: none; font-style: normal; text-decoration: none; text-align: center;">QTY: ${
-                              item.qty
-                            }</div> 
-                            <div align="left" class="bodyTitle" id="bodyText-10" style="font-family: 'Poppins', sans-serif; font-size: 14px; line-height: 150%; color: #6f6f6f;"><p style="margin-top: 0px; margin-bottom: 0px; line-height: 150%; text-align: center;">${`${item.item.itemName.slice(
-                              0,
-                              50
-                            )}...`}</p></div>
+                            <div align="center" class="bodyTitle" style="font-family: 'Poppins', sans-serif; font-size: 18px; font-weight: 700; line-height: 150%; color: #111111; text-transform: none; font-style: normal; text-decoration: none; text-align: center;">$5,700.00</div> 
+                            <div align="center" class="bodyTitle" style="font-family: 'Poppins', sans-serif; font-size: 18px; font-weight: 700; line-height: 150%; color: #111111; text-transform: none; font-style: normal; text-decoration: none; text-align: center;">QTY: 2</div> 
+                            <div align="left" class="bodyTitle" id="bodyText-10" style="font-family: 'Poppins', sans-serif; font-size: 14px; line-height: 150%; color: #6f6f6f;"><p style="margin-top: 0px; margin-bottom: 0px; line-height: 150%; text-align: center;">Miu Miu Printed Shirt Dress - Farfetch...</p></div>
                             
                             
-                                </div>`
-                                )}
+                                </div>
                                 
                                 
                                                                 
@@ -1071,7 +1224,7 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                           <td height="20" class="spacingHeight-20"></td>
                                         </tr>
                                         <tr>
-                                          <td align="center" class="bodyTitle" style="font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 500; line-height: 150%; color: #111111; text-transform: none; font-style: normal; text-decoration: none; text-align: center;">Fee: ${fee}</td>
+                                          <td align="center" class="bodyTitle" style="font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 500; line-height: 150%; color: #111111; text-transform: none; font-style: normal; text-decoration: none; text-align: center;">Fee: $774.50</td>
                                         </tr>
                                      
                                         
@@ -1090,7 +1243,7 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                               
                                           <table role="presentation" cellpadding="0" border="0" align="center" width="50%" class="mlContentTable">
                                             <tbody><tr>
-                                              <td width="100%" align="center" class="bodyTitle" style="font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 700; line-height: 150%; color: #111111;">${totalPrice}</td>
+                                              <td width="100%" align="center" class="bodyTitle" style="font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 700; line-height: 150%; color: #111111;">$6,474.50</td>
                                               
                                               
                                             </tr>
@@ -1133,9 +1286,11 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                       
                                     </td>
                                   </tr>
-                                </tbody></table>`
-                              }
-                            \n\n\n
+                                </tbody></table>
+                            
+
+
+
                             <table
                               align="center"
                               border="0"
@@ -1145,12 +1300,15 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                               cellspacing="0"
                               width="640"
                             >
-                              \n
+                              
+
                               <tbody>
                                 <tr>
-                                  \n
+                                  
+
                                   <td class="mlContentTableCardTd">
-                                    \n
+                                    
+
                                     <table
                                       align="center"
                                       bgcolor="#ffffff"
@@ -1161,12 +1319,15 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                       style="width: 640px; min-width: 640px;"
                                       width="640"
                                     >
-                                      \n
+                                      
+
                                       <tbody>
                                         <tr>
-                                          \n
+                                          
+
                                           <td>
-                                            \n
+                                            
+
                                             <table
                                               role="presentation"
                                               cellpadding="0"
@@ -1177,21 +1338,26 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                               style="width: 640px; min-width: 640px;"
                                               class="mlContentTable"
                                             >
-                                              \n
+                                              
+
                                               <tbody>
                                                 <tr>
-                                                  \n
+                                                  
+
                                                   <td
                                                     height="20"
                                                     class="spacingHeight-20"
                                                     style="line-height: 20px; min-height: 20px;"
                                                   ></td>
-                                                  \n
+                                                  
+
                                                 </tr>
-                                                \n
+                                                
+
                                               </tbody>
                                             </table>
-                                            \n
+                                            
+
                                             <table
                                               role="presentation"
                                               cellpadding="0"
@@ -1202,12 +1368,15 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                               style="width: 640px; min-width: 640px;"
                                               class="mlContentTable"
                                             >
-                                              \n
+                                              
+
                                               <tbody>
                                                 <tr>
-                                                  \n
+                                                  
+
                                                   <td align="center" class="">
-                                                    \n
+                                                    
+
                                                     <table
                                                       role="presentation"
                                                       cellpadding="0"
@@ -1221,10 +1390,12 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                       "
                                                       class=""
                                                     >
-                                                      \n
+                                                      
+
                                                       <tbody>
                                                         <tr>
-                                                          \n
+                                                          
+
                                                           <td
                                                             height="20"
                                                             class="spacingHeight-20"
@@ -1233,33 +1404,47 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                               min-height: 20px;
                                                             "
                                                           ></td>
-                                                          \n
+                                                          
+
                                                         </tr>
-                                                        \n
+                                                        
+
                                                       </tbody>
                                                     </table>
-                                                    \n
+                                                    
+
                                                   </td>
-                                                  \n
+                                                  
+
                                                 </tr>
-                                                \n
+                                                
+
                                               </tbody>
                                             </table>
-                                            \n
+                                            
+
                                           </td>
-                                          \n
+                                          
+
                                         </tr>
-                                        \n
+                                        
+
                                       </tbody>
                                     </table>
-                                    \n
+                                    
+
                                   </td>
-                                  \n
+                                  
+
                                 </tr>
-                                \n
+                                
+
                               </tbody>
                             </table>
-                            \n\n\n
+                            
+
+
+
                             <table
                               align="center"
                               border="0"
@@ -1269,12 +1454,15 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                               cellspacing="0"
                               width="640"
                             >
-                              \n
+                              
+
                               <tbody>
                                 <tr>
-                                  \n
+                                  
+
                                   <td class="mlContentTableCardTd">
-                                    \n
+                                    
+
                                     <table
                                       align="center"
                                       bgcolor="#ffffff"
@@ -1285,12 +1473,15 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                       style="width: 640px; min-width: 640px;"
                                       width="640"
                                     >
-                                      \n
+                                      
+
                                       <tbody>
                                         <tr>
-                                          \n
+                                          
+
                                           <td>
-                                            \n
+                                            
+
                                             <table
                                               role="presentation"
                                               cellpadding="0"
@@ -1301,21 +1492,26 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                               style="width: 640px; min-width: 640px;"
                                               class="mlContentTable"
                                             >
-                                              \n
+                                              
+
                                               <tbody>
                                                 <tr>
-                                                  \n
+                                                  
+
                                                   <td
                                                     height="20"
                                                     class="spacingHeight-20"
                                                     style="line-height: 20px; min-height: 20px;"
                                                   ></td>
-                                                  \n
+                                                  
+
                                                 </tr>
-                                                \n
+                                                
+
                                               </tbody>
                                             </table>
-                                            \n
+                                            
+
                                             <table
                                               role="presentation"
                                               cellpadding="0"
@@ -1326,16 +1522,19 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                               style="width: 640px; min-width: 640px;"
                                               class="mlContentTable"
                                             >
-                                              \n
+                                              
+
                                               <tbody>
                                                 <tr>
-                                                  \n
+                                                  
+
                                                   <td
                                                     align="center"
                                                     style="padding: 0px 40px;"
                                                     class="mlContentOuter"
                                                   >
-                                                    \n
+                                                    
+
                                                     <table
                                                       role="presentation"
                                                       cellpadding="0"
@@ -1346,10 +1545,12 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                       style="width: 270px; min-width: 270px;"
                                                       class="mlContentTable marginBottom"
                                                     >
-                                                      \n
+                                                      
+
                                                       <tbody>
                                                         <tr>
-                                                          \n
+                                                          
+
                                                           <td align="center" id="imageBlock-14">
                                                             <img
                                                               src="https://bucket.mlcdn.com/a/2355/2355557/images/0925db5be5b05861ff509ed6ee6601f6d8d3830c.png"
@@ -1358,12 +1559,15 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                               style="display: block;"
                                                             />
                                                           </td>
-                                                          \n
+                                                          
+
                                                         </tr>
-                                                        \n
+                                                        
+
                                                       </tbody>
                                                     </table>
-                                                    \n
+                                                    
+
                                                     <table
                                                       role="presentation"
                                                       cellpadding="0"
@@ -1374,10 +1578,12 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                       style="width: 267px; min-width: 267px;"
                                                       class="mlContentTable marginBottom"
                                                     >
-                                                      \n
+                                                      
+
                                                       <tbody>
                                                         <tr>
-                                                          \n
+                                                          
+
                                                           <td
                                                             align="center"
                                                             class="bodyTitle"
@@ -1395,20 +1601,26 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                           >
                                                             Questions? FeedBack?
                                                           </td>
-                                                          \n
+                                                          
+
                                                         </tr>
-                                                        \n
+                                                        
+
                                                         <tr>
-                                                          \n
+                                                          
+
                                                           <td
                                                             height="20"
                                                             class="spacingHeight-20"
                                                           ></td>
-                                                          \n
+                                                          
+
                                                         </tr>
-                                                        \n
+                                                        
+
                                                         <tr>
-                                                          \n
+                                                          
+
                                                           <td
                                                             align="left"
                                                             class="bodyTitle"
@@ -1436,22 +1648,29 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                               love meeting users!<br />
                                                             </p>
                                                           </td>
-                                                          \n
+                                                          
+
                                                         </tr>
-                                                        \n
+                                                        
+
                                                         <tr>
-                                                          \n
+                                                          
+
                                                           <td
                                                             height="30"
                                                             class="spacingHeight-30"
                                                           ></td>
-                                                          \n
+                                                          
+
                                                         </tr>
-                                                        \n
+                                                        
+
                                                         <tr>
-                                                          \n
+                                                          
+
                                                           <td align="center">
-                                                            \n
+                                                            
+
                                                             <table
                                                               role="presentation"
                                                               border="0"
@@ -1460,10 +1679,12 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                               width="100%"
                                                               style="width: 100%; min-width: 100%;"
                                                             >
-                                                              \n
+                                                              
+
                                                               <tbody>
                                                                 <tr>
-                                                                  \n
+                                                                  
+
                                                                   <td
                                                                     align="left"
                                                                     class="mlContentButton"
@@ -1472,8 +1693,10 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                                         sans-serif;
                                                                     "
                                                                   >
-                                                                    \n<\!--[if
-                                                                    mso]>\n\t\t\t\t\t\t\t\t\t<v:roundrect
+                                                                    
+<!--[if
+                                                                    mso]>
+									<v:roundrect
                                                                       xmlns:v="urn:schemas-microsoft-com:vml"
                                                                       xmlns:w="urn:schemas-microsoft-com:office:word"
                                                                       href="https://calendly.com/dashiell/20min"
@@ -1485,9 +1708,13 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                                       arcsize="6%"
                                                                       stroke="f"
                                                                       fillcolor="#2d8cff"
-                                                                      >\n\t\t\t\t\t\t\t\t\t<w:anchorlock />\n\t\t\t\t\t\t\t\t\t
+                                                                      >
+									<w:anchorlock />
+									
                                                                       <center>
-                                                                        \n\t\t\t\t\t\t\t\t\t<![endif]-->\n<a
+                                                                        
+									<![endif]-->
+<a
                                                                           class="mlContentButton"
                                                                           href="https://calendly.com/dashiell/20min"
                                                                           style="
@@ -1506,32 +1733,46 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                                             width: 150px;
                                                                           "
                                                                           >Schedule A Chat</a
-                                                                        >\n<\!--[if
-                                                                        mso]>\n\t\t\t\t\t\t\t\t\t
+                                                                        >
+<!--[if
+                                                                        mso]>
+									
                                                                       </center>
-                                                                      \n\t\t\t\t\t\t\t\t\t</v:roundrect
-                                                                    >\n\t\t\t\t\t\t\t\t\t<![endif]-->\n
+                                                                      
+									</v:roundrect
+                                                                    >
+									<![endif]-->
+
                                                                   </td>
-                                                                  \n
+                                                                  
+
                                                                 </tr>
-                                                                \n
+                                                                
+
                                                               </tbody>
                                                             </table>
-                                                            \n
+                                                            
+
                                                           </td>
-                                                          \n
+                                                          
+
                                                         </tr>
-                                                        \n
+                                                        
+
                                                       </tbody>
                                                     </table>
-                                                    \n
+                                                    
+
                                                   </td>
-                                                  \n
+                                                  
+
                                                 </tr>
-                                                \n
+                                                
+
                                               </tbody>
                                             </table>
-                                            \n
+                                            
+
                                             <table
                                               role="presentation"
                                               cellpadding="0"
@@ -1542,35 +1783,47 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                               style="width: 640px; min-width: 640px;"
                                               class="mlContentTable"
                                             >
-                                              \n
+                                              
+
                                               <tbody>
                                                 <tr>
-                                                  \n
+                                                  
+
                                                   <td
                                                     height="20"
                                                     class="spacingHeight-20"
                                                     style="line-height: 20px; min-height: 20px;"
                                                   ></td>
-                                                  \n
+                                                  
+
                                                 </tr>
-                                                \n
+                                                
+
                                               </tbody>
                                             </table>
-                                            \n
+                                            
+
                                           </td>
-                                          \n
+                                          
+
                                         </tr>
-                                        \n
+                                        
+
                                       </tbody>
                                     </table>
-                                    \n
+                                    
+
                                   </td>
-                                  \n
+                                  
+
                                 </tr>
-                                \n
+                                
+
                               </tbody>
                             </table>
-                            \n\n
+                            
+
+
 
 
                             <table align="center" border="0" bgcolor="#ffffff" class="mlContentTable mlContentTableDefault" cellpadding="0" cellspacing="0" width="640">
@@ -1681,12 +1934,15 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                               cellspacing="0"
                               width="640"
                             >
-                              \n
+                              
+
                               <tbody>
                                 <tr>
-                                  \n
+                                  
+
                                   <td class="mlContentTableFooterCardTd">
-                                    \n
+                                    
+
                                     <table
                                       align="center"
                                       bgcolor="#ffffff"
@@ -1697,12 +1953,15 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                       style="width: 640px; min-width: 640px;"
                                       width="640"
                                     >
-                                      \n
+                                      
+
                                       <tbody>
                                         <tr>
-                                          \n
+                                          
+
                                           <td>
-                                            \n
+                                            
+
                                             <table
                                               role="presentation"
                                               cellpadding="0"
@@ -1713,21 +1972,26 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                               style="width: 640px; min-width: 640px;"
                                               class="mlContentTable"
                                             >
-                                              \n
+                                              
+
                                               <tbody>
                                                 <tr>
-                                                  \n
+                                                  
+
                                                   <td
                                                     height="30"
                                                     class="spacingHeight-30"
                                                     style="line-height: 30px; min-height: 30px;"
                                                   ></td>
-                                                  \n
+                                                  
+
                                                 </tr>
-                                                \n
+                                                
+
                                               </tbody>
                                             </table>
-                                            \n
+                                            
+
                                             <table
                                               role="presentation"
                                               cellpadding="0"
@@ -1738,16 +2002,19 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                               style="width: 640px; min-width: 640px;"
                                               class="mlContentTable"
                                             >
-                                              \n
+                                              
+
                                               <tbody>
                                                 <tr>
-                                                  \n
+                                                  
+
                                                   <td
                                                     align="center"
                                                     style="padding: 0px 40px;"
                                                     class="mlContentOuter"
                                                   >
-                                                    \n
+                                                    
+
                                                     <table
                                                       role="presentation"
                                                       cellpadding="0"
@@ -1756,10 +2023,12 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                       align="center"
                                                       width="100%"
                                                     >
-                                                      \n
+                                                      
+
                                                       <tbody>
                                                         <tr>
-                                                          \n
+                                                          
+
                                                           <td
                                                             align="left"
                                                             class="bodyTitle"
@@ -1773,19 +2042,25 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                           >
                                                             WishTender
                                                           </td>
-                                                          \n
+                                                          
+
                                                         </tr>
-                                                        \n
+                                                        
+
                                                       </tbody>
                                                     </table>
-                                                    \n
+                                                    
+
                                                   </td>
-                                                  \n
+                                                  
+
                                                 </tr>
-                                                \n
+                                                
+
                                               </tbody>
                                             </table>
-                                            \n
+                                            
+
                                             <table
                                               role="presentation"
                                               cellpadding="0"
@@ -1796,17 +2071,22 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                               style="width: 640px; min-width: 640px;"
                                               class="mlContentTable"
                                             >
-                                              \n
+                                              
+
                                               <tbody>
                                                 <tr>
-                                                  \n
+                                                  
+
                                                   <td height="10" class="spacingHeight-10"></td>
-                                                  \n
+                                                  
+
                                                 </tr>
-                                                \n
+                                                
+
                                               </tbody>
                                             </table>
-                                            \n
+                                            
+
                                             <table
                                               role="presentation"
                                               cellpadding="0"
@@ -1817,16 +2097,19 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                               style="width: 640px; min-width: 640px;"
                                               class="mlContentTable"
                                             >
-                                              \n
+                                              
+
                                               <tbody>
                                                 <tr>
-                                                  \n
+                                                  
+
                                                   <td
                                                     align="center"
                                                     style="padding: 0px 40px;"
                                                     class="mlContentOuter"
                                                   >
-                                                    \n
+                                                    
+
                                                     <table
                                                       role="presentation"
                                                       cellpadding="0"
@@ -1835,12 +2118,15 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                       align="center"
                                                       width="100%"
                                                     >
-                                                      \n
+                                                      
+
                                                       <tbody>
                                                         <tr>
-                                                          \n
+                                                          
+
                                                           <td align="center">
-                                                            \n
+                                                            
+
                                                             <table
                                                               role="presentation"
                                                               cellpadding="0"
@@ -1854,10 +2140,12 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                               "
                                                               class="mlContentTable marginBottom"
                                                             >
-                                                              \n
+                                                              
+
                                                               <tbody>
                                                                 <tr>
-                                                                  \n
+                                                                  
+
                                                                   <td
                                                                     align="left"
                                                                     class="bodyTitle"
@@ -1879,22 +2167,29 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                                       Chicago,&nbsp;IL
                                                                     </p>
                                                                   </td>
-                                                                  \n
+                                                                  
+
                                                                 </tr>
-                                                                \n
+                                                                
+
                                                                 <tr>
-                                                                  \n
+                                                                  
+
                                                                   <td
                                                                     height="25"
                                                                     class="spacingHeight-20"
                                                                   ></td>
-                                                                  \n
+                                                                  
+
                                                                 </tr>
-                                                                \n
+                                                                
+
                                                                 <tr>
-                                                                  \n
+                                                                  
+
                                                                   <td align="center">
-                                                                    \n
+                                                                    
+
                                                                     <table
                                                                       role="presentation"
                                                                       cellpadding="0"
@@ -1902,10 +2197,12 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                                       border="0"
                                                                       align="left"
                                                                     >
-                                                                      \n
+                                                                      
+
                                                                       <tbody>
                                                                         <tr>
-                                                                          \n
+                                                                          
+
                                                                           <td
                                                                             align="center"
                                                                             width="24"
@@ -1914,10 +2211,12 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                                             "
                                                                             ng-show="slink.link != ''"
                                                                           >
-                                                                            \n<a
+                                                                            
+<a
                                                                               href="https://twitter.com/WishTender"
                                                                               target="_self"
-                                                                              >\n<img
+                                                                              >
+<img
                                                                                 width="24"
                                                                                 alt="twitter"
                                                                                 src="https://cdn.mailerlite.com/images/icons/default/round/black/twitter.png"
@@ -1925,8 +2224,10 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                                                   display: block;
                                                                                 "
                                                                                 border="0"
-                                                                              />\n</a
-                                                                            >\n
+                                                                              />
+</a
+                                                                            >
+
                                                                           </td>
                                                                           <td
                                                                             align="center"
@@ -1936,10 +2237,12 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                                             "
                                                                             ng-show="slink.link != ''"
                                                                           >
-                                                                            \n<a
+                                                                            
+<a
                                                                               href="https://instagram.com/wishtenderapp"
                                                                               target="_self"
-                                                                              >\n<img
+                                                                              >
+<img
                                                                                 width="24"
                                                                                 alt="instagram"
                                                                                 src="https://cdn.mailerlite.com/images/icons/default/round/black/instagram.png"
@@ -1947,8 +2250,10 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                                                   display: block;
                                                                                 "
                                                                                 border="0"
-                                                                              />\n</a
-                                                                            >\n
+                                                                              />
+</a
+                                                                            >
+
                                                                           </td>
                                                                           <td
                                                                             align="center"
@@ -1958,10 +2263,12 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                                             "
                                                                             ng-show="slink.link != ''"
                                                                           >
-                                                                            \n<a
+                                                                            
+<a
                                                                               href="https://www.tiktok.com/@wishtender"
                                                                               target="_self"
-                                                                              >\n<img
+                                                                              >
+<img
                                                                                 width="24"
                                                                                 alt="tiktok"
                                                                                 src="https://cdn.mailerlite.com/images/icons/default/round/black/tiktok.png"
@@ -1969,22 +2276,30 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                                                   display: block;
                                                                                 "
                                                                                 border="0"
-                                                                              />\n</a
-                                                                            >\n
+                                                                              />
+</a
+                                                                            >
+
                                                                           </td>
-                                                                          \n
+                                                                          
+
                                                                         </tr>
-                                                                        \n
+                                                                        
+
                                                                       </tbody>
                                                                     </table>
-                                                                    \n
+                                                                    
+
                                                                   </td>
-                                                                  \n
+                                                                  
+
                                                                 </tr>
-                                                                \n
+                                                                
+
                                                               </tbody>
                                                             </table>
-                                                            \n
+                                                            
+
                                                             <table
                                                               role="presentation"
                                                               cellpadding="0"
@@ -1998,32 +2313,45 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                                               "
                                                               class="mlContentTable"
                                                             >
-                                                              \n
+                                                              
+
                                                               <tbody>
-                                                                \n
+                                                                
+
                                                                 <tr>
-                                                                  \n
+                                                                  
+
                                                                   <td height="10"></td>
-                                                                  \n
+                                                                  
+
                                                                 </tr>
-                                                                \n\n
+                                                                
+
+
                                                               </tbody>
                                                             </table>
-                                                            \n
+                                                            
+
                                                           </td>
-                                                          \n
+                                                          
+
                                                         </tr>
-                                                        \n
+                                                        
+
                                                       </tbody>
                                                     </table>
-                                                    \n
+                                                    
+
                                                   </td>
-                                                  \n
+                                                  
+
                                                 </tr>
-                                                \n
+                                                
+
                                               </tbody>
                                             </table>
-                                            \n
+                                            
+
                                             <table
                                               role="presentation"
                                               cellpadding="0"
@@ -2034,42 +2362,56 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                               style="width: 640px; min-width: 640px;"
                                               class="mlContentTable"
                                             >
-                                              \n
+                                              
+
                                               <tbody>
                                                 <tr>
-                                                  \n
+                                                  
+
                                                   <td
                                                     height="40"
                                                     class="spacingHeight-40"
                                                     style="line-height: 40px; min-height: 40px;"
                                                   ></td>
-                                                  \n
+                                                  
+
                                                 </tr>
-                                                \n
+                                                
+
                                               </tbody>
                                             </table>
-                                            \n
+                                            
+
                                           </td>
-                                          \n
+                                          
+
                                         </tr>
-                                        \n
+                                        
+
                                       </tbody>
                                     </table>
-                                    \n
+                                    
+
                                   </td>
-                                  \n
+                                  
+
                                 </tr>
-                                \n
+                                
+
                               </tbody>
                             </table>
-                            \n
+                            
+
                           </td>
-                          \n
+                          
+
                         </tr>
-                        \n
+                        
+
                       </tbody>
                     </table>
-                    \n
+                    
+
                     <table
                       cellpadding="0"
                       cellspacing="0"
@@ -2079,41 +2421,59 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                       style="width: 640px; min-width: 640px;"
                       class="mlContentTable"
                     >
-                      \n
+                      
+
                       <tbody>
                         <tr>
-                          \n
+                          
+
                           <td height="40" class="spacingHeight-20"></td>
-                          \n
+                          
+
                         </tr>
-                        \n\n
+                        
+
+
                         <tr>
-                          \n
+                          
+
                           <td height="40" class="spacingHeight-20"></td>
-                          \n
+                          
+
                         </tr>
-                        \n
+                        
+
                       </tbody>
                     </table>
-                    \n\n<\!--[if mso 16]>\n
+                    
+
+<!--[if mso 16]>
+
                   </td>
-                  \n
+                  
+
                 </tr>
-                \n
+                
+
               </table>
-              \n <\!--<![endif]-->\n<\!--[if !mso]><\!-- -->\n
+              
+ <!--<![endif]-->
+<!--[if !mso]><!-- -->
+
             </td>
-            \n
+            
+
           </tr>
-          \n
+          
+
         </tbody>
       </table>
-      \n<\!--<![endif]-->\n
+      
+<!--<![endif]-->
+
     </div>
-    \n\n
+    
+
+
   </body>
 </html>
-`;
-};
-
-module.exports = html;
