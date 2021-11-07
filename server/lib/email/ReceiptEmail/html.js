@@ -75,9 +75,18 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
     <style type="text/css">
       \n\t\t\t\t@media only screen and (max-width: 640px){\n\t\t\t\t\t#logoBlock-4 {\n\t\t\t\t\t\tmax-width: 210px!important;\n\t\t\t\t\t\twidth: 100%!important;\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t
     </style>
+    
     <style type="text/css">
-      \n\t\t\t\t@media only screen and (max-width: 640px){\n\t\t\t\t\t#imageBlock-10 img {\n\t\t\t\t\t\tmax-width: 560px!important;\n\t\t\t\t\t\twidth: 100%!important;\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t
+      @media only screen and (max-width: 640px){ .itemInfo{flex-wrap: wrap!important;        padding-bottom: 1em!important;
+        border-bottom: 1px solid lightgrey!important;} .itemInfo:first-of-type {
+        padding-top: 1em!important; border-top: 1px solid lightgrey!important;
+      } 
+      .itemInfo:first-of-type {
+
+      }
+    }
     </style>
+    
     <style type="text/css">
       \n\t\t\t\t@media only screen and (max-width: 640px){\n\t\t\t\t\t#imageBlock-14 img {\n\t\t\t\t\t\tmax-width: 868px!important;\n\t\t\t\t\t\twidth: 100%!important;\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t
     </style>
@@ -1038,11 +1047,12 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                                 
                                 
                                 
-                                ${items.map(
-                                  (item) => `<div style="
+                                ${items
+                                  .map(
+                                    (item) => `<div style="
                                 display: flex;
                                 gap: 1em;
-                            "><img src="${
+                            " class="itemInfo"><img src="${
                               item.item.itemImage
                             }" border="0" width="100" style="display: block;">
                                 
@@ -1059,7 +1069,8 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                             
                             
                                 </div>`
-                                )}
+                                  )
+                                  .join('')}
                                 
                                 
                                                                 

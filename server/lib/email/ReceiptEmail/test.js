@@ -812,7 +812,193 @@ const converteds = [
   },
 ];
 
-const order = orderMulti; // orderMulti orderSin orderConverted oconverteds
+const messedUp = {
+  _id: '61874d6afba8b8000491d3c7',
+  seen: false,
+  noteToTender: [],
+  buyerInfo: { email: 'dangerousdashie@gmail.com', fromLine: 'Dash' },
+  alias: '60df9aa1dbcca1000421e3a8',
+  noteToWisher: { message: 'Yay!', read: null },
+  session: 'vvGUxoU6_SK5IKUtEkTrjZ8ju_kPvUqS',
+  processorPaymentID: 'cs_test_b1Zcy5Mdw44ruvnsXl4dMoMHzvLC6UzQ2tnEkhXZu71IXglGZ1BqWace3Z',
+  exchangeRate: {
+    wishTender: [
+      { from: 'USD', to: 'AUD', value: 1.3522717733064582, type: 'connect to customer' },
+    ],
+  },
+  processedBy: 'Stripe',
+  paid: true,
+  wishersTender: { intended: { amount: 35000, aliasCurrency: 'USD' } },
+  total: { amount: 52063, currency: 'AUD' },
+  cart: {
+    items: {
+      '60df9b9adbcca1000421e3ab': {
+        item: {
+          categories: [],
+          orders: [
+            '60df9dbedbcca1000421e3ae',
+            '60df9fe0f43f5d0004529d06',
+            '60e607b78d56bc0004417da6',
+            '60e6081d8d56bc0004417da7',
+            '615de2ef1b5bdd00044ed1d2',
+            '615de5061b5bdd00044ed1d3',
+            '61873a1b71da117c8a6f2242',
+          ],
+          deleted: false,
+          _id: '60df9b9adbcca1000421e3ab',
+          itemName: 'Fendi Pleated high-waisted Shorts - Farfetch',
+          price: 10000,
+          url:
+            'https://www.farfetch.com/shopping/women/fendi-pleated-high-waisted-shorts-item-16366888.aspx?storeid=9671',
+          currency: 'USD',
+          wishlist: '60df9aa1dbcca1000421e3a9',
+          itemImage:
+            'https://wishtender-dev.s3.amazonaws.com/images/itemImages/9420335c-a824-420a-a5a6-c935eb618795.png',
+          __v: 0,
+        },
+        qty: 2,
+        price: 20000,
+      },
+      '60df9afadbcca1000421e3aa': {
+        item: {
+          categories: [],
+          orders: [
+            '60df9dbedbcca1000421e3ae',
+            '60df9fe0f43f5d0004529d06',
+            '60e607248d56bc0004417da4',
+            '60e607b78d56bc0004417da6',
+          ],
+          deleted: false,
+          _id: '60df9afadbcca1000421e3aa',
+          itemName: 'Off-White GREY SNAP DENIM TSHIRT DRESS GREY NO COL - Farfetch',
+          price: 15000,
+          url:
+            'https://www.farfetch.com/shopping/women/off-white-grey-snap-denim-tshirt-dress-grey-no-col-item-16868612.aspx?storeid=12572',
+          currency: 'USD',
+          wishlist: '60df9aa1dbcca1000421e3a9',
+          itemImage:
+            'https://wishtender-dev.s3.amazonaws.com/images/itemImages/0428cd8d-e098-40ed-ae45-577487bf5758.png',
+          __v: 0,
+        },
+        qty: 1,
+        price: 15000,
+      },
+    },
+    totalQty: 3,
+    totalPrice: 35000,
+    alias: {
+      wishlists: ['60df9aa1dbcca1000421e3a9'],
+      deleted: false,
+      _id: '60df9aa1dbcca1000421e3a8',
+      handle: 'dash',
+      aliasName: 'dashie',
+      currency: 'USD',
+      handle_lowercased: 'dash',
+      __v: 1,
+      profileImage:
+        'https://wishtender-dev.s3.amazonaws.com/images/profileImages/62fc6d64-4426-4d32-8218-b2a51d62e2ab.png',
+    },
+  },
+  convertedCart: {
+    items: {
+      '60df9b9adbcca1000421e3ab': {
+        item: {
+          categories: [],
+          orders: [
+            '60df9dbedbcca1000421e3ae',
+            '60df9fe0f43f5d0004529d06',
+            '60e607b78d56bc0004417da6',
+            '60e6081d8d56bc0004417da7',
+            '615de2ef1b5bdd00044ed1d2',
+            '615de5061b5bdd00044ed1d3',
+            '61873a1b71da117c8a6f2242',
+          ],
+          deleted: false,
+          _id: '60df9b9adbcca1000421e3ab',
+          itemName: 'Fendi Pleated high-waisted Shorts - Farfetch',
+          price: 13523,
+          url:
+            'https://www.farfetch.com/shopping/women/fendi-pleated-high-waisted-shorts-item-16366888.aspx?storeid=9671',
+          currency: 'USD',
+          wishlist: '60df9aa1dbcca1000421e3a9',
+          itemImage:
+            'https://wishtender-dev.s3.amazonaws.com/images/itemImages/9420335c-a824-420a-a5a6-c935eb618795.png',
+          __v: 0,
+          convertedTo: 'AUD',
+        },
+        qty: 2,
+        price: 27046,
+      },
+      '60df9afadbcca1000421e3aa': {
+        item: {
+          categories: [],
+          orders: [
+            '60df9dbedbcca1000421e3ae',
+            '60df9fe0f43f5d0004529d06',
+            '60e607248d56bc0004417da4',
+            '60e607b78d56bc0004417da6',
+          ],
+          deleted: false,
+          _id: '60df9afadbcca1000421e3aa',
+          itemName: 'Off-White GREY SNAP DENIM TSHIRT DRESS GREY NO COL - Farfetch',
+          price: 20284,
+          url:
+            'https://www.farfetch.com/shopping/women/off-white-grey-snap-denim-tshirt-dress-grey-no-col-item-16868612.aspx?storeid=12572',
+          currency: 'USD',
+          wishlist: '60df9aa1dbcca1000421e3a9',
+          itemImage:
+            'https://wishtender-dev.s3.amazonaws.com/images/itemImages/0428cd8d-e098-40ed-ae45-577487bf5758.png',
+          __v: 0,
+          convertedTo: 'AUD',
+        },
+        qty: 1,
+        price: 20284,
+      },
+    },
+    totalQty: 3,
+    totalPrice: 47330,
+    alias: {
+      wishlists: ['60df9aa1dbcca1000421e3a9'],
+      deleted: false,
+      _id: '60df9aa1dbcca1000421e3a8',
+      handle: 'dash',
+      aliasName: 'dashie',
+      currency: 'USD',
+      handle_lowercased: 'dash',
+      __v: 1,
+      profileImage:
+        'https://wishtender-dev.s3.amazonaws.com/images/profileImages/62fc6d64-4426-4d32-8218-b2a51d62e2ab.png',
+    },
+    convertedTo: 'AUD',
+  },
+  fees: { wishTender: 3500, total: 38500, currency: 'AUD' },
+  createdAt: '2021-11-07T03:52:10.426Z',
+  __v: 0,
+  cashFlow: {
+    customerCharged: {
+      from: { amountBeforeFees: 35000, currency: 'USD' },
+      amountBeforeFees: 47330,
+      amount: 52063,
+      currency: 'AUD',
+      exchangeRate: 1.3522717733064582,
+    },
+    toPlatform: {
+      from: { amount: 52063, currency: 'AUD' },
+      amount: 38115,
+      currency: 'USD',
+      exchangeRate: 0.732102,
+    },
+    toConnect: {
+      from: { amount: 34650, currency: 'USD' },
+      amount: 34650,
+      currency: 'USD',
+      exchangeRate: null,
+    },
+    connectAccount: 'acct_1J8vUuPtCE6if3M7',
+  },
+  paidOn: '2021-11-07T03:52:21Z',
+};
+const order = messedUp; // messedUp orderMulti orderSin orderConverted oconverteds
 const fee = currency.smallestUnitToFormatted(
   order.cashFlow.customerCharged.amount - order.cashFlow.customerCharged.amountBeforeFees,
   'en',
