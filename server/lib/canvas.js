@@ -1,4 +1,4 @@
-const { createCanvas, loadImage, Image } = require('canvas');
+const { createCanvas, loadImage } = require('canvas');
 const axios = require('axios');
 const sharp = require('sharp');
 const { ApplicationError } = require('./Error');
@@ -20,6 +20,8 @@ module.exports.createCroppedImage = async (url, crop, dimensions, convert, next)
     }
 
     ctx.fillStyle = 'white';
+
+    // comment out the setimeout if running the import amazon script
     setTimeout(() => {
       try {
         throw new Error('image load timed out');

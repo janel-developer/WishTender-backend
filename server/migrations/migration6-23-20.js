@@ -24,6 +24,10 @@ const WishlistItem = require('../models/WishlistItem.Model');
 //     return Promise.resolve([...a, res]);
 //   });
 // }, Promise.resolve(null));
+(async () => {
+  const results = await Users.find({});
+  console.log(users);
+})();
 
 // const getProm = async (order) => {
 //   const prom = new Promise((res) => {
@@ -95,9 +99,13 @@ const WishlistItem = require('../models/WishlistItem.Model');
 //   console.log(prob);
 // })();
 // (async () => {
-//   const results = await Users.find({});
+//   const stripe = require('stripe')(
+//     'sk_test_51HAi5vLLBOhef2QN86Ub0sz30QQNOAzyK7dxUmhml7kAAKTAVZVdha5kyDzIbxDtbIXy9OSIKjh6De2GULeDmhmY00t9rBCOfL'
+//   );
 
-//   console.log(results);
+//   const reversal = await stripe.transfers.createReversal('{TRANSFER_ID}', {
+//     amount: 500,
+//   });
 // })();
 
 // (async () => {

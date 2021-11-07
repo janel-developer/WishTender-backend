@@ -9,31 +9,55 @@ const StripeAccountInfo = require('../models/StripeAccountInfo.Model');
 const Users = require('../models/User.Model');
 
 // mongoose.connect(process.env.DEVELOPMENT_DB_DSN, { useNewUrlParser: true });
-mongoose.connect(process.env.PRODUCTION_DB_DSN, { useNewUrlParser: true });
+// mongoose.connect(process.env.PRODUCTION_DB_DSN, { useNewUrlParser: true });
 require('dotenv').config({ path: `${__dirname}/./../.env` });
 
+const id = '617b14aa48e12b000480b5d4';
 (async () => {
+  // const deleted = await stripe.accounts.del('acct_1JncWlQ6pu2foFrq');
+  // console.log(deleted);
   try {
-    const user = await Users.findOne({ _id: '614e459e6355c60004c937d4' }).populate({
-      path: 'stripeAccountInfo',
-      model: 'StripeAccountInfo',
-    });
+    const accountInfos = await StripeAccountInfo.find({ user: id });
     let deleted;
-    let stripeInfo;
-    let deleteInfo;
-    if (user.stripeAccountInfo) {
-      if (user.stripeAccountInfo.stripeAccountId) {
-        deleted = await stripe.accounts.del(user.stripeAccountInfo.stripeAccountId);
+    accountInfos.forEach(async (accountInf) => {
+      try {
+        deleted = await stripe.accounts.del(accountInf.stripeAccountId);
+        accountInf.remove();
+        console.log(deleted);
+      } catch (err) {
+        console.log(err);
       }
-      stripeInfo = await StripeAccountInfo.findOneWithDeleted({
-        _id: user.stripeAccountInfo._id,
-      });
-      deleteInfo = await stripeInfo.remove();
-      user.stripeAccountInfo = null;
-      await user.save();
-      console.log(user);
-    }
+    });
+    const user = await Users.findOne({ _id: id });
+    user.stripeAccountInfo = null;
+    await user.save();
+    console.log(user);
   } catch (err) {
-    console.log(err);
+    console.timeLog.log(err);
   }
 })();
+// (async () => {
+//   try {
+//     const user = await Users.findOne({ _id: '614e459e6355c60004c937d4' }).populate({
+//       path: 'stripeAccountInfo',
+//       model: 'StripeAccountInfo',
+//     });
+//     let deleted;
+//     let stripeInfo;
+//     let deleteInfo;
+//     if (user.stripeAccountInfo) {
+//       if (user.stripeAccountInfo.stripeAccountId) {
+//         deleted = await stripe.accounts.del(user.stripeAccountInfo.stripeAccountId);
+//       }
+//       stripeInfo = await StripeAccountInfo.findOneWithDeleted({
+//         _id: user.stripeAccountInfo._id,
+//       });
+//       deleteInfo = await stripeInfo.remove();
+//       user.stripeAccountInfo = null;
+//       await user.save();
+//       console.log(user);
+//     }
+//   } catch (err) {
+//     console.log(err);
+//   }
+// })();

@@ -19,7 +19,7 @@ const { Schema } = mongoose;
 const SessionSchema = new Schema({ session: String, _id: String }, { strict: false });
 
 const Session = mongoose.model('sessions', SessionSchema, 'sessions');
-const ReceiptEmail = require('../lib/email/ReceiptEmail');
+const ReceiptEmail = require('../lib/email/ReceiptEmail/ReceiptEmail');
 const TenderReceivedEmail = require('../lib/email/TenderReceivedEmail/TenderReceivedEmail');
 
 const checkoutSessionCompleted = async (checkout) => {
