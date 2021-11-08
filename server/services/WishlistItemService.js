@@ -82,6 +82,20 @@ class WishlistItemService {
     return wishlistItems;
   }
 
+  async getWishlistItemsByBatch(batch) {
+    let wishlistItems;
+    try {
+      wishlistItems = await this.WishlistItemModel.find({ batch: batch });
+      // wishlistItems = await this.WishlistItemModel.find({ _id: ids });
+    } catch (err) {
+      throw new ApplicationError(
+        { err },
+        `Unable to get wishlist items because of an internal error.`
+      );
+    }
+    return wishlistItems;
+  }
+
   /**
    * gets wishlist item that aren't the correct currency
    *

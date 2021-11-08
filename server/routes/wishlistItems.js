@@ -140,7 +140,8 @@ module.exports = () => {
         const ms = Math.floor(Math.random() * (max - min + 1) + min);
         await sleep(ms);
       };
-      const addItemToDatabase = async (item) => {
+      const addItemToDatabase = async (item, innerNext) => {
+        // next declared in upper scope
         const prom = new Promise((resolve, rej) => {
           (async () => {
             let file;
@@ -152,12 +153,13 @@ module.exports = () => {
                   h: 300,
                   w: 300,
                 },
-                site === 'amazon' ? 'png' : null
+                site === 'amazon' ? 'png' : null,
+                next
               );
               await randomSleepTime(900, 3000);
               file.storedFilename = await imageService.store(file.buffer, { h: 300, w: 300 });
             } catch (err) {
-              return next(err);
+              return innerNext(err);
             }
 
             const newItem = { ...item };
@@ -167,7 +169,8 @@ module.exports = () => {
               const itemRes = await wishlistItemService.addWishlistItem(newItem);
               return resolve(itemRes);
             } catch (err) {
-              await imageService.delete(req.file.storedFilename);
+              if (req.file && req.file.storedFilename)
+                await imageService.delete(req.file.storedFilename);
 
               return rej(err);
             }
@@ -177,16 +180,30 @@ module.exports = () => {
       };
 
       // sequential so not to arouse the bot detectors
-      const items = req.body.items.reduce(
-        (prevPr, currentItemEl, i) =>
-          prevPr
-            .then((acc) => addItemToDatabase(currentItemEl).then((resp) => [...acc, resp]))
-            // eslint-disable-next-line arrow-body-style
-            .catch((err) => {
-              return next(new ApplicationError({ err }, `Failed to add items at the i=${i} item`));
-            }),
-        Promise.resolve([])
-      );
+      console.log('removing...');
+      req.body.items
+        .filter((i) => i.price === 'NaN' || !i.imageCrop)
+        .forEach((i) => {
+          console.log(JSON.stringify(i));
+          console.log('___');
+        });
+      const items = req.body.items
+        .filter((i) => i.price !== 'NaN' && i.imageCrop)
+        .reduce(
+          (prevPr, currentItemEl, i) =>
+            prevPr
+              .then((acc) =>
+                addItemToDatabase(currentItemEl, next).then((resp) => {
+                  return [...acc, resp];
+                })
+              ) // eslint-disable-next-line arrow-body-style
+              .catch((err) => {
+                return next(
+                  new ApplicationError({ err }, `Failed to add items at the i=${i} item`)
+                );
+              }),
+          Promise.resolve([])
+        );
       items
         .then(async () => res.status(201).send())
         // eslint-disable-next-line arrow-body-style
@@ -258,10 +275,14 @@ module.exports = () => {
     async (req, res, next) => {
       logger.log('silly', `deleting wishlist item by id`);
       // const { id } = req.params;
-      const { ids } = req.body;
+      const { ids, batch } = req.body;
       let items;
       try {
-        items = await wishlistItemService.getWishlistItems(ids);
+        if (ids) {
+          items = await wishlistItemService.getWishlistItems(ids);
+        } else if (batch) {
+          items = await wishlistItemService.getWishlistItemsByBatch(batch);
+        }
       } catch (err) {
         return next(new ApplicationError({ err }, `Failed to get items`));
       }
