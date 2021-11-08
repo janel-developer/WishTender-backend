@@ -998,7 +998,7 @@ const messedUp = {
   },
   paidOn: '2021-11-07T03:52:21Z',
 };
-const order = messedUp; // messedUp orderMulti orderSin orderConverted oconverteds
+const order = orderSin; // messedUp orderMulti orderSin orderConverted converteds
 const fee = currency.smallestUnitToFormatted(
   order.cashFlow.customerCharged.amount - order.cashFlow.customerCharged.amountBeforeFees,
   'en',

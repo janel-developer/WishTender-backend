@@ -77,14 +77,24 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
     </style>
     
     <style type="text/css">
-      @media only screen and (max-width: 640px){ .itemInfo{flex-wrap: wrap!important;        padding-bottom: 1em!important;
-        border-bottom: 1px solid lightgrey!important;} .itemInfo:first-of-type {
+      @media only screen and (max-width: 640px){ 
+        .itemInfo{    padding-bottom: 1em!important;
+        border-bottom: 1px solid lightgrey!important;} 
+        .itemInfo:first-of-type {
         padding-top: 1em!important; border-top: 1px solid lightgrey!important;
       } 
-      .itemInfo:first-of-type {
-
+      .itemImage{
+width:50px!important;
       }
+      .itemDescription{
+        width:100%!important;
+      }
+      .itemData{
+        width:100%!important;
+      }
+      
     }
+    
     </style>
     
     <style type="text/css">
@@ -1032,50 +1042,50 @@ const html = (alias, items, totalQty, totalPrice, fee) => {
                               </tbody>
                             </table>
                             `
-                                  : `<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" width="640" style="width: 640px; min-width: 640px;" class="mlContentTable">
+                                  : `<table role="presentation" cellpadding="10" cellspacing="0" border="0" align="center" width="640" style="width: 640px; min-width: 640px;" class="mlContentTable">
                                   <tbody><tr>
                                     <td align="center" style="padding: 0px 40px;" class="mlContentOuter">
                                 
-                                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" width="100%">
+                                      <table role="presentation" cellpadding="10" cellspacing="0" border="0" align="center" width="100%">
                                         <tbody><tr>
-                                          <td align="center" id="imageBlock-10" style="
-                                    display: flex;
-                                    flex-direction: column;
-                                    gap: 1em;
-                                    flex-wrap: wrap;
-                                ">
-                                
+                                          <td align="center" id="imageBlock-10" 
+                                >
                                 
                                 
                                 ${items
                                   .map(
-                                    (item) => `<div style="
-                                display: flex;
-                                gap: 1em;
-                            " class="itemInfo"><img src="${
+                                    (
+                                      item
+                                    ) => `<table class="itemInfo" cellpadding="10"style="width:100%;"><tbody><tr><td>
+                                    
+                                    <table class ="itemData" cellpadding="10" align="left"><tbody><tr style="padding:1em; width:100%;
+                            " >
+                            <td><img class="itemImage"src="${
                               item.item.itemImage
-                            }" border="0" width="100" style="display: block;">
+                            }" border="0"  style="display: block; width:70px;">
+                            </td>
                                 
-                            <div align="center" class="bodyTitle" style="font-family: 'Poppins', sans-serif; font-size: 18px; font-weight: 700; line-height: 150%; color: #111111; text-transform: none; font-style: normal; text-decoration: none; text-align: center;">${
+                            <td align="center" class="bodyTitle" style="font-family: 'Poppins', sans-serif; font-size: 12px;  line-height: 150%; color: #111111; text-transform: none; font-style: normal; text-decoration: none; text-align: center;">${
                               item.price
-                            }</div> 
-                            <div align="center" class="bodyTitle" style="font-family: 'Poppins', sans-serif; font-size: 18px; font-weight: 700; line-height: 150%; color: #111111; text-transform: none; font-style: normal; text-decoration: none; text-align: center;">QTY: ${
+                            }</td> 
+                            <td align="center" class="bodyTitle" style="font-family: 'Poppins', sans-serif; font-size: 12px;  line-height: 150%; color: #111111; text-transform: none; font-style: normal; text-decoration: none; text-align: center;">QTY: ${
                               item.qty
-                            }</div> 
-                            <div align="left" class="bodyTitle" id="bodyText-10" style="font-family: 'Poppins', sans-serif; font-size: 14px; line-height: 150%; color: #6f6f6f;"><p style="margin-top: 0px; margin-bottom: 0px; line-height: 150%; text-align: center;">${`${item.item.itemName.slice(
+                            }</td> </tr></tbody></table>
+                            <table class = "itemDescription" align="right" style="width:260px;"><tbody><tr><td align="left" class="bodyTitle" id="bodyText-10" style="font-family: 'Poppins', sans-serif; font-size: 14px; line-height: 150%; color: #6f6f6f;"><p style="margin-top: 0px; margin-bottom: 0px; line-height: 150%; ">${`${item.item.itemName.slice(
                               0,
                               50
-                            )}...`}</p></div>
+                            )}...`}</p></td></tr></tbody></table> 
                             
+                            </td></tr></tbody></table> 
                             
-                                </div>`
+                                `
                                   )
                                   .join('')}
                                 
                                 
                                                                 
                                 </td>
-                                        </tr>
+                                        </tr> </table><table>
                                         
                                         
                                         <tr>
