@@ -249,6 +249,9 @@ module.exports = (config) => {
     return next();
   });
 
+  app.get('/test', (req, res, next) => {
+    res.send('hi');
+  });
   app.use('/api', routes());
   app.set('views', __dirname + '/views');
   app.set('view engine', 'pug');
