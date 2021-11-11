@@ -79,6 +79,7 @@ const frontEndRoutes = [
   'confirm-email',
   'account-settings',
   'how-it-works',
+  'faq',
 ];
 
 function authCountrySupported(req, res, next) {
