@@ -25,7 +25,7 @@ class ReceiptEmail extends Email {
 
     const from = `WishTender <${email}>`;
     const subject = `Your Receipt`;
-    const html = `<h1> Thank you for you for your purchase!</h1><p>You purchased a WishTender for ${
+    const html = `<h1> Thank you for your purchase!</h1><p>You purchased a WishTender for ${
       alias.aliasName
     } <a href = 'https://${
       process.env.NODE_ENV === 'production' ? 'www' : 'staging'
